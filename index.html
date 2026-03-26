@@ -2234,10 +2234,13 @@ const USERS = {
 };
 
 // ── LOGIN ──
+let _loggedIn = false;
 function doLogin() {
+  if (_loggedIn) return; // Prevent double login
   const u = document.getElementById('loginUser').value.toLowerCase().trim();
   const p = document.getElementById('loginPass').value;
   if (USERS[u] && USERS[u].pass === p) {
+    _loggedIn = true;
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('appScreen').style.display = 'block';
     const user = USERS[u];
@@ -2291,6 +2294,7 @@ window.addEventListener('load', function(){
   } catch(e){ console.log('Auto-login error:', e); }
 });
 function doLogout() {
+  _loggedIn = false;
   localStorage.removeItem('portal_session');
   if (window._sessionTimer) clearTimeout(window._sessionTimer);
   document.getElementById('appScreen').style.display = 'none';
@@ -3077,22 +3081,32 @@ function loadPdLiveData(){
   }
 
   const sorted = [...todayProd].sort((a,b)=>(a.hora||'').localeCompare(b.hora||''));
-  let html='', tCons=0, tPt=0, tPers=0;
+  let html='', tCons=0, tPt=0, totalPersSum=0, hoursWithPers=0;
   const colSpan = pdCostoVisible ? 7 : 6;
   const costoDisplay = pdCostoVisible ? '' : 'none';
-  let almuerzoShown = false;
+
+  // Find almuerzo info from first record that has it
+  let almInicio='', almFin='';
+  sorted.forEach(r=>{ if(r.almuerzo_inicio&&r.almuerzo_fin&&!almInicio){ almInicio=r.almuerzo_inicio; almFin=r.almuerzo_fin; }});
+  let almuerzoInserted = false;
+
   sorted.forEach(r => {
     const c=parseFloat(r.consumo_kg)||0, p=parseFloat(r.pt_aprox_kg)||0;
     const rd = c>0?(p/c*100):0;
     const persForHour = todayPers.find(pr=>(pr.hora||'').substring(0,5)===(r.hora||'').substring(0,5));
     const pers = persForHour?(parseInt(persForHour.num_personal)||parseInt(persForHour.total_personal)||0):totalPersonal;
     const costoKg = (pers>0&&p>0)?(costoKgCongPd*pers/p):0;
-    tCons+=c; tPt+=p; tPers=pers;
+    tCons+=c; tPt+=p;
+    if(pers>0){ totalPersSum+=pers; hoursWithPers++; }
 
-    // Almuerzo row - show once before the first record after lunch
-    if(!almuerzoShown && r.almuerzo_inicio && r.almuerzo_fin){
-      almuerzoShown = true;
-      html+='<tr style="background:var(--amber-bg)"><td>'+r.almuerzo_inicio+'-'+r.almuerzo_fin+'</td><td colspan="'+colSpan+'" style="text-align:center;font-style:italic;color:var(--amber)">🍽️ Almuerzo '+r.almuerzo_inicio+' — '+r.almuerzo_fin+'</td></tr>';
+    // Insert almuerzo row at correct position (before first hour >= almuerzo time)
+    if(!almuerzoInserted && almInicio && almFin){
+      const hourNum = parseInt((r.hora||'').substring(0,2))||0;
+      const almNum = parseInt(almInicio.substring(0,2))||13;
+      if(hourNum >= almNum){
+        almuerzoInserted = true;
+        html+='<tr style="background:var(--amber-bg)"><td><b>'+almInicio+'-'+almFin+'</b></td><td colspan="'+colSpan+'" style="text-align:center;font-style:italic;color:var(--amber)">🍽️ Almuerzo '+almInicio+' — '+almFin+'</td></tr>';
+      }
     }
 
     const rendColor = rd>=50?'color:var(--verde)':rd>=45?'color:var(--amber)':'color:var(--danger)';
@@ -3102,11 +3116,17 @@ function loadPdLiveData(){
     html+='<td class="num">'+pers+'</td>';
     html+='<td class="pd-costo-col num" style="display:'+costoDisplay+'">$'+costoKg.toFixed(4)+'</td></tr>';
   });
+
+  // Append almuerzo at end if not inserted yet
+  if(!almuerzoInserted && almInicio && almFin){
+    html+='<tr style="background:var(--amber-bg)"><td><b>'+almInicio+'-'+almFin+'</b></td><td colspan="'+colSpan+'" style="text-align:center;font-style:italic;color:var(--amber)">🍽️ Almuerzo '+almInicio+' — '+almFin+'</td></tr>';
+  }
   tbody.innerHTML=html;
 
   const tRend = tCons>0?(tPt/tCons*100):0;
-  const tCosto = (tPers>0&&tPt>0)?(costoKgCongPd*tPers/tPt):0;
-  if(tfoot) tfoot.innerHTML='<tr class="table-footer"><td><b>TOTAL</b></td><td><b>'+sorted.length+' hrs</b></td><td></td><td class="num"><b>'+tCons.toLocaleString('es-PE')+'</b></td><td class="num"><b>'+tPt.toLocaleString('es-PE')+'</b></td><td style="color:var(--verde);font-weight:800"><b>'+tRend.toFixed(1)+'%</b></td><td class="num"><b>'+tPers+'</b></td><td class="pd-costo-col num" style="display:'+costoDisplay+'"><b>$'+tCosto.toFixed(4)+'</b></td></tr>';
+  const avgPers = hoursWithPers>0?Math.round(totalPersSum/hoursWithPers):0;
+  const tCosto = (totalPersSum>0&&tPt>0)?(costoKgCongPd*totalPersSum/tPt):0;
+  if(tfoot) tfoot.innerHTML='<tr class="table-footer"><td><b>TOTAL</b></td><td><b>'+sorted.length+' hrs</b></td><td></td><td class="num"><b>'+tCons.toLocaleString('es-PE')+'</b></td><td class="num"><b>'+tPt.toLocaleString('es-PE')+'</b></td><td style="color:var(--verde);font-weight:800"><b>'+tRend.toFixed(1)+'%</b></td><td class="num"><b>'+avgPers+' prom</b></td><td class="pd-costo-col num" style="display:'+costoDisplay+'"><b>$'+tCosto.toFixed(4)+'</b></td></tr>';
 }
 
 window.addEventListener('storage', loadPdLiveData);
