@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Portal Produccion — Frutos Tropicales Peru</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -740,9 +739,52 @@ body.dark-mode .topbar-dev-signature .signature-name {
 }
 .portal-toast.show { transform:translateY(0);opacity:1; }
 
-@media(max-width:768px) {
+/* ═══ MOBILE RESPONSIVE ═══ */
+@media (max-width: 768px) {
+  .sidebar { transform:translateX(-100%); position:fixed; z-index:1000; height:100vh; width:260px; }
+  .sidebar.open { transform:translateX(0); }
+  .sidebar-overlay.active { display:block; }
+  .app-layout { grid-template-columns:1fr; }
+  .main-content { margin-left:0; }
+  .topbar { flex-wrap:wrap; padding:10px 14px; gap:8px; }
+  .topbar-left { order:1; }
+  .topbar-center { order:3; width:100%; justify-content:center; }
+  .topbar-right { order:2; margin-left:auto; }
+  .topbar-dev-signature { padding:6px 12px; }
+  .topbar-dev-signature .signature-name { font-size:11px; }
+  .topbar-dev-signature .signature-role { font-size:7px; }
+  .topbar-sig-label { font-size:6px; }
+  .panel-container { padding:12px; }
+  .section-title { font-size:18px; flex-direction:column; align-items:flex-start; }
+  .kpi-grid { grid-template-columns:repeat(2, 1fr); gap:10px; }
+  .kpi-value { font-size:24px; }
+  .grid-2, .grid-23 { grid-template-columns:1fr; }
+  .card { padding:14px; }
+  .chart-wrap, .chart-wrap-lg { height:200px; }
+  .data-table { font-size:11px; }
+  .data-table th, .data-table td { padding:6px 8px; }
+  .filter-bar { flex-wrap:wrap; gap:6px; }
+  .filter-chip { font-size:11px; padding:4px 10px; }
+  .filter-select { font-size:11px; }
+  .btn-app-link { font-size:11px; padding:6px 12px; }
+  .area-header-bar { flex-direction:column; gap:8px; text-align:center; }
+  .area-header-actions { justify-content:center; flex-wrap:wrap; }
+  .form-grid-portal { grid-template-columns:1fr; }
   .tunnel-grid-portal { grid-template-columns:1fr; }
-  .form-grid-portal { grid-template-columns:1fr 1fr; }
+  .process-flow { flex-direction:column; }
+  .process-step { min-width:auto; }
+  .process-arrow { transform:rotate(90deg); }
+  #pdKpiRow { grid-template-columns:repeat(2, 1fr) !important; }
+  .mobile-menu-btn { display:flex; }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns:1fr; }
+  #pdKpiRow { grid-template-columns:1fr !important; }
+  .topbar-dev-signature { display:none; }
+  .section-title { font-size:16px; }
+  .kpi-value { font-size:20px; }
+  .chart-wrap, .chart-wrap-lg { height:180px; }
 }
 </style>
 </head>
