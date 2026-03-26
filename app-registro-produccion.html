@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Produccion — FTP Planta</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+/* ═══════════════ CSS VARIABLES ═══════════════ */
+:root {
+  --bg: #0b0f14;
+  --bg2: #111820;
+  --surface: rgba(20,28,38,0.85);
+  --surface-solid: #141c26;
+  --border: rgba(255,255,255,0.06);
+  --border-hover: rgba(255,255,255,0.12);
+  --verde: #16a34a;
+  --verde-light: #4ade80;
+  --verde-bg: rgba(22,163,74,0.12);
+  --naranja: #ea580c;
+  --naranja-bg: rgba(234,88,12,0.12);
+  --azul: #2563eb;
+  --azul-bg: rgba(37,99,235,0.12);
+  --amber: #f59e0b;
+  --amber-bg: rgba(245,158,11,0.12);
+  --rojo: #ef4444;
+  --rojo-bg: rgba(239,68,68,0.12);
+  --purple: #8b5cf6;
+  --purple-bg: rgba(139,92,246,0.12);
+  --texto: #f1f5f9;
+  --texto2: #cbd5e1;
+  --muted: #64748b;
+  --radius: 16px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --glass: backdrop-filter: blur(20px);
+  --gold: #d4af37;
+  --gold-light: #fff8dc;
+  --silver: #c0c0c0;
+}
+
+/* LIGHT THEME */
+[data-theme="light"] {
+  --bg: #f0f2f5;
+  --bg2: #e8eaed;
+  --surface: rgba(255,255,255,0.9);
+  --surface-solid: #ffffff;
+  --border: rgba(0,0,0,0.07);
+  --border-hover: rgba(0,0,0,0.14);
+  --texto: #0f172a;
+  --texto2: #334155;
+  --muted: #64748b;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--texto);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ═══════════════ SCROLLBAR ═══════════════ */
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(100,116,139,0.3); border-radius:10px; }
+::-webkit-scrollbar-thumb:hover { background:rgba(100,116,139,0.5); }
+
+/* ═══════════════ TOP BAR ═══════════════ */
+.topbar {
+  background: linear-gradient(135deg, #0a1f10 0%, #143d25 50%, #0d2a17 100%);
+  color: #fff;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.4);
+  flex-wrap: wrap;
+}
+[data-theme="light"] .topbar {
+  background: linear-gradient(135deg, #166534, #16a34a, #15803d);
+}
+
+.dash-logo {
+  height: 42px;
+  width: auto;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+  animation: logoFloat 3s ease-in-out infinite;
+}
+@keyframes logoFloat {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.topbar-title-wrap { flex:1; min-width:200px; }
+.topbar-title {
+  font-size: 20px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--silver), var(--gold-light), var(--gold));
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s ease infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.topbar-subtitle {
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 2px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.topbar-back {
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.topbar-back:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.theme-toggle {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.theme-toggle:hover {
+  background: rgba(255,255,255,0.2);
+  transform: translateY(-1px);
+}
+
+/* DEVELOPER SIGNATURE */
+.topbar-dev-signature {
+  text-align: right;
+  padding: 8px 16px;
+  background: rgba(0,0,0,0.35);
+  border-radius: 14px;
+  border: 1px solid rgba(212,175,55,0.25);
+  position: relative;
+  overflow: hidden;
+  animation: borderGlow 3s ease-in-out infinite;
+}
+@keyframes borderGlow {
+  0%,100% { border-color: rgba(212,175,55,0.2); box-shadow: 0 0 8px rgba(212,175,55,0.05); }
+  50% { border-color: rgba(212,175,55,0.5); box-shadow: 0 0 20px rgba(212,175,55,0.15); }
+}
+.topbar-dev-signature::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.08), transparent);
+  animation: shineSweep 4s ease-in-out infinite;
+}
+@keyframes shineSweep {
+  0% { left: -100%; }
+  50%,100% { left: 100%; }
+}
+.topbar-sig-label {
+  font-size: 8px;
+  color: rgba(212,175,55,0.6);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 800;
+}
+.signature-name {
+  font-size: 12px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #d4af37, #fff8dc, #c0c0c0, #fff8dc, #d4af37);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s ease infinite;
+}
+.signature-role {
+  font-size: 9px;
+  font-weight: 700;
+  color: #4ade80;
+  letter-spacing: 0.5px;
+}
+
+/* ═══════════════ CONTENT ═══════════════ */
+.content { padding: 20px; max-width: 1300px; margin: 0 auto; }
+
+/* ═══════════════ CARDS / GLASSMORPHISM ═══════════════ */
+.card {
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow);
+  transition: background 0.3s, border-color 0.3s;
+}
+.card-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--texto);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+.card-title .chevron {
+  margin-left: auto;
+  font-size: 14px;
+  transition: transform 0.3s;
+  color: var(--muted);
+}
+.card-title .chevron.collapsed { transform: rotate(-90deg); }
+.card-body.collapsed { display: none; }
+
+/* ═══════════════ FORM ═══════════════ */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.form-group input, .form-group select, .form-group textarea {
+  padding: 11px 14px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto);
+  background: var(--surface-solid);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  border-color: var(--verde);
+  box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+}
+.form-group input::placeholder, .form-group textarea::placeholder { color: var(--muted); opacity: 0.5; }
+.form-group .tooltip-text {
+  font-size: 10px;
+  color: var(--muted);
+  font-style: italic;
+}
+.form-group input:disabled, .form-group select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* CHECKBOX INLINE */
+.checkbox-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.checkbox-inline input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--amber);
+  cursor: pointer;
+}
+.checkbox-inline label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--amber);
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+/* PREVIEW CALC */
+.calc-preview {
+  display: flex;
+  gap: 20px;
+  margin-top: 14px;
+  padding: 14px 18px;
+  background: rgba(22,163,74,0.06);
+  border-radius: 12px;
+  border: 1px solid rgba(22,163,74,0.12);
+  flex-wrap: wrap;
+}
+.calc-item { text-align: center; }
+.calc-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.calc-value { font-size: 22px; font-weight: 900; margin-top: 2px; }
+.calc-value.green { color: var(--verde); }
+.calc-value.amber { color: var(--amber); }
+.calc-value.red { color: var(--rojo); }
+
+/* ALMUERZO SECTION */
+.almuerzo-section {
+  margin-top: 14px;
+  padding: 14px 18px;
+  background: rgba(245,158,11,0.08);
+  border: 1px dashed rgba(245,158,11,0.3);
+  border-radius: 12px;
+}
+.almuerzo-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--amber);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* BUTTONS */
+.btn-row { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+.btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(22,163,74,0.3);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(22,163,74,0.45);
+}
+.btn-primary:active { transform: translateY(0); }
+.btn-outline {
+  background: transparent;
+  color: var(--muted);
+  border: 2px solid var(--border);
+}
+.btn-outline:hover {
+  border-color: var(--border-hover);
+  color: var(--texto);
+}
+
+/* ═══════════════ KPI GRID ═══════════════ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.kpi-card {
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+}
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+}
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--kpi-c, var(--verde));
+}
+.kpi-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+.kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.kpi-value {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--texto);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-unit { font-size: 14px; font-weight: 600; color: var(--muted); }
+.kpi-meta { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+/* ═══════════════ CHARTS ═══════════════ */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+.chart-wrap { height: 280px; position: relative; }
+
+/* ═══════════════ TABLE ═══════════════ */
+.table-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.table-controls input {
+  padding: 9px 14px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto);
+  background: var(--surface-solid);
+  outline: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: border-color 0.2s;
+}
+.table-controls input:focus { border-color: var(--verde); }
+.table-wrap { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+  background: var(--bg2);
+  padding: 11px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.data-table tbody tr:hover { background: rgba(22,163,74,0.04); }
+.data-table .num { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.badge-green { background: var(--verde-bg); color: var(--verde-light); }
+.badge-amber { background: var(--amber-bg); color: var(--amber); }
+.badge-red { background: var(--rojo-bg); color: var(--rojo); }
+[data-theme="light"] .badge-green { color: var(--verde); }
+
+.row-almuerzo { background: rgba(245,158,11,0.06) !important; }
+.row-almuerzo td:first-child { border-left: 3px solid var(--amber); }
+
+.delete-btn {
+  background: var(--rojo-bg);
+  border: none;
+  color: var(--rojo);
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.delete-btn:hover { background: var(--rojo); color: #fff; transform: scale(1.1); }
+
+.table-footer td {
+  font-weight: 800 !important;
+  background: var(--bg2) !important;
+  border-top: 2px solid var(--verde) !important;
+  color: var(--verde-light) !important;
+}
+[data-theme="light"] .table-footer td { color: var(--verde) !important; }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted);
+}
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state .empty-text { font-size: 15px; font-weight: 600; }
+.empty-state .empty-sub { font-size: 12px; margin-top: 6px; }
+
+/* ═══════════════ TOAST ═══════════════ */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: #fff;
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 8px 30px rgba(22,163,74,0.45);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* ═══════════════ RESPONSIVE ═══════════════ */
+@media (max-width: 900px) {
+  .topbar { padding: 12px 16px; gap: 10px; }
+  .topbar-title { font-size: 16px; }
+  .content { padding: 14px; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+}
+@media (max-width: 600px) {
+  .topbar-dev-signature { display: none; }
+  .form-grid { grid-template-columns: 1fr 1fr; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .kpi-value { font-size: 22px; }
+  .topbar-right { gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <a href="index.html" class="topbar-back">&larr; Portal</a>
+  <img src="LOGO.png" class="dash-logo" alt="FTP Logo">
+  <div class="topbar-title-wrap">
+    <div class="topbar-title">Registro de Produccion</div>
+    <div class="topbar-subtitle">Frutos Tropicales Peru S.A.C.</div>
+  </div>
+  <div class="topbar-right">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema" id="themeBtn">🌙</button>
+    <div class="topbar-dev-signature">
+      <div class="topbar-sig-label">Desarrollado por:</div>
+      <div class="signature-name">Rodrigo Garcia</div>
+      <div class="signature-role">Systems Analyst &amp; Developer-QA</div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- REGISTRATION FORM -->
+  <div class="card" id="formCard">
+    <div class="card-title" onclick="toggleSection('formBody','formChevron')">
+      📝 Registrar Produccion por Hora
+      <span class="chevron" id="formChevron">▼</span>
+    </div>
+    <div class="card-body" id="formBody">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Fecha</label>
+          <input type="date" id="fFecha">
+        </div>
+        <div class="form-group">
+          <label>Turno</label>
+          <select id="fTurno" onchange="onTurnoChange()">
+            <option value="DIA">TURNO DIA</option>
+            <option value="NOCHE">TURNO NOCHE</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Producto / Fruta</label>
+          <select id="fFruta">
+            <option value="MANGO" selected>MANGO</option>
+            <option value="FRESA">FRESA</option>
+            <option value="PALTA">PALTA</option>
+            <option value="ARANDANO">ARANDANO</option>
+            <option value="PIÑA">PIÑA</option>
+            <option value="GRANADA">GRANADA</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Hora</label>
+          <select id="fHora">
+            <option value="05:00-06:00">05:00 - 06:00</option>
+            <option value="06:00-07:00">06:00 - 07:00</option>
+            <option value="07:00-08:00">07:00 - 08:00</option>
+            <option value="08:00-09:00">08:00 - 09:00</option>
+            <option value="09:00-10:00">09:00 - 10:00</option>
+            <option value="10:00-11:00">10:00 - 11:00</option>
+            <option value="11:00-12:00">11:00 - 12:00</option>
+            <option value="12:00-13:00">12:00 - 13:00</option>
+            <option value="13:00-14:00">13:00 - 14:00</option>
+            <option value="14:00-15:00">14:00 - 15:00</option>
+            <option value="15:00-16:00">15:00 - 16:00</option>
+            <option value="16:00-17:00">16:00 - 17:00</option>
+            <option value="17:00-18:00">17:00 - 18:00</option>
+            <option value="18:00-19:00">18:00 - 19:00</option>
+            <option value="19:00-20:00">19:00 - 20:00</option>
+            <option value="20:00-21:00">20:00 - 21:00</option>
+            <option value="21:00-22:00">21:00 - 22:00</option>
+            <option value="22:00-23:00">22:00 - 23:00</option>
+            <option value="23:00-00:00">23:00 - 00:00</option>
+            <option value="00:00-01:00">00:00 - 01:00</option>
+            <option value="01:00-02:00">01:00 - 02:00</option>
+            <option value="02:00-03:00">02:00 - 03:00</option>
+            <option value="03:00-04:00">03:00 - 04:00</option>
+            <option value="04:00-05:00">04:00 - 05:00</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Hora Inicio Turno</label>
+          <input type="time" id="fHoraInicio" value="07:00">
+          <span class="tooltip-text">Hora real de inicio del turno</span>
+        </div>
+        <div class="form-group">
+          <label>Hora Fin Turno</label>
+          <input type="time" id="fHoraFin" value="19:00">
+          <span class="tooltip-text">Hora real de fin del turno</span>
+        </div>
+        <div class="form-group">
+          <label>Linea</label>
+          <select id="fLinea">
+            <option value="General">General</option>
+            <option value="Linea 1">Linea 1</option>
+            <option value="Linea 2">Linea 2</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Proyectado TN/Dia</label>
+          <input type="number" id="fProyectado" placeholder="Ej: 16" min="0" step="0.1" value="16">
+          <span class="tooltip-text">Toneladas proyectadas a procesar hoy</span>
+        </div>
+        <div class="form-group">
+          <label>Consumo MP (kg)</label>
+          <input type="number" id="fConsumo" placeholder="Ej: 2000" min="0" step="0.1" oninput="calcPreview()">
+        </div>
+        <div class="form-group">
+          <label>P. Terminado Aprox (kg)</label>
+          <input type="number" id="fPT" placeholder="Ej: 900" min="0" step="0.1" oninput="calcPreview()">
+          <span class="tooltip-text">Peso antes de entrar al tunel IQF</span>
+        </div>
+        <div class="form-group">
+          <label>Observacion</label>
+          <input type="text" id="fObs" placeholder="Opcional">
+        </div>
+        <div class="form-group">
+          <label>Supervisor</label>
+          <input type="text" id="fSupervisor" placeholder="Nombre">
+        </div>
+      </div>
+
+      <!-- ALMUERZO SECTION -->
+      <div class="almuerzo-section" id="almuerzoSection">
+        <div class="almuerzo-title">🍽️ Datos de Almuerzo</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Inicio Almuerzo</label>
+            <input type="time" id="fAlmInicio" value="13:00">
+          </div>
+          <div class="form-group">
+            <label>Fin Almuerzo</label>
+            <input type="time" id="fAlmFin" value="14:00">
+          </div>
+          <div class="form-group" style="justify-content:flex-end">
+            <div class="checkbox-inline">
+              <input type="checkbox" id="fSinAlmuerzo" onchange="toggleSinAlmuerzo()">
+              <label for="fSinAlmuerzo">Sin almuerzo / Corrido</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CALC PREVIEW -->
+      <div class="calc-preview" id="calcPreview" style="display:none">
+        <div class="calc-item">
+          <div class="calc-label">Rendimiento</div>
+          <div class="calc-value" id="prevRend">—</div>
+        </div>
+      </div>
+
+      <!-- BUTTONS -->
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="registrarHora()">✅ Registrar Hora</button>
+        <button class="btn btn-outline" onclick="limpiarForm()">Limpiar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-c:var(--verde)">
+      <div class="kpi-icon">📦</div>
+      <div class="kpi-label">Consumo Total</div>
+      <div class="kpi-value" id="kpiConsumo">0 <span class="kpi-unit">kg</span></div>
+      <div class="kpi-meta">MP ingresada hoy</div>
+    </div>
+    <div class="kpi-card" style="--kpi-c:var(--naranja)">
+      <div class="kpi-icon">🏭</div>
+      <div class="kpi-label">P. Terminado Total</div>
+      <div class="kpi-value" id="kpiPT">0 <span class="kpi-unit">kg</span></div>
+      <div class="kpi-meta">Antes de tunel IQF</div>
+    </div>
+    <div class="kpi-card" style="--kpi-c:var(--azul)">
+      <div class="kpi-icon">📊</div>
+      <div class="kpi-label">Rendimiento Promedio</div>
+      <div class="kpi-value" id="kpiRend">0<span class="kpi-unit">%</span></div>
+      <div class="kpi-meta">PT / Consumo total</div>
+    </div>
+    <div class="kpi-card" style="--kpi-c:var(--verde)">
+      <div class="kpi-icon">📝</div>
+      <div class="kpi-label">Registros Hoy</div>
+      <div class="kpi-value" id="kpiCount">0</div>
+      <div class="kpi-meta">Horas registradas</div>
+    </div>
+    <div class="kpi-card" style="--kpi-c:var(--gold)">
+      <div class="kpi-icon">⭐</div>
+      <div class="kpi-label">Mejor Hora</div>
+      <div class="kpi-value" id="kpiBest" style="font-size:18px;">—</div>
+      <div class="kpi-meta">Mayor rendimiento</div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">📊 Consumo vs PT por Hora</div>
+      <div class="chart-wrap"><canvas id="chartBarras"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📈 Rendimiento % por Hora</div>
+      <div class="chart-wrap"><canvas id="chartRendimiento"></canvas></div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 2 -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">📊 Produccion Acumulada por Hora</div>
+      <div class="chart-wrap"><canvas id="chartAcumulado"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Comparativo Turnos Dia vs Noche</div>
+      <div class="chart-wrap"><canvas id="chartTurnos"></canvas></div>
+    </div>
+  </div>
+
+  <!-- HISTORY TABLE -->
+  <div class="card">
+    <div class="card-title">📋 Historial de Registros — Hoy</div>
+    <div class="table-controls">
+      <label style="font-size:12px;font-weight:700;color:var(--muted)">Filtrar por fecha:</label>
+      <input type="date" id="filterDate" onchange="refreshAll()">
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" id="historyTable">
+        <thead>
+          <tr>
+            <th>Hora</th>
+            <th>Fruta</th>
+            <th>Linea</th>
+            <th style="text-align:right">Consumo (kg)</th>
+            <th style="text-align:right">P. Terminado (kg)</th>
+            <th style="text-align:right">Rend %</th>
+            <th>Observacion</th>
+            <th style="text-align:center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody">
+        </tbody>
+        <tfoot id="historyFoot">
+        </tfoot>
+      </table>
+    </div>
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">📭</div>
+      <div class="empty-text">No hay registros para esta fecha</div>
+      <div class="empty-sub">Registra la primera hora de produccion usando el formulario</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+// ═══════════════ THEME ═══════════════
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next === 'dark' ? '' : 'light');
+  if (next === 'dark') document.documentElement.removeAttribute('data-theme');
+  document.getElementById('themeBtn').textContent = next === 'light' ? '☀️' : '🌙';
+  localStorage.setItem('prod_reg_theme', next);
+  rebuildCharts();
+}
+(function initTheme() {
+  const saved = localStorage.getItem('prod_reg_theme');
+  if (saved === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.getElementById('themeBtn').textContent = '☀️';
+  }
+})();
+
+// ═══════════════ SECTION TOGGLE ═══════════════
+function toggleSection(bodyId, chevronId) {
+  const body = document.getElementById(bodyId);
+  const chev = document.getElementById(chevronId);
+  body.classList.toggle('collapsed');
+  chev.classList.toggle('collapsed');
+}
+
+// ═══════════════ SIN ALMUERZO TOGGLE ═══════════════
+function toggleSinAlmuerzo() {
+  const checked = document.getElementById('fSinAlmuerzo').checked;
+  document.getElementById('fAlmInicio').disabled = checked;
+  document.getElementById('fAlmFin').disabled = checked;
+  if (checked) {
+    document.getElementById('fAlmInicio').value = '';
+    document.getElementById('fAlmFin').value = '';
+  } else {
+    document.getElementById('fAlmInicio').value = '13:00';
+    document.getElementById('fAlmFin').value = '14:00';
+  }
+}
+
+// ═══════════════ TURNO CHANGE ═══════════════
+function onTurnoChange() {
+  const turno = document.getElementById('fTurno').value;
+  if (turno === 'DIA') {
+    document.getElementById('fHoraInicio').value = '07:00';
+    document.getElementById('fHoraFin').value = '19:00';
+  } else {
+    document.getElementById('fHoraInicio').value = '19:00';
+    document.getElementById('fHoraFin').value = '07:00';
+  }
+}
+
+// ═══════════════ CALC PREVIEW ═══════════════
+function calcPreview() {
+  const consumo = parseFloat(document.getElementById('fConsumo').value) || 0;
+  const pt = parseFloat(document.getElementById('fPT').value) || 0;
+  const preview = document.getElementById('calcPreview');
+
+  if (consumo > 0 || pt > 0) {
+    preview.style.display = 'flex';
+    const rend = consumo > 0 ? (pt / consumo * 100) : 0;
+    const rendEl = document.getElementById('prevRend');
+    rendEl.textContent = rend.toFixed(1) + '%';
+    rendEl.className = 'calc-value ' + (rend >= 45 ? 'green' : rend >= 40 ? 'amber' : 'red');
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
+// ═══════════════ STORAGE ═══════════════
+function getRecords() {
+  try { return JSON.parse(localStorage.getItem('prod_registros') || '[]'); }
+  catch { return []; }
+}
+function saveRecords(records) {
+  localStorage.setItem('prod_registros', JSON.stringify(records));
+  window.dispatchEvent(new Event('storage'));
+}
+
+// ═══════════════ REGISTER ═══════════════
+async function registrarHora() {
+  const consumo = parseFloat(document.getElementById('fConsumo').value);
+  const pt = parseFloat(document.getElementById('fPT').value);
+  if (!consumo || isNaN(consumo) || consumo <= 0) { showToast('Ingresa el consumo de MP', true); return; }
+  if (!pt || isNaN(pt) || pt <= 0) { showToast('Ingresa el P. Terminado', true); return; }
+
+  const supervisor = document.getElementById('fSupervisor').value.trim();
+  if (supervisor) localStorage.setItem('prod_reg_supervisor', supervisor);
+
+  const rend = (pt / consumo * 100).toFixed(1);
+  const hora = document.getElementById('fHora').value;
+  const sinAlmuerzo = document.getElementById('fSinAlmuerzo').checked;
+
+  const record = {
+    id: Date.now().toString(36) + Math.random().toString(36).substr(2,5),
+    fecha: document.getElementById('fFecha').value,
+    hora: hora,
+    turno: document.getElementById('fTurno').value,
+    fruta: document.getElementById('fFruta').value,
+    linea: document.getElementById('fLinea').value,
+    proyectado_tn: parseFloat(document.getElementById('fProyectado').value) || 16,
+    consumo_kg: consumo,
+    pt_aprox_kg: pt,
+    rendimiento: parseFloat(rend),
+    hora_inicio_turno: document.getElementById('fHoraInicio').value,
+    hora_fin_turno: document.getElementById('fHoraFin').value,
+    almuerzo_inicio: sinAlmuerzo ? '' : (document.getElementById('fAlmInicio').value || ''),
+    almuerzo_fin: sinAlmuerzo ? '' : (document.getElementById('fAlmFin').value || ''),
+    supervisor: supervisor,
+    observacion: document.getElementById('fObs').value.trim(),
+    created_at: (function(){const _d=new Date();return _d.getFullYear()+'-'+String(_d.getMonth()+1).padStart(2,'0')+'-'+String(_d.getDate()).padStart(2,'0')+' '+String(_d.getHours()).padStart(2,'0')+':'+String(_d.getMinutes()).padStart(2,'0')+':'+String(_d.getSeconds()).padStart(2,'0')})()
+  };
+
+  const records = getRecords();
+  records.push(record);
+  saveRecords(records);
+
+  // Save to Supabase (cloud sync)
+  try {
+    const { data, error } = await supabaseClient
+      .from('registro_produccion')
+      .upsert({
+        fecha: record.fecha,
+        hora: record.hora,
+        turno: record.turno,
+        fruta: record.fruta,
+        linea: record.linea,
+        proyectado_tn: record.proyectado_tn,
+        consumo_kg: record.consumo_kg,
+        pt_aprox_kg: record.pt_aprox_kg,
+        hora_inicio_turno: record.hora_inicio_turno || null,
+        hora_fin_turno: record.hora_fin_turno || null,
+        almuerzo_inicio: record.almuerzo_inicio || null,
+        almuerzo_fin: record.almuerzo_fin || null,
+        supervisor: record.supervisor,
+        observacion: record.observacion
+      }, { onConflict: 'fecha,hora,linea' });
+
+    if (error) console.error('Supabase error:', error);
+    else showToast('Guardado en Supabase ✅');
+  } catch(e) { console.error('Supabase offline, datos en localStorage', e); }
+
+  showToast('Registro guardado exitosamente');
+  limpiarForm();
+  refreshAll();
+}
+
+function limpiarForm() {
+  document.getElementById('fConsumo').value = '';
+  document.getElementById('fPT').value = '';
+  document.getElementById('fObs').value = '';
+  document.getElementById('calcPreview').style.display = 'none';
+  document.getElementById('prevRend').textContent = '—';
+}
+
+// ═══════════════ DELETE RECORD ═══════════════
+async function deleteRecord(id) {
+  if (!confirm('¿Eliminar este registro?')) return;
+  let records = getRecords();
+  const record = records.find(r => r.id === id);
+  records = records.filter(r => r.id !== id);
+  saveRecords(records);
+
+  // Delete from Supabase
+  if (record) {
+    try {
+      await supabaseClient.from('registro_produccion').delete().eq('fecha', record.fecha).eq('hora', record.hora).eq('linea', record.linea);
+    } catch(e) { console.error('Supabase delete offline', e); }
+  }
+
+  refreshAll();
+  showToast('Registro eliminado');
+}
+
+// ═══════════════ TOAST ═══════════════
+function showToast(msg, isError) {
+  const toast = document.getElementById('toast');
+  toast.textContent = (isError ? '⚠️ ' : '✅ ') + msg;
+  toast.style.background = isError
+    ? 'linear-gradient(135deg, #dc2626, #b91c1c)'
+    : 'linear-gradient(135deg, #16a34a, #15803d)';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ═══════════════ REFRESH ALL ═══════════════
+function refreshAll() {
+  const filterDate = document.getElementById('filterDate').value;
+  const records = getRecords();
+  const todayRecs = records.filter(r => r.fecha === filterDate);
+
+  updateKPIs(todayRecs);
+  updateTable(todayRecs);
+  rebuildCharts(todayRecs);
+}
+
+// ═══════════════ KPIs ═══════════════
+function updateKPIs(recs) {
+  const totalConsumo = recs.reduce((s, r) => s + (r.consumo_kg || 0), 0);
+  const totalPT = recs.reduce((s, r) => s + (r.pt_aprox_kg || 0), 0);
+  const rendProm = totalConsumo > 0 ? (totalPT / totalConsumo * 100) : 0;
+
+  document.getElementById('kpiConsumo').innerHTML = formatNum(totalConsumo) + ' <span class="kpi-unit">kg</span>';
+  document.getElementById('kpiPT').innerHTML = formatNum(totalPT) + ' <span class="kpi-unit">kg</span>';
+  document.getElementById('kpiRend').innerHTML = rendProm.toFixed(1) + '<span class="kpi-unit">%</span>';
+  document.getElementById('kpiCount').textContent = recs.length;
+
+  // Mejor Hora
+  if (recs.length > 0) {
+    const best = recs.reduce((a, b) => (a.rendimiento > b.rendimiento ? a : b));
+    document.getElementById('kpiBest').innerHTML = best.hora.split('-')[0] + ' <span class="kpi-unit">(' + best.rendimiento + '%)</span>';
+  } else {
+    document.getElementById('kpiBest').innerHTML = '—';
+  }
+}
+
+function formatNum(n) {
+  return n.toLocaleString('es-PE', { maximumFractionDigits: 1 });
+}
+
+// ═══════════════ TABLE ═══════════════
+function updateTable(recs) {
+  const tbody = document.getElementById('historyBody');
+  const tfoot = document.getElementById('historyFoot');
+  const empty = document.getElementById('emptyState');
+
+  if (recs.length === 0) {
+    tbody.innerHTML = '';
+    tfoot.innerHTML = '';
+    empty.style.display = 'block';
+    document.querySelector('.table-wrap').style.display = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  document.querySelector('.table-wrap').style.display = 'block';
+
+  // Sort by hora
+  const sorted = [...recs].sort((a, b) => a.hora.localeCompare(b.hora));
+
+  // Determine almuerzo time range from first record that has it
+  let almInicio = '', almFin = '';
+  for (const r of sorted) {
+    if (r.almuerzo_inicio && r.almuerzo_fin) {
+      almInicio = r.almuerzo_inicio;
+      almFin = r.almuerzo_fin;
+      break;
+    }
+  }
+
+  let rows = '';
+  let almRowInserted = false;
+
+  sorted.forEach((r, idx) => {
+    const horaStart = r.hora.split('-')[0];
+    const rendClass = r.rendimiento >= 45 ? 'badge-green' : r.rendimiento >= 40 ? 'badge-amber' : 'badge-red';
+    const obs = r.observacion || '';
+
+    // Insert almuerzo row before the first hour that is >= almuerzo start
+    if (almInicio && almFin && !almRowInserted && horaStart >= almInicio) {
+      rows += `<tr class="row-almuerzo">
+        <td style="font-weight:700" colspan="2">🍽️ ALMUERZO (${almInicio} - ${almFin})</td>
+        <td colspan="6" style="color:var(--amber);font-weight:700;font-style:italic">Pausa de almuerzo</td>
+      </tr>`;
+      almRowInserted = true;
+    }
+
+    rows += `<tr>
+      <td style="font-weight:700">${r.hora}</td>
+      <td>${r.fruta}</td>
+      <td>${r.linea}</td>
+      <td class="num">${formatNum(r.consumo_kg)}</td>
+      <td class="num">${formatNum(r.pt_aprox_kg)}</td>
+      <td class="num"><span class="badge ${rendClass}">${r.rendimiento}%</span></td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${obs}">${obs}</td>
+      <td style="text-align:center"><button class="delete-btn" onclick="deleteRecord('${r.id}')" title="Eliminar">🗑️</button></td>
+    </tr>`;
+  });
+
+  // If almuerzo row not yet inserted (all hours before almuerzo), append at end
+  if (almInicio && almFin && !almRowInserted) {
+    rows += `<tr class="row-almuerzo">
+      <td style="font-weight:700" colspan="2">🍽️ ALMUERZO (${almInicio} - ${almFin})</td>
+      <td colspan="6" style="color:var(--amber);font-weight:700;font-style:italic">Pausa de almuerzo</td>
+    </tr>`;
+  }
+
+  tbody.innerHTML = rows;
+
+  // Footer totals
+  const totC = recs.reduce((s, r) => s + r.consumo_kg, 0);
+  const totPT = recs.reduce((s, r) => s + r.pt_aprox_kg, 0);
+  const totRend = totC > 0 ? (totPT / totC * 100).toFixed(1) : 0;
+
+  tfoot.innerHTML = `<tr class="table-footer">
+    <td colspan="3" style="font-weight:800">TOTALES</td>
+    <td class="num">${formatNum(totC)}</td>
+    <td class="num">${formatNum(totPT)}</td>
+    <td class="num">${totRend}%</td>
+    <td colspan="2"></td>
+  </tr>`;
+}
+
+// ═══════════════ CHARTS ═══════════════
+let chartBar = null, chartLine = null, chartAcumulado = null, chartTurnos = null;
+
+function rebuildCharts(recs) {
+  if (!recs) {
+    const filterDate = document.getElementById('filterDate').value;
+    recs = getRecords().filter(r => r.fecha === filterDate);
+  }
+
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
+  const textColor = isLight ? '#64748b' : '#94a3b8';
+
+  const sorted = [...recs].sort((a, b) => a.hora.localeCompare(b.hora));
+  const labels = sorted.map(r => r.hora.split('-')[0]);
+
+  // ── BAR CHART: Consumo vs PT ──
+  if (chartBar) chartBar.destroy();
+  const ctxBar = document.getElementById('chartBarras').getContext('2d');
+  chartBar = new Chart(ctxBar, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Consumo MP (kg)',
+          data: sorted.map(r => r.consumo_kg),
+          backgroundColor: 'rgba(22,163,74,0.7)',
+          borderColor: '#16a34a',
+          borderWidth: 1,
+          borderRadius: 6,
+          barPercentage: 0.7,
+          categoryPercentage: 0.8
+        },
+        {
+          label: 'P. Terminado (kg)',
+          data: sorted.map(r => r.pt_aprox_kg),
+          backgroundColor: 'rgba(234,88,12,0.7)',
+          borderColor: '#ea580c',
+          borderWidth: 1,
+          borderRadius: 6,
+          barPercentage: 0.7,
+          categoryPercentage: 0.8
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600', size: 11 } } },
+        datalabels: { display: false }
+      },
+      scales: {
+        x: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } },
+        y: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor }, beginAtZero: true }
+      }
+    },
+    plugins: [ChartDataLabels]
+  });
+
+  // ── LINE CHART: Rendimiento % ──
+  if (chartLine) chartLine.destroy();
+  const ctxLine = document.getElementById('chartRendimiento').getContext('2d');
+  const rendData = sorted.map(r => r.rendimiento);
+  const pointColors = rendData.map(v => v >= 45 ? '#16a34a' : v >= 40 ? '#f59e0b' : '#ef4444');
+
+  chartLine = new Chart(ctxLine, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Rendimiento %',
+          data: rendData,
+          borderColor: '#16a34a',
+          backgroundColor: 'rgba(22,163,74,0.1)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 6,
+          pointBackgroundColor: pointColors,
+          pointBorderColor: pointColors,
+          pointBorderWidth: 2,
+          borderWidth: 2.5
+        },
+        {
+          label: 'Objetivo 50%',
+          data: sorted.map(() => 50),
+          borderColor: 'rgba(239,68,68,0.5)',
+          borderDash: [8, 4],
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600', size: 11 } } },
+        datalabels: {
+          align: 'top',
+          color: function(ctx) {
+            const v = ctx.dataset.data[ctx.dataIndex];
+            if (ctx.datasetIndex !== 0) return 'transparent';
+            return v >= 45 ? '#16a34a' : v >= 40 ? '#f59e0b' : '#ef4444';
+          },
+          font: { weight: '800', size: 11, family: 'Plus Jakarta Sans' },
+          formatter: function(value, ctx) {
+            if (ctx.datasetIndex !== 0) return '';
+            return value + '%';
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } },
+        y: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor }, beginAtZero: true, max: 100 }
+      }
+    },
+    plugins: [ChartDataLabels]
+  });
+
+  // ── COMBO CHART: Produccion Acumulada por Hora ──
+  if (chartAcumulado) chartAcumulado.destroy();
+  const ctxAcum = document.getElementById('chartAcumulado').getContext('2d');
+  const consumoPerHour = sorted.map(r => r.consumo_kg);
+  let cumulative = [];
+  let runningTotal = 0;
+  consumoPerHour.forEach(v => { runningTotal += v; cumulative.push(runningTotal); });
+
+  chartAcumulado = new Chart(ctxAcum, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Consumo por Hora (kg)',
+          data: consumoPerHour,
+          backgroundColor: 'rgba(234,88,12,0.7)',
+          borderColor: '#ea580c',
+          borderWidth: 1,
+          borderRadius: 6,
+          barPercentage: 0.7,
+          categoryPercentage: 0.8,
+          yAxisID: 'y',
+          order: 2
+        },
+        {
+          label: 'Acumulado Consumo (kg)',
+          data: cumulative,
+          type: 'line',
+          borderColor: '#16a34a',
+          backgroundColor: 'rgba(22,163,74,0.15)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 5,
+          pointBackgroundColor: '#16a34a',
+          borderWidth: 2.5,
+          yAxisID: 'y1',
+          order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600', size: 11 } } },
+        datalabels: { display: false }
+      },
+      scales: {
+        x: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } },
+        y: {
+          type: 'linear',
+          position: 'left',
+          title: { display: true, text: 'Kg/hora', color: textColor, font: { size: 11, weight: '700' } },
+          ticks: { color: textColor, font: { size: 10 } },
+          grid: { color: gridColor },
+          beginAtZero: true
+        },
+        y1: {
+          type: 'linear',
+          position: 'right',
+          title: { display: true, text: 'Acumulado (kg)', color: textColor, font: { size: 11, weight: '700' } },
+          ticks: { color: textColor, font: { size: 10 } },
+          grid: { drawOnChartArea: false },
+          beginAtZero: true
+        }
+      }
+    },
+    plugins: [ChartDataLabels]
+  });
+
+  // ── GROUPED BAR CHART: Comparativo Turnos Dia vs Noche ──
+  if (chartTurnos) chartTurnos.destroy();
+  const ctxTurnos = document.getElementById('chartTurnos').getContext('2d');
+
+  // Gather all records for the current week (Mon-Sat)
+  const allRecords = getRecords();
+  const filterDate = document.getElementById('filterDate').value;
+  const refDate = new Date(filterDate + 'T12:00:00');
+  const dayOfWeek = refDate.getDay(); // 0=Sun,1=Mon...6=Sat
+  // Find Monday of this week
+  const monday = new Date(refDate);
+  const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  monday.setDate(monday.getDate() + diff);
+
+  const dayNames = ['Lun','Mar','Mie','Jue','Vie','Sab'];
+  const diaData = [0,0,0,0,0,0];
+  const nocheData = [0,0,0,0,0,0];
+
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + i);
+    const dateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    const dayRecs = allRecords.filter(r => r.fecha === dateStr);
+    dayRecs.forEach(r => {
+      if (r.turno === 'NOCHE') {
+        nocheData[i] += (r.consumo_kg || 0);
+      } else {
+        diaData[i] += (r.consumo_kg || 0);
+      }
+    });
+  }
+
+  chartTurnos = new Chart(ctxTurnos, {
+    type: 'bar',
+    data: {
+      labels: dayNames,
+      datasets: [
+        {
+          label: 'Turno Dia',
+          data: diaData,
+          backgroundColor: 'rgba(22,163,74,0.7)',
+          borderColor: '#16a34a',
+          borderWidth: 1,
+          borderRadius: 6,
+          barPercentage: 0.7,
+          categoryPercentage: 0.8
+        },
+        {
+          label: 'Turno Noche',
+          data: nocheData,
+          backgroundColor: 'rgba(139,92,246,0.7)',
+          borderColor: '#8b5cf6',
+          borderWidth: 1,
+          borderRadius: 6,
+          barPercentage: 0.7,
+          categoryPercentage: 0.8
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600', size: 11 } } },
+        datalabels: { display: false }
+      },
+      scales: {
+        x: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } },
+        y: {
+          ticks: { color: textColor, font: { size: 10 } },
+          grid: { color: gridColor },
+          beginAtZero: true,
+          title: { display: true, text: 'Consumo (kg)', color: textColor, font: { size: 11, weight: '700' } }
+        }
+      }
+    },
+    plugins: [ChartDataLabels]
+  });
+}
+
+// ═══════════════ SUPABASE LOAD ═══════════════
+function getLocalToday() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+async function loadFromSupabase() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('registro_produccion')
+      .select('*')
+      .eq('fecha', getLocalToday())
+      .order('hora');
+
+    if (data && data.length > 0) {
+      // Merge with localStorage - Supabase is source of truth
+      const localRecords = JSON.parse(localStorage.getItem('prod_registros') || '[]');
+      const otherDays = localRecords.filter(r => r.fecha !== getLocalToday());
+      const merged = [...otherDays, ...data.map(d => ({
+        ...d,
+        consumo_kg: parseFloat(d.consumo_kg),
+        pt_aprox_kg: parseFloat(d.pt_aprox_kg),
+        rendimiento: parseFloat(d.rendimiento),
+        proyectado_tn: parseFloat(d.proyectado_tn)
+      }))];
+      localStorage.setItem('prod_registros', JSON.stringify(merged));
+      // Re-render UI
+      if (typeof refreshAll === 'function') refreshAll();
+      else if (typeof updateAll === 'function') updateAll();
+      else if (typeof renderTabla === 'function') renderTabla();
+    }
+  } catch(e) { console.log('Supabase offline, usando localStorage'); }
+}
+
+// ═══════════════ INIT ═══════════════
+(function init() {
+  // Restore supervisor
+  const savedSup = localStorage.getItem('prod_reg_supervisor');
+  if (savedSup) document.getElementById('fSupervisor').value = savedSup;
+
+  // Set today's date
+  const d = new Date();
+  const today = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  document.getElementById('fFecha').value = today;
+  document.getElementById('filterDate').value = today;
+
+  refreshAll();
+
+  // Load from Supabase (cloud sync)
+  loadFromSupabase();
+})();
+</script>
+</body>
+</html>
