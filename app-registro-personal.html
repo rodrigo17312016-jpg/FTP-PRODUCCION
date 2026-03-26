@@ -183,6 +183,7 @@ body{font-family:'Plus Jakarta Sans','Inter',system-ui,sans-serif;background:var
     <div class="topbar-sub">Frutos Tropicales Peru S.A.C.</div>
   </div>
   <div class="topbar-spacer"></div>
+  <div id="supabaseStatus" style="width:12px;height:12px;border-radius:50%;background:#ef4444;box-shadow:0 0 6px rgba(0,0,0,0.3);cursor:help;flex-shrink:0" title="Supabase: Verificando..."></div>
   <div class="live-badge"><span class="dot"></span> En vivo</div>
   <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema" id="themeBtn">🌙</button>
   <a class="topbar-back" href="index.html">← Portal</a>
@@ -401,20 +402,35 @@ function getLocalToday(){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
-function showSupabaseToast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
+function showSupabaseToast(msg, color){
+  const existing = document.getElementById('supaToast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.id = 'supaToast';
+  toast.textContent = msg;
+  toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 28px;border-radius:12px;color:#fff;font-weight:700;font-size:14px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,0.3);background:'+(color||'#16a34a')+';transition:opacity 0.3s';
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
 }
 
 async function loadFromSupabase() {
+  if (typeof supabaseClient === 'undefined' || !supabaseClient) {
+    console.warn('Supabase no disponible');
+    showSupabaseToast('Supabase no conectado - usando datos locales', '#ef4444');
+    return;
+  }
   try {
     const { data, error } = await supabaseClient
       .from('registro_personal')
       .select('*')
       .eq('fecha', getLocalToday())
       .order('hora');
+
+    if (error) {
+      console.error('Supabase load error:', error);
+      showSupabaseToast('Error al cargar de Supabase: ' + error.message, '#ef4444');
+      return;
+    }
 
     if (data && data.length > 0) {
       const localRecords = JSON.parse(localStorage.getItem('personal_registros') || '[]');
@@ -425,20 +441,27 @@ async function loadFromSupabase() {
       if (typeof updateKPIs === 'function') updateKPIs();
       if (typeof updateCharts === 'function') updateCharts();
     }
-  } catch(e) { console.log('Supabase offline'); }
+  } catch(e) {
+    console.log('Supabase offline');
+    showSupabaseToast('Supabase sin conexion - usando datos locales', '#ef4444');
+  }
 }
 
 async function loadLaboresFromSupabase() {
+  if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
   try {
-    const { data } = await supabaseClient.from('labores_custom').select('*').eq('activo', true);
+    const { data, error } = await supabaseClient.from('labores_custom').select('*').eq('activo', true);
+    if (error) console.error('Supabase labores error:', error);
     if (data) localStorage.setItem('personal_labores_custom', JSON.stringify(data));
-  } catch(e) {}
+  } catch(e) { console.log('Labores Supabase offline'); }
 }
 
 async function saveLaborToSupabase(labor) {
+  if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
   try {
-    await supabaseClient.from('labores_custom').upsert(labor);
-  } catch(e) {}
+    const { error } = await supabaseClient.from('labores_custom').upsert(labor);
+    if (error) console.error('Supabase save labor error:', error);
+  } catch(e) { console.log('Save labor Supabase offline'); }
 }
 
 /* ===== DISTRIBUTION POSITIONS (by area from Excel) ===== */
@@ -577,6 +600,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load from Supabase
   loadFromSupabase().then(() => updateDashboard());
   loadLaboresFromSupabase().then(() => { buildAllDistInputs(); renderAdminTable(); });
+  // Check Supabase connection status indicator
+  checkSupabaseConnection();
 });
 
 function todayStr(){
@@ -679,6 +704,10 @@ function updateChartsTheme(){
 
 /* ===== SAVE ===== */
 async function guardarRegistro(){
+  if (typeof supabaseClient === 'undefined' || !supabaseClient) {
+    showToast('ERROR: Supabase no conectado');
+    return;
+  }
   const fecha = document.getElementById('fFecha').value;
   const hora = document.getElementById('fHora').value;
   const fruta = document.getElementById('fFruta').value;
@@ -733,9 +762,16 @@ async function guardarRegistro(){
         registrado_por: registro.registrado_por
       }, { onConflict: 'fecha,hora,linea' });
 
-    if (error) console.error('Supabase error:', error);
-    else showSupabaseToast('Personal guardado en Supabase ✅');
-  } catch(e) { console.error('Supabase offline', e); }
+    if (error) {
+      console.error('Supabase error:', error);
+      showSupabaseToast('ERROR Supabase: ' + error.message, '#ef4444');
+    } else {
+      showSupabaseToast('Registrado en Supabase', '#16a34a');
+    }
+  } catch(e) {
+    console.error('Supabase offline', e);
+    showSupabaseToast('Supabase sin conexion - guardado local', '#ef4444');
+  }
 
   // Remember registrado
   if(registrado) localStorage.setItem('personal_last_registrado', registrado);
@@ -766,7 +802,7 @@ async function eliminarRegistro(id){
   saveRegistros(registros);
 
   // Delete from Supabase
-  if (toDelete) {
+  if (toDelete && typeof supabaseClient !== 'undefined' && supabaseClient) {
     try {
       const { error } = await supabaseClient
         .from('registro_personal')
@@ -774,8 +810,14 @@ async function eliminarRegistro(id){
         .eq('fecha', toDelete.fecha)
         .eq('hora', toDelete.hora)
         .eq('linea', toDelete.linea);
-      if (error) console.error('Supabase delete error:', error);
-    } catch(e) { console.error('Supabase offline', e); }
+      if (error) {
+        console.error('Supabase delete error:', error);
+        showSupabaseToast('Error al eliminar en Supabase: ' + error.message, '#ef4444');
+      }
+    } catch(e) {
+      console.error('Supabase offline', e);
+      showSupabaseToast('Sin conexion a Supabase al eliminar', '#ef4444');
+    }
   }
 
   updateDashboard();
@@ -1104,10 +1146,10 @@ async function eliminarLaborCustom(idx){
   const removed = customs.splice(idx,1)[0];
   saveCustomLabores(customs);
   // Delete from Supabase
-  if (removed) {
+  if (removed && typeof supabaseClient !== 'undefined' && supabaseClient) {
     try {
       await supabaseClient.from('labores_custom').delete().eq('key', removed.key);
-    } catch(e) {}
+    } catch(e) { console.log('Supabase delete labor offline'); }
   }
   buildAllDistInputs();
   renderAdminTable();
