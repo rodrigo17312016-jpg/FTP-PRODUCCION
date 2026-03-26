@@ -582,6 +582,7 @@ body {
     <div class="topbar-subtitle">Frutos Tropicales Peru S.A.C.</div>
   </div>
   <div class="topbar-right">
+    <div id="supabaseStatus" style="width:12px;height:12px;border-radius:50%;background:#ef4444;box-shadow:0 0 6px rgba(0,0,0,0.3);cursor:help;flex-shrink:0" title="Supabase: Verificando..."></div>
     <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema" id="themeBtn">🌙</button>
     <div class="topbar-dev-signature">
       <div class="topbar-sig-label">Desarrollado por:</div>
@@ -913,6 +914,10 @@ function saveRecords(records) {
 
 // ═══════════════ REGISTER ═══════════════
 async function registrarHora() {
+  if (typeof supabaseClient === 'undefined' || !supabaseClient) {
+    showToast('ERROR: Supabase no conectado', true);
+    return;
+  }
   const consumo = parseFloat(document.getElementById('fConsumo').value);
   const pt = parseFloat(document.getElementById('fPT').value);
   if (!consumo || isNaN(consumo) || consumo <= 0) { showToast('Ingresa el consumo de MP', true); return; }
@@ -970,9 +975,16 @@ async function registrarHora() {
         observacion: record.observacion
       }, { onConflict: 'fecha,hora,linea' });
 
-    if (error) console.error('Supabase error:', error);
-    else showToast('Guardado en Supabase ✅');
-  } catch(e) { console.error('Supabase offline, datos en localStorage', e); }
+    if (error) {
+      console.error('Supabase error:', error);
+      showSupabaseToast('ERROR Supabase: ' + error.message, '#ef4444');
+    } else {
+      showSupabaseToast('Registrado en Supabase', '#16a34a');
+    }
+  } catch(e) {
+    console.error('Supabase offline:', e);
+    showSupabaseToast('Supabase sin conexion - guardado local', '#ef4444');
+  }
 
   showToast('Registro guardado exitosamente');
   limpiarForm();
@@ -996,10 +1008,17 @@ async function deleteRecord(id) {
   saveRecords(records);
 
   // Delete from Supabase
-  if (record) {
+  if (record && typeof supabaseClient !== 'undefined' && supabaseClient) {
     try {
-      await supabaseClient.from('registro_produccion').delete().eq('fecha', record.fecha).eq('hora', record.hora).eq('linea', record.linea);
-    } catch(e) { console.error('Supabase delete offline', e); }
+      const { error } = await supabaseClient.from('registro_produccion').delete().eq('fecha', record.fecha).eq('hora', record.hora).eq('linea', record.linea);
+      if (error) {
+        console.error('Supabase delete error:', error);
+        showSupabaseToast('Error al eliminar en Supabase: ' + error.message, '#ef4444');
+      }
+    } catch(e) {
+      console.error('Supabase delete offline', e);
+      showSupabaseToast('Sin conexion a Supabase al eliminar', '#ef4444');
+    }
   }
 
   refreshAll();
@@ -1416,12 +1435,23 @@ function getLocalToday() {
 }
 
 async function loadFromSupabase() {
+  if (typeof supabaseClient === 'undefined' || !supabaseClient) {
+    console.warn('Supabase no disponible, usando solo localStorage');
+    showSupabaseToast('Supabase no conectado - usando datos locales', '#ef4444');
+    return;
+  }
   try {
     const { data, error } = await supabaseClient
       .from('registro_produccion')
       .select('*')
       .eq('fecha', getLocalToday())
       .order('hora');
+
+    if (error) {
+      console.error('Supabase load error:', error);
+      showSupabaseToast('Error al cargar de Supabase: ' + error.message, '#ef4444');
+      return;
+    }
 
     if (data && data.length > 0) {
       // Merge with localStorage - Supabase is source of truth
@@ -1435,12 +1465,14 @@ async function loadFromSupabase() {
         proyectado_tn: parseFloat(d.proyectado_tn)
       }))];
       localStorage.setItem('prod_registros', JSON.stringify(merged));
-      // Re-render UI
       if (typeof refreshAll === 'function') refreshAll();
       else if (typeof updateAll === 'function') updateAll();
       else if (typeof renderTabla === 'function') renderTabla();
     }
-  } catch(e) { console.log('Supabase offline, usando localStorage'); }
+  } catch(e) {
+    console.log('Supabase offline, usando localStorage');
+    showSupabaseToast('Supabase sin conexion - usando datos locales', '#ef4444');
+  }
 }
 
 // ═══════════════ INIT ═══════════════
@@ -1459,6 +1491,9 @@ async function loadFromSupabase() {
 
   // Load from Supabase (cloud sync)
   loadFromSupabase();
+
+  // Check Supabase connection status indicator
+  checkSupabaseConnection();
 })();
 </script>
 </body>
