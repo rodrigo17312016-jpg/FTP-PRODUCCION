@@ -1195,71 +1195,52 @@ body.dark-mode .topbar-dev-signature .signature-name {
      ═══════════════════════════════════════════════════ -->
 <div class="panel-container" id="panel-produccion-dia">
   <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">🏭 Produccion del Dia <a class="btn-app-link" style="--area-color:#16a34a" href="dash-produccion-dia.html" target="_blank">🚀 Abrir Dashboard Completo</a></div>
-  <div class="section-subtitle">Avance de produccion hora a hora · Martes 25 de Marzo 2026</div>
+  <div class="section-subtitle">Datos en tiempo real desde Supabase · <span id="pdFechaHoy"></span></div>
 
-  <div class="kpi-grid">
-    <div class="kpi-card" style="--kpi-color:var(--naranja)">
-      <div class="kpi-label">Fruta en Proceso</div>
-      <div class="kpi-value" style="color:var(--naranja)">Mango</div>
-      <div class="kpi-meta">Mango · Campana 2026</div>
-    </div>
-    <div class="kpi-card" style="--kpi-color:var(--verde)">
-      <div class="kpi-label">Kg Procesados Hoy</div>
-      <div class="kpi-value">14,090</div>
-      <div class="kpi-progress"><div class="kpi-progress-bar" style="width:88%;background:var(--verde)"></div></div>
-      <div class="kpi-meta">Meta: 16,000 kg</div>
-    </div>
-    <div class="kpi-card" style="--kpi-color:var(--azul)">
-      <div class="kpi-label">Cajas Producidas</div>
-      <div class="kpi-value">644</div>
-      <div class="kpi-meta">10 kg/caja · Chunks IQF</div>
-    </div>
-    <div class="kpi-card" style="--kpi-color:var(--naranja)">
-      <div class="kpi-label">Rendimiento</div>
-      <div class="kpi-value">45.7<span class="kpi-unit">%</span></div>
-      <div class="kpi-meta">Chunks IQF</div>
-    </div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+    <a href="app-registro-produccion.html" target="_blank" class="btn-app-link" style="--area-color:#16a34a;font-size:12px;padding:6px 14px">📋 Registro Produccion</a>
+    <a href="app-registro-personal.html" target="_blank" class="btn-app-link" style="--area-color:#d97706;font-size:12px;padding:6px 14px">👥 Registro Personal</a>
+    <a href="app-registro-costos.html" target="_blank" class="btn-app-link" style="--area-color:#dc2626;font-size:12px;padding:6px 14px">💰 Registro Costos</a>
+    <button id="pdToggleCosto" onclick="togglePdCosto()" style="margin-left:auto;padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:var(--text-muted);cursor:pointer;font-size:12px;font-weight:600">🔒 Mostrar Costos</button>
   </div>
 
+  <!-- KPIs compactos en una sola fila -->
+  <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px" id="pdKpiRow">
+    <div class="kpi-card" style="--kpi-color:var(--verde);padding:14px"><div class="kpi-label" style="font-size:9px">CONSUMO MP</div><div class="kpi-value" style="font-size:24px" id="pdConsumo">0 <span class="kpi-unit">kg</span></div><div class="kpi-meta" style="font-size:10px" id="pdConsumoMeta">Proyectado: 16 TN</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--azul);padding:14px"><div class="kpi-label" style="font-size:9px">P. TERMINADO</div><div class="kpi-value" style="font-size:24px" id="pdPT">0 <span class="kpi-unit">kg</span></div><div class="kpi-meta" style="font-size:10px">Antes de tunel IQF</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--naranja);padding:14px"><div class="kpi-label" style="font-size:9px">RENDIMIENTO</div><div class="kpi-value" style="font-size:24px" id="pdRend">0<span class="kpi-unit">%</span></div><div class="kpi-meta" style="font-size:10px" id="pdRendMeta">PT / Consumo</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--purple);padding:14px"><div class="kpi-label" style="font-size:9px">HRS EFECTIVAS</div><div class="kpi-value" style="font-size:24px" id="pdHrs">0 <span class="kpi-unit">hrs</span></div><div class="kpi-meta" style="font-size:10px">Horas con registro</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--amber);padding:14px"><div class="kpi-label" style="font-size:9px">PERSONAL</div><div class="kpi-value" style="font-size:24px" id="pdPersonal">0 <span class="kpi-unit">op.</span></div><div class="kpi-meta" style="font-size:10px">Ultimo registro</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--cyan);padding:14px"><div class="kpi-label" style="font-size:9px">REGISTROS</div><div class="kpi-value" style="font-size:24px" id="pdRegistros">0</div><div class="kpi-meta" style="font-size:10px">Horas registradas</div></div>
+  </div>
+
+  <!-- Tabla hora a hora LIVE -->
   <div class="card mb-24">
     <div class="card-header">
-      <div class="card-title">⚙️ Avance de Produccion por Hora — Hoy 25 Marzo 2026</div>
-      <span class="live-tag"><span class="dot"></span> En tiempo real</span>
+      <div class="card-title">📋 Produccion Hora a Hora — Hoy <span id="pdTableDate"></span></div>
+      <span class="live-tag"><span class="dot"></span> Live</span>
     </div>
     <div style="overflow-x:auto">
-      <table class="data-table">
+      <table class="data-table" id="pdLiveTable">
         <thead><tr>
-          <th>Hora</th><th>Fruta</th><th>Linea</th><th>Consumo (kg)</th><th>Chunks IQF (kg)</th>
-          <th>Cajas</th><th>Rend %</th><th>Observacion</th>
+          <th>Hora</th><th>Fruta</th><th>Linea</th><th>Consumo (kg)</th><th>P. Terminado (kg)</th><th>Rend %</th><th>N° Personal</th><th class="pd-costo-col" style="display:none">Costo/Kg ($)</th>
         </tr></thead>
-        <tbody>
-          <tr><td>07:00-08:00</td><td>Mango</td><td>IQF-1</td><td class="num">1,800</td><td class="num">824</td><td class="num">82</td><td class="text-green">45.8%</td><td>Inicio de turno dia</td></tr>
-          <tr><td>08:00-09:00</td><td>Mango</td><td>IQF-1</td><td class="num">2,100</td><td class="num">970</td><td class="num">97</td><td class="text-green">46.2%</td><td>Flujo estable</td></tr>
-          <tr><td>09:00-10:00</td><td>Mango</td><td>IQF-1</td><td class="num">2,000</td><td class="num">902</td><td class="num">90</td><td class="text-green">45.1%</td><td>—</td></tr>
-          <tr><td>10:00-11:00</td><td>Mango</td><td>IQF-1</td><td class="num">2,050</td><td class="num">941</td><td class="num">94</td><td class="text-green">45.9%</td><td>Maximo rendimiento</td></tr>
-          <tr><td>11:00-12:00</td><td>Mango</td><td>IQF-1</td><td class="num">2,200</td><td class="num">1,023</td><td class="num">102</td><td class="text-green">46.5%</td><td>Pico de produccion</td></tr>
-          <tr><td>12:00-13:00</td><td>Mango</td><td>IQF-1</td><td class="num">1,980</td><td class="num">899</td><td class="num">90</td><td class="text-green">45.4%</td><td>—</td></tr>
-          <tr style="background:var(--amber-bg)"><td>13:00-14:00</td><td class="text-muted">—</td><td class="text-muted">—</td><td colspan="4" style="text-align:center;font-style:italic;color:var(--amber)">Almuerzo / Cambio de turno</td><td>—</td></tr>
-          <tr><td>14:00-15:00</td><td>Mango</td><td>IQF-1</td><td class="num">1,960</td><td class="num">878</td><td class="num">88</td><td class="text-green">44.8%</td><td>Inicio turno tarde</td></tr>
-          <tr class="hora-actual"><td>15:00-16:00</td><td>Mango</td><td>IQF-1</td><td class="text-muted">—</td><td class="text-muted">—</td><td class="text-muted">—</td><td class="text-muted">—</td><td><span class="live-tag"><span class="dot"></span> En proceso...</span></td></tr>
-          <tr class="hora-futuro"><td>16:00-17:00</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Pendiente</td></tr>
-          <tr class="hora-futuro"><td>17:00-18:00</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Pendiente</td></tr>
+        <tbody id="pdLiveBody">
+          <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted);font-style:italic">Cargando datos en tiempo real...</td></tr>
         </tbody>
-        <tfoot><tr class="table-footer">
-          <td><b>TOTAL</b></td><td><b>7 horas efectivas</b></td><td></td><td class="num"><b>14,090</b></td>
-          <td class="num"><b>6,437</b></td><td class="num"><b>644</b></td><td class="text-green"><b>45.7%</b></td><td></td>
-        </tr></tfoot>
+        <tfoot id="pdLiveFoot"></tfoot>
       </table>
     </div>
   </div>
 
+  <!-- Charts -->
   <div class="grid-2">
     <div class="card">
-      <div class="card-header"><div class="card-title">📊 Produccion por Hora (Kg)</div></div>
+      <div class="card-header"><div class="card-title">📊 Consumo vs P. Terminado por Hora</div></div>
       <div class="chart-wrap"><canvas id="chartHoraKg"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-header"><div class="card-title">🎯 Rendimiento por Hora</div></div>
+      <div class="card-header"><div class="card-title">🎯 Rendimiento % por Hora</div></div>
       <div class="chart-wrap"><canvas id="chartHoraRend"></canvas></div>
     </div>
   </div>
@@ -1947,18 +1928,7 @@ body.dark-mode .topbar-dev-signature .signature-name {
     <div class="kpi-card" style="--kpi-color:var(--cyan)"><div class="kpi-icon" style="background:var(--cyan-bg);color:var(--cyan)">⚡</div><div class="kpi-label">Registros Hoy</div><div class="kpi-value" id="acoKpiRegistros">0</div><div class="kpi-meta">Horas registradas</div></div>
   </div>
 
-  <div class="grid-2 mb-24">
-    <div class="card">
-      <div class="card-header"><div class="card-title">📊 Consumo vs P. Terminado por Hora — Hoy</div></div>
-      <div class="chart-wrap"><canvas id="chartAcoHora"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-header"><div class="card-title">🎯 Rendimiento % por Hora</div></div>
-      <div class="chart-wrap"><canvas id="chartAcoRend"></canvas></div>
-    </div>
-  </div>
-
-  <div class="card">
+  <div class="card mb-24">
     <div class="card-header">
       <div class="card-title">📋 Produccion Hora a Hora — Hoy <span id="acoTableDate"></span></div>
       <span class="live-tag"><span class="dot"></span> Live</span>
@@ -1980,6 +1950,17 @@ body.dark-mode .topbar-dev-signature .signature-name {
         </tbody>
         <tfoot id="acoLiveFoot"></tfoot>
       </table>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Consumo vs P. Terminado por Hora — Hoy</div></div>
+      <div class="chart-wrap"><canvas id="chartAcoHora"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🎯 Rendimiento % por Hora</div></div>
+      <div class="chart-wrap"><canvas id="chartAcoRend"></canvas></div>
     </div>
   </div>
 </div>
@@ -2217,11 +2198,28 @@ function doLogin() {
     initAllCharts();
     syncFromSupabase();
     subscribeRealtime();
+    // Sesion activa por 5 minutos
+    sessionStorage.setItem('portal_session', JSON.stringify({user:u, expires: Date.now() + 5*60*1000}));
+    if (window._sessionTimer) clearTimeout(window._sessionTimer);
+    window._sessionTimer = setTimeout(function(){ doLogout(); }, 5*60*1000);
   } else {
     document.getElementById('loginError').textContent = 'Usuario o contrasena incorrectos';
   }
 }
+// Auto-login si la sesion sigue activa
+(function(){
+  try {
+    const s = JSON.parse(sessionStorage.getItem('portal_session'));
+    if (s && s.user && s.expires > Date.now()) {
+      document.getElementById('loginUser').value = s.user;
+      document.getElementById('loginPass').value = USERS[s.user].pass;
+      doLogin();
+    }
+  } catch(e){}
+})();
 function doLogout() {
+  sessionStorage.removeItem('portal_session');
+  if (window._sessionTimer) clearTimeout(window._sessionTimer);
   document.getElementById('appScreen').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('loginUser').value = '';
@@ -2941,6 +2939,90 @@ if (dateEl) {
 
 // Initial load
 setTimeout(loadAcoLiveData, 500);
+
+// ── PRODUCCION DEL DIA LIVE DATA ──
+let pdCostoVisible = false;
+function togglePdCosto(){
+  pdCostoVisible = !pdCostoVisible;
+  document.querySelectorAll('.pd-costo-col').forEach(el => el.style.display = pdCostoVisible ? '' : 'none');
+  const btn = document.getElementById('pdToggleCosto');
+  if(btn) btn.innerHTML = pdCostoVisible ? '🔓 Ocultar Costos' : '🔒 Mostrar Costos';
+}
+
+function loadPdLiveData(){
+  const prodRecs = JSON.parse(localStorage.getItem('prod_registros')||'[]');
+  const persRecs = JSON.parse(localStorage.getItem('personal_registros')||'[]');
+  const costCfg = JSON.parse(localStorage.getItem('costos_config')||'{}');
+  const today = new Date(); const yy=today.getFullYear(), mm=String(today.getMonth()+1).padStart(2,'0'), dd=String(today.getDate()).padStart(2,'0');
+  const todayStr = yy+'-'+mm+'-'+dd;
+  const months=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const dateLabel = dd+' '+months[today.getMonth()]+' '+yy;
+  const el=document.getElementById('pdFechaHoy'); if(el) el.textContent=dateLabel;
+  const el2=document.getElementById('pdTableDate'); if(el2) el2.textContent=dateLabel;
+
+  const todayProd = prodRecs.filter(r => r.fecha === todayStr);
+  const todayPers = persRecs.filter(r => r.fecha === todayStr);
+  const tarifaUsd = costCfg.tarifa_usd || (costCfg.tarifa_soles ? costCfg.tarifa_soles/(costCfg.tipo_cambio||3.35) : 3.51);
+
+  let totalConsumo=0, totalPT=0, totalPersonal=0;
+  todayProd.forEach(r => { totalConsumo += (parseFloat(r.consumo_kg)||0); totalPT += (parseFloat(r.pt_aprox_kg)||0); });
+  const lastPers = todayPers.length > 0 ? todayPers[todayPers.length-1] : null;
+  totalPersonal = lastPers ? (parseInt(lastPers.num_personal)||parseInt(lastPers.total_personal)||0) : 0;
+  const rend = totalConsumo > 0 ? (totalPT/totalConsumo*100) : 0;
+  const cumplPct = Math.min(100, Math.round(totalConsumo/16000*100));
+
+  const cE=document.getElementById('pdConsumo'); if(cE) cE.innerHTML=totalConsumo.toLocaleString('es-PE')+' <span class="kpi-unit">kg</span>';
+  const cM=document.getElementById('pdConsumoMeta'); if(cM) cM.textContent='Proy: 16 TN · '+cumplPct+'% cumplido';
+  const pE=document.getElementById('pdPT'); if(pE) pE.innerHTML=totalPT.toLocaleString('es-PE')+' <span class="kpi-unit">kg</span>';
+  const rE=document.getElementById('pdRend'); if(rE) rE.innerHTML=rend.toFixed(1)+'<span class="kpi-unit">%</span>';
+  const rM=document.getElementById('pdRendMeta'); if(rM) rM.textContent=(rend>=50?'▲':'▼')+' '+Math.abs(rend-50).toFixed(1)+'% vs Obj 50%';
+  const hE=document.getElementById('pdHrs'); if(hE) hE.innerHTML=todayProd.length+' <span class="kpi-unit">hrs</span>';
+  const peE=document.getElementById('pdPersonal'); if(peE) peE.innerHTML=totalPersonal+' <span class="kpi-unit">op.</span>';
+  const rgE=document.getElementById('pdRegistros'); if(rgE) rgE.textContent=todayProd.length;
+
+  // Table
+  const tbody = document.getElementById('pdLiveBody');
+  const tfoot = document.getElementById('pdLiveFoot');
+  if(!tbody) return;
+
+  if(todayProd.length === 0){
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted);font-style:italic">No hay registros. Usa las apps para registrar datos.</td></tr>';
+    if(tfoot) tfoot.innerHTML='';
+    return;
+  }
+
+  const sorted = [...todayProd].sort((a,b)=>(a.hora||'').localeCompare(b.hora||''));
+  let html='', tCons=0, tPt=0, tPers=0;
+  sorted.forEach(r => {
+    const c=parseFloat(r.consumo_kg)||0, p=parseFloat(r.pt_aprox_kg)||0;
+    const rd = c>0?(p/c*100):0;
+    const persForHour = todayPers.find(pr=>pr.hora===r.hora);
+    const pers = persForHour?(parseInt(persForHour.num_personal)||parseInt(persForHour.total_personal)||0):totalPersonal;
+    const costoKg = (pers>0&&p>0)?(tarifaUsd*pers/p):0;
+    tCons+=c; tPt+=p; tPers=pers;
+
+    // Check almuerzo
+    if(r.almuerzo_inicio && r.almuerzo_fin){
+      html+='<tr style="background:var(--amber-bg)"><td>'+r.almuerzo_inicio+'-'+r.almuerzo_fin+'</td><td colspan="'+(pdCostoVisible?7:6)+'" style="text-align:center;font-style:italic;color:var(--amber)">🍽️ Almuerzo '+r.almuerzo_inicio+' — '+r.almuerzo_fin+'</td></tr>';
+    }
+
+    const rendColor = rd>=50?'color:var(--verde)':rd>=45?'color:var(--amber)':'color:var(--danger)';
+    html+='<tr><td><b>'+r.hora+'</b></td><td>'+r.fruta+'</td><td>'+(r.linea||'Gral')+'</td>';
+    html+='<td class="num">'+c.toLocaleString('es-PE')+'</td><td class="num">'+p.toLocaleString('es-PE')+'</td>';
+    html+='<td style="'+rendColor+';font-weight:700">'+rd.toFixed(1)+'%</td>';
+    html+='<td class="num">'+pers+'</td>';
+    html+='<td class="pd-costo-col num" style="display:'+(pdCostoVisible?'':'none')+'">$'+costoKg.toFixed(4)+'</td></tr>';
+  });
+  tbody.innerHTML=html;
+
+  const tRend = tCons>0?(tPt/tCons*100):0;
+  const tCosto = (tPers>0&&tPt>0)?(tarifaUsd*tPers/tPt):0;
+  if(tfoot) tfoot.innerHTML='<tr class="table-footer"><td><b>TOTAL</b></td><td><b>'+sorted.length+' hrs</b></td><td></td><td class="num"><b>'+tCons.toLocaleString('es-PE')+'</b></td><td class="num"><b>'+tPt.toLocaleString('es-PE')+'</b></td><td style="color:var(--verde);font-weight:800"><b>'+tRend.toFixed(1)+'%</b></td><td class="num"><b>'+tPers+'</b></td><td class="pd-costo-col num" style="display:'+(pdCostoVisible?'':'none')+'"><b>$'+tCosto.toFixed(4)+'</b></td></tr>';
+}
+
+window.addEventListener('storage', loadPdLiveData);
+setInterval(loadPdLiveData, 5000);
+setTimeout(loadPdLiveData, 600);
 
 // ── PORTAL TOAST ──
 function showPortalToast(message, color) {
