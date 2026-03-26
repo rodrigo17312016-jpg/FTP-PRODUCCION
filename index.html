@@ -1919,11 +1919,13 @@ body.dark-mode .topbar-dev-signature .signature-name {
     <div class="area-header-icon">🔪</div>
     <div class="area-header-info">
       <div class="area-header-title">Acondicionado</div>
-      <div class="area-header-sub">Pelado, corte, seleccion y preparacion de fruta · Hora a hora</div>
+      <div class="area-header-sub">Pelado, corte, seleccion y preparacion de fruta · Datos en tiempo real</div>
     </div>
     <div class="area-header-actions">
       <span class="live-tag"><span class="dot"></span> En vivo</span>
-      <a class="btn-app-link" style="--area-color:#16a34a" href="app-acondicionado.html" target="_blank">📱 Abrir App Completa</a>
+      <a class="btn-app-link" style="--area-color:#16a34a" href="app-registro-produccion.html" target="_blank">📋 Registro Produccion</a>
+      <a class="btn-app-link" style="--area-color:#d97706" href="app-registro-personal.html" target="_blank">👥 Registro Personal</a>
+      <a class="btn-app-link" style="--area-color:#dc2626" href="app-registro-costos.html" target="_blank">💰 Registro Costos</a>
     </div>
   </div>
 
@@ -1931,22 +1933,23 @@ body.dark-mode .topbar-dev-signature .signature-name {
     <div class="filter-chip active">Turno Dia</div>
     <div class="filter-chip">Turno Noche</div>
     <div class="filter-chip">Ambos Turnos</div>
-    <select class="filter-select"><option>Hoy 25/03</option><option>Ayer 24/03</option><option>23/03</option></select>
+    <select class="filter-select"><option>Hoy</option><option>Ayer</option></select>
     <select class="filter-select"><option>Mango</option><option>Arandano</option><option>Granada</option></select>
+    <button class="filter-chip" id="btnToggleCosto" onclick="toggleCostoColumn()" style="background:rgba(220,38,38,0.15);color:#f87171;border-color:rgba(220,38,38,0.3)">🔒 Mostrar Costos</button>
   </div>
 
-  <div class="kpi-grid">
-    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">🏭</div><div class="kpi-label">Consumo MP Hoy</div><div class="kpi-value">14,090 <span class="kpi-unit">kg</span></div><div class="kpi-progress"><div class="kpi-progress-bar" style="width:88%;background:var(--verde)"></div></div><div class="kpi-meta">Meta: 16,000 kg · T1 activo</div></div>
-    <div class="kpi-card" style="--kpi-color:var(--naranja)"><div class="kpi-icon" style="background:var(--naranja-bg);color:var(--naranja)">🧊</div><div class="kpi-label">Chunks IQF</div><div class="kpi-value">6,437 <span class="kpi-unit">kg</span></div><div class="kpi-meta">Producto terminado 1ra calidad</div></div>
-    <div class="kpi-card" style="--kpi-color:var(--azul)"><div class="kpi-icon" style="background:var(--azul-bg);color:var(--azul)">🎯</div><div class="kpi-label">Rendimiento</div><div class="kpi-value">45.7<span class="kpi-unit">%</span></div><div class="kpi-change down">▼ 4.3% vs Obj 50%</div><div class="kpi-meta">Chunks / Consumo MP</div></div>
-    <div class="kpi-card" style="--kpi-color:var(--purple)"><div class="kpi-icon" style="background:var(--purple-bg);color:var(--purple)">📦</div><div class="kpi-label">ByP (Bits & Pieces)</div><div class="kpi-value">563 <span class="kpi-unit">kg</span></div><div class="kpi-meta">4% del consumo</div></div>
-    <div class="kpi-card" style="--kpi-color:var(--amber)"><div class="kpi-icon" style="background:var(--amber-bg);color:var(--amber)">👥</div><div class="kpi-label">Personal Activo</div><div class="kpi-value">42 <span class="kpi-unit">op.</span></div><div class="kpi-meta">Linea ACO-1</div></div>
-    <div class="kpi-card" style="--kpi-color:var(--cyan)"><div class="kpi-icon" style="background:var(--cyan-bg);color:var(--cyan)">⚡</div><div class="kpi-label">Kg/Hr</div><div class="kpi-value">1,867</div><div class="kpi-change down">vs 2,000 proy.</div></div>
+  <div class="kpi-grid" id="acoKpiGrid">
+    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">🏭</div><div class="kpi-label">Consumo MP Hoy</div><div class="kpi-value" id="acoKpiConsumo">0 <span class="kpi-unit">kg</span></div><div class="kpi-progress"><div class="kpi-progress-bar" id="acoProgressBar" style="width:0%;background:var(--verde)"></div></div><div class="kpi-meta" id="acoKpiMeta">Proyectado: 16 TN</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--naranja)"><div class="kpi-icon" style="background:var(--naranja-bg);color:var(--naranja)">🧊</div><div class="kpi-label">P. Terminado Aprox</div><div class="kpi-value" id="acoKpiPT">0 <span class="kpi-unit">kg</span></div><div class="kpi-meta">Peso antes de tunel IQF</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--azul)"><div class="kpi-icon" style="background:var(--azul-bg);color:var(--azul)">🎯</div><div class="kpi-label">Rendimiento</div><div class="kpi-value" id="acoKpiRend">0<span class="kpi-unit">%</span></div><div class="kpi-change" id="acoKpiRendDiff"></div><div class="kpi-meta">PT Aprox / Consumo MP</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--purple)"><div class="kpi-icon" style="background:var(--purple-bg);color:var(--purple)">⏱️</div><div class="kpi-label">Hrs Efectivas</div><div class="kpi-value" id="acoKpiHrs">0 <span class="kpi-unit">hrs</span></div><div class="kpi-meta">Horas con registro</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--amber)"><div class="kpi-icon" style="background:var(--amber-bg);color:var(--amber)">👥</div><div class="kpi-label">Personal Activo</div><div class="kpi-value" id="acoKpiPersonal">0 <span class="kpi-unit">op.</span></div><div class="kpi-meta" id="acoKpiPersonalMeta">Sin registros</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--cyan)"><div class="kpi-icon" style="background:var(--cyan-bg);color:var(--cyan)">⚡</div><div class="kpi-label">Registros Hoy</div><div class="kpi-value" id="acoKpiRegistros">0</div><div class="kpi-meta">Horas registradas</div></div>
   </div>
 
   <div class="grid-2 mb-24">
     <div class="card">
-      <div class="card-header"><div class="card-title">📊 Consumo vs Chunks por Hora — Hoy</div></div>
+      <div class="card-header"><div class="card-title">📊 Consumo vs P. Terminado por Hora — Hoy</div></div>
       <div class="chart-wrap"><canvas id="chartAcoHora"></canvas></div>
     </div>
     <div class="card">
@@ -1955,48 +1958,27 @@ body.dark-mode .topbar-dev-signature .signature-name {
     </div>
   </div>
 
-  <!-- Data entry form -->
-  <div class="form-section" style="--area-color:#16a34a">
-    <div class="form-section-header" onclick="toggleFormSection(this)">
-      <div class="form-section-title">📝 Registrar Produccion por Hora</div>
-      <div class="form-section-toggle">▼</div>
-    </div>
-    <div class="form-section-body">
-      <div class="form-grid-portal">
-        <div class="form-group-p"><label>Hora</label><select><option>07:00-08:00</option><option>08:00-09:00</option><option>09:00-10:00</option><option>10:00-11:00</option><option>11:00-12:00</option><option>12:00-13:00</option><option>14:00-15:00</option><option>15:00-16:00</option><option>16:00-17:00</option><option>17:00-18:00</option></select></div>
-        <div class="form-group-p"><label>Fruta / Variedad</label><select><option>Mango</option><option>Arandano</option><option>Granada</option></select></div>
-        <div class="form-group-p"><label>Turno</label><select><option>Dia (07:00-19:00)</option><option>Noche (19:00-07:00)</option></select></div>
-        <div class="form-group-p"><label>Consumo MP (kg)</label><input type="number" placeholder="0"></div>
-        <div class="form-group-p"><label>Chunks IQF (kg)</label><input type="number" placeholder="0"></div>
-        <div class="form-group-p"><label>ByP (kg)</label><input type="number" placeholder="0"></div>
-        <div class="form-group-p"><label>N° Operarios</label><input type="number" placeholder="0"></div>
-        <div class="form-group-p"><label>Linea</label><select><option>Linea 1</option><option>Linea 2</option><option>Linea 3</option></select></div>
-        <div class="form-group-p"><label>Observacion</label><input type="text" placeholder="(opcional)"></div>
-      </div>
-      <div class="form-actions">
-        <button class="btn-submit" style="--area-color:#16a34a" onclick="showPortalToast('Registro guardado exitosamente','#16a34a')">✅ Registrar Hora</button>
-        <button class="btn-clear">Limpiar</button>
-      </div>
-    </div>
-  </div>
-
   <div class="card">
-    <div class="card-header"><div class="card-title">📋 Produccion Hora a Hora — Hoy 25 Marzo</div><span class="live-tag"><span class="dot"></span> Live</span></div>
+    <div class="card-header">
+      <div class="card-title">📋 Produccion Hora a Hora — Hoy <span id="acoTableDate"></span></div>
+      <span class="live-tag"><span class="dot"></span> Live</span>
+    </div>
     <div style="overflow-x:auto">
-      <table class="data-table">
-        <thead><tr><th>Hora</th><th>Fruta</th><th>Linea</th><th>Consumo (kg)</th><th>Chunks (kg)</th><th>ByP (kg)</th><th>Rend %</th><th>Personal</th><th>Kg/Hr</th></tr></thead>
-        <tbody>
-          <tr><td>07:00-08:00</td><td>Mango</td><td>L1</td><td class="num">1,800</td><td class="num">824</td><td class="num">72</td><td class="text-green">45.8%</td><td class="num">42</td><td class="num">1,800</td></tr>
-          <tr><td>08:00-09:00</td><td>Mango</td><td>L1</td><td class="num">2,100</td><td class="num">970</td><td class="num">84</td><td class="text-green">46.2%</td><td class="num">42</td><td class="num">2,100</td></tr>
-          <tr><td>09:00-10:00</td><td>Mango</td><td>L1</td><td class="num">2,000</td><td class="num">902</td><td class="num">80</td><td class="text-green">45.1%</td><td class="num">42</td><td class="num">2,000</td></tr>
-          <tr><td>10:00-11:00</td><td>Mango</td><td>L1</td><td class="num">2,050</td><td class="num">941</td><td class="num">82</td><td class="text-green">45.9%</td><td class="num">42</td><td class="num">2,050</td></tr>
-          <tr><td>11:00-12:00</td><td>Mango</td><td>L1</td><td class="num">2,200</td><td class="num">1,023</td><td class="num">88</td><td class="text-green">46.5%</td><td class="num">42</td><td class="num">2,200</td></tr>
-          <tr><td>12:00-13:00</td><td>Mango</td><td>L1</td><td class="num">1,980</td><td class="num">899</td><td class="num">79</td><td class="text-green">45.4%</td><td class="num">42</td><td class="num">1,980</td></tr>
-          <tr style="background:var(--amber-bg)"><td>13:00-14:00</td><td class="text-muted" colspan="8" style="text-align:center;font-style:italic;color:var(--amber)">⏸️ Almuerzo / Cambio de turno</td></tr>
-          <tr><td>14:00-15:00</td><td>Mango</td><td>L1</td><td class="num">1,960</td><td class="num">878</td><td class="num">78</td><td class="text-green">44.8%</td><td class="num">42</td><td class="num">1,960</td></tr>
-          <tr class="hora-actual"><td>15:00-16:00</td><td>Mango</td><td>L1</td><td class="text-muted">—</td><td class="text-muted">—</td><td class="text-muted">—</td><td class="text-muted">—</td><td class="text-muted">—</td><td><span class="live-tag"><span class="dot"></span> En proceso</span></td></tr>
+      <table class="data-table" id="acoLiveTable">
+        <thead><tr>
+          <th>Hora</th><th>Fruta</th><th>Linea</th><th>Consumo (kg)</th><th>P. Terminado (kg)</th><th>Rend %</th><th>N° Personal</th><th class="costo-col" style="display:none">Costo/Kg Cong. ($)</th>
+        </tr></thead>
+        <tbody id="acoLiveBody">
+          <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted);font-style:italic">
+            No hay registros aun. Usa los aplicativos para registrar datos:
+            <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+              <a href="app-registro-produccion.html" target="_blank" style="color:#16a34a;font-weight:700;text-decoration:none">📋 Produccion</a>
+              <a href="app-registro-personal.html" target="_blank" style="color:#d97706;font-weight:700;text-decoration:none">👥 Personal</a>
+              <a href="app-registro-costos.html" target="_blank" style="color:#dc2626;font-weight:700;text-decoration:none">💰 Costos</a>
+            </div>
+          </td></tr>
         </tbody>
-        <tfoot><tr class="table-footer"><td><b>TOTAL</b></td><td><b>7 hrs</b></td><td></td><td class="num"><b>14,090</b></td><td class="num"><b>6,437</b></td><td class="num"><b>563</b></td><td class="text-green"><b>45.7%</b></td><td class="num"><b>42</b></td><td class="num"><b>2,013</b></td></tr></tfoot>
+        <tfoot id="acoLiveFoot"></tfoot>
       </table>
     </div>
   </div>
@@ -2207,6 +2189,8 @@ body.dark-mode .topbar-dev-signature .signature-name {
 <!-- ═══════════════════════════════════════════════════
      JAVASCRIPT
      ═══════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script>
 // ── USERS ──
 const USERS = {
@@ -2231,6 +2215,8 @@ function doLogin() {
     const tr = document.getElementById('topbarRole'); if(tr) tr.textContent = user.role;
     const ta = document.getElementById('topbarAvatar'); if(ta) ta.textContent = user.initials;
     initAllCharts();
+    syncFromSupabase();
+    subscribeRealtime();
   } else {
     document.getElementById('loginError').textContent = 'Usuario o contrasena incorrectos';
   }
@@ -2730,6 +2716,231 @@ function toggleFormSection(header) {
   body.classList.toggle('open');
   if (toggle) toggle.classList.toggle('open');
 }
+
+// ── ACONDICIONADO LIVE DATA ──
+let costoVisible = false;
+
+function toggleCostoColumn() {
+  costoVisible = !costoVisible;
+  const btn = document.getElementById('btnToggleCosto');
+  btn.textContent = costoVisible ? '🔓 Ocultar Costos' : '🔒 Mostrar Costos';
+  btn.style.background = costoVisible ? 'rgba(22,163,74,0.15)' : 'rgba(220,38,38,0.15)';
+  btn.style.color = costoVisible ? '#4ade80' : '#f87171';
+  document.querySelectorAll('.costo-col').forEach(el => el.style.display = costoVisible ? '' : 'none');
+}
+
+function getToday() {
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function loadAcoLiveData() {
+  const today = getToday();
+  const prodRegs = JSON.parse(localStorage.getItem('prod_registros') || '[]').filter(r => r.fecha === today);
+  const persRegs = JSON.parse(localStorage.getItem('personal_registros') || '[]').filter(r => r.fecha === today);
+  const costosConf = JSON.parse(localStorage.getItem('costos_config') || 'null');
+  const costosRegs = JSON.parse(localStorage.getItem('costos_registros') || '[]');
+  const costoHoy = costosRegs.find(r => r.fecha === today) || costosConf;
+  const costoHHSoles = costoHoy ? (parseFloat(costoHoy.costo_hora_hombre) || 5.95) : 5.95;
+  const tipoCambio = costoHoy ? (parseFloat(costoHoy.tipo_cambio) || 3.35) : 3.35;
+  const tarifaUsd = costoHoy ? (parseFloat(costoHoy.tarifa_usd) || parseFloat(costoHoy.tarifa_almuerzo_usd) || (parseFloat(costoHoy.tarifa_soles || costoHoy.tarifa_almuerzo_soles || 10) / tipoCambio)) : (10/3.35);
+  const costoKgCongelado = costoHoy ? (parseFloat(costoHoy.costo_kg_congelado) || 3.51) : 3.51;
+
+  // Detect almuerzo from prod records
+  const almRecord = prodRegs.find(r => r.almuerzo_inicio && r.almuerzo_inicio !== '');
+  const almInicio = almRecord ? almRecord.almuerzo_inicio : null;
+  const almFin = almRecord ? almRecord.almuerzo_fin : null;
+
+  const horas = ['05:00-06:00','06:00-07:00','07:00-08:00','08:00-09:00','09:00-10:00','10:00-11:00','11:00-12:00','12:00-13:00','13:00-14:00','14:00-15:00','15:00-16:00','16:00-17:00','17:00-18:00','18:00-19:00','19:00-20:00','20:00-21:00','21:00-22:00','22:00-23:00','23:00-00:00','00:00-01:00'];
+  const tbody = document.getElementById('acoLiveBody');
+  const tfoot = document.getElementById('acoLiveFoot');
+  if (!tbody) return;
+
+  let totalConsumo=0, totalPT=0, totalPersonal=0, nHoras=0;
+  let rows = '';
+
+  horas.forEach(hora => {
+    const horaStart = hora.split('-')[0].trim();
+    const prod = prodRegs.find(r => {
+      if (!r.hora) return false;
+      const rh = r.hora.split('-')[0].trim().replace(' ','');
+      return rh === horaStart || r.hora === hora;
+    });
+    const pers = persRegs.find(r => {
+      if (!r.hora) return false;
+      const rh = r.hora.split('-')[0].trim().replace(' ','');
+      return rh === horaStart || r.hora === hora;
+    });
+
+    // Check if this hour is the almuerzo hour
+    if (almInicio && horaStart === almInicio.substring(0,5)) {
+      rows += '<tr style="background:var(--amber-bg)"><td>'+hora+'</td><td class="text-muted" colspan="'+(costoVisible?6:5)+'" style="text-align:center;font-style:italic;color:var(--amber)">⏸️ Almuerzo '+almInicio+' — '+(almFin||'14:00')+'</td></tr>';
+      return;
+    }
+
+    if (prod) {
+      const consumo = parseFloat(prod.consumo_kg)||0;
+      const pt = parseFloat(prod.pt_aprox_kg)||0;
+      const rend = consumo > 0 ? (pt/consumo*100) : 0;
+      const nPers = pers ? (parseInt(pers.num_personal)||parseInt(pers.total_personal)||0) : 0;
+      const costoKg = (nPers > 0 && pt > 0) ? (costoKgCongelado * nPers / pt) : 0;
+      const rendClass = rend >= 45 ? 'text-green' : rend >= 40 ? 'text-orange' : 'text-red';
+      const linea = prod.linea === 'General' ? 'Gral' : prod.linea === 'Linea 1' ? 'L1' : prod.linea === 'Linea 2' ? 'L2' : prod.linea || 'Gral';
+
+      totalConsumo += consumo;
+      totalPT += pt;
+      if (nPers > 0) totalPersonal = nPers;
+      nHoras++;
+
+      rows += '<tr><td>'+hora+'</td><td>'+(prod.fruta||'MANGO')+'</td><td>'+linea+'</td>';
+      rows += '<td class="num">'+consumo.toLocaleString('es-PE')+'</td>';
+      rows += '<td class="num">'+pt.toLocaleString('es-PE')+'</td>';
+      rows += '<td class="'+rendClass+'">'+rend.toFixed(1)+'%</td>';
+      rows += '<td class="num">'+(nPers||'—')+'</td>';
+      rows += '<td class="costo-col num" style="display:'+(costoVisible?'':'none')+'">$'+(costoKg>0?costoKg.toFixed(4):'—')+'</td>';
+      rows += '</tr>';
+    }
+  });
+
+  if (rows === '') {
+    tbody.innerHTML = '<tr><td colspan="'+(costoVisible?8:7)+'" style="text-align:center;padding:40px;color:var(--text-muted);font-style:italic">No hay registros aun. Usa los aplicativos para registrar datos:<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><a href="app-registro-produccion.html" target="_blank" style="color:#16a34a;font-weight:700;text-decoration:none">📋 Produccion</a><a href="app-registro-personal.html" target="_blank" style="color:#d97706;font-weight:700;text-decoration:none">👥 Personal</a><a href="app-registro-costos.html" target="_blank" style="color:#dc2626;font-weight:700;text-decoration:none">💰 Costos</a></div></td></tr>';
+  } else {
+    tbody.innerHTML = rows;
+  }
+
+  // Footer totals
+  if (nHoras > 0) {
+    const rendTotal = totalConsumo > 0 ? (totalPT/totalConsumo*100) : 0;
+    const costoTotal = (totalPersonal > 0 && totalPT > 0) ? (costoKgCongelado * totalPersonal / totalPT) : 0;
+    tfoot.innerHTML = '<tr class="table-footer"><td><b>TOTAL</b></td><td><b>'+nHoras+' hrs</b></td><td></td><td class="num"><b>'+totalConsumo.toLocaleString('es-PE')+'</b></td><td class="num"><b>'+totalPT.toLocaleString('es-PE')+'</b></td><td class="text-green"><b>'+rendTotal.toFixed(1)+'%</b></td><td class="num"><b>'+totalPersonal+'</b></td><td class="costo-col num" style="display:'+(costoVisible?'':'none')+'"><b>$'+(costoTotal>0?costoTotal.toFixed(4):'—')+'</b></td></tr>';
+  } else {
+    tfoot.innerHTML = '';
+  }
+
+  // Update KPIs
+  const el = (id,v) => { const e=document.getElementById(id); if(e) e.innerHTML=v; };
+  el('acoKpiConsumo', totalConsumo.toLocaleString('es-PE')+' <span class="kpi-unit">kg</span>');
+  el('acoKpiPT', totalPT.toLocaleString('es-PE')+' <span class="kpi-unit">kg</span>');
+  const rendProm = totalConsumo > 0 ? (totalPT/totalConsumo*100) : 0;
+  el('acoKpiRend', rendProm.toFixed(1)+'<span class="kpi-unit">%</span>');
+  el('acoKpiRendDiff', rendProm > 0 ? ((rendProm >= 50 ? '▲ ' : '▼ ')+(50-rendProm).toFixed(1)+'% vs Obj 50%') : '');
+  el('acoKpiHrs', nHoras+' <span class="kpi-unit">hrs</span>');
+  el('acoKpiPersonal', totalPersonal+' <span class="kpi-unit">op.</span>');
+  el('acoKpiPersonalMeta', totalPersonal > 0 ? 'Ultimo registro' : 'Sin registros');
+  el('acoKpiRegistros', nHoras.toString());
+  // Proyectado from records
+  const proyRec = prodRegs.find(r => r.proyectado_tn);
+  const proyTN = proyRec ? parseFloat(proyRec.proyectado_tn) : 16;
+  const proyKg = proyTN * 1000;
+  const pctProy = proyKg > 0 ? Math.min(100, totalConsumo/proyKg*100) : 0;
+  el('acoKpiMeta', 'Proyectado: '+proyTN+' TN · '+pctProy.toFixed(0)+'% cumplido');
+  const pb = document.getElementById('acoProgressBar');
+  if (pb) {
+    pb.style.width = pctProy.toFixed(0)+'%';
+    pb.style.background = pctProy >= 90 ? 'var(--verde)' : pctProy >= 60 ? 'var(--amber)' : 'var(--naranja)';
+  }
+
+  // Update charts
+  updateAcoCharts(prodRegs);
+}
+
+function updateAcoCharts(prodRegs) {
+  const horasLabels = [];
+  const consumoData = [];
+  const ptData = [];
+  const rendData = [];
+
+  prodRegs.filter(r => !r.hora || !r.hora.includes('13:00')).sort((a,b) => (a.hora||'').localeCompare(b.hora||'')).forEach(r => {
+    const h = (r.hora||'').split('-')[0] || r.hora;
+    horasLabels.push(h);
+    consumoData.push(parseFloat(r.consumo_kg)||0);
+    ptData.push(parseFloat(r.pt_aprox_kg)||0);
+    const c = parseFloat(r.consumo_kg)||0;
+    const p = parseFloat(r.pt_aprox_kg)||0;
+    rendData.push(c > 0 ? parseFloat((p/c*100).toFixed(1)) : 0);
+  });
+
+  // Rebuild chartAcoHora
+  const ch1 = Chart.getChart('chartAcoHora');
+  if (ch1) {
+    ch1.data.labels = horasLabels;
+    ch1.data.datasets[0].data = consumoData;
+    ch1.data.datasets[1].data = ptData;
+    ch1.update();
+  }
+  // Rebuild chartAcoRend
+  const ch2 = Chart.getChart('chartAcoRend');
+  if (ch2) {
+    ch2.data.labels = horasLabels;
+    ch2.data.datasets[0].data = rendData;
+    if (ch2.data.datasets[1]) ch2.data.datasets[1].data = horasLabels.map(() => 50);
+    ch2.update();
+  }
+}
+
+// ── SUPABASE SYNC ──
+async function syncFromSupabase() {
+  try {
+    const today = getToday();
+    const [prodRes, persRes, costRes] = await Promise.all([
+      supabaseClient.from('registro_produccion').select('*').eq('fecha', today).order('hora'),
+      supabaseClient.from('registro_personal').select('*').eq('fecha', today).order('hora'),
+      supabaseClient.from('config_costos').select('*').eq('fecha', today).limit(1)
+    ]);
+
+    if (prodRes.data && prodRes.data.length > 0) {
+      const existing = JSON.parse(localStorage.getItem('prod_registros') || '[]');
+      const otherDays = existing.filter(r => r.fecha !== today);
+      localStorage.setItem('prod_registros', JSON.stringify([...otherDays, ...prodRes.data]));
+    }
+    if (persRes.data && persRes.data.length > 0) {
+      const existing = JSON.parse(localStorage.getItem('personal_registros') || '[]');
+      const otherDays = existing.filter(r => r.fecha !== today);
+      localStorage.setItem('personal_registros', JSON.stringify([...otherDays, ...persRes.data]));
+    }
+    if (costRes.data && costRes.data.length > 0) {
+      localStorage.setItem('costos_config', JSON.stringify(costRes.data[0]));
+    }
+
+    loadAcoLiveData(); // Re-render with fresh data
+  } catch(e) {
+    console.log('Supabase offline, usando localStorage');
+  }
+}
+
+// Supabase Real-time subscription
+function subscribeRealtime() {
+  try {
+    supabaseClient
+      .channel('produccion-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'registro_produccion' }, () => syncFromSupabase())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'registro_personal' }, () => syncFromSupabase())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'config_costos' }, () => syncFromSupabase())
+      .subscribe();
+    console.log('✅ Realtime subscribed');
+  } catch(e) { console.log('Realtime not available'); }
+}
+
+// Listen for storage changes (from other tabs / apps)
+window.addEventListener('storage', loadAcoLiveData);
+// Also poll every 5 seconds for same-tab updates
+setInterval(() => {
+  loadAcoLiveData();
+}, 5000);
+
+// Supabase sync every 15 seconds
+setInterval(syncFromSupabase, 15000);
+
+// Set today's date in table header
+const dateEl = document.getElementById('acoTableDate');
+if (dateEl) {
+  const d = new Date();
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  dateEl.textContent = d.getDate()+' '+months[d.getMonth()];
+}
+
+// Initial load
+setTimeout(loadAcoLiveData, 500);
 
 // ── PORTAL TOAST ──
 function showPortalToast(message, color) {
