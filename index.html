@@ -282,7 +282,7 @@ body.dark-mode .sidebar { background:linear-gradient(180deg,#080f0b 0%,#0d1f14 3
   margin-left:var(--sidebar-w);padding-top:var(--topbar-h);min-height:100vh;
 }
 .panel-container { padding:24px 28px;display:none; }
-.panel-container.active { display:block;animation:fadeInUp 0.4s ease both; }
+.panel-container.active { display:block; }
 
 /* ═══ CARDS & COMPONENTS ═══ */
 .card {
@@ -2374,6 +2374,9 @@ document.querySelectorAll('.nav-item[data-panel]').forEach(item => {
       'area-tuneles':'Tuneles IQF','area-empaque':'Empaque'
     };
     document.getElementById('topbarTitle').textContent = titles[panel] || panel;
+    // Scroll to top immediately on panel change
+    document.querySelector('.main-content').scrollTop = 0;
+    window.scrollTo(0, 0);
     if (window.innerWidth <= 1024) toggleSidebar();
     // Fix blank charts: force resize after panel is fully visible
     setTimeout(function(){
