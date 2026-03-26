@@ -1161,13 +1161,13 @@ function renderKPIs() {
   document.getElementById('kpiCostoDiarioLabel').textContent = `Costo Diario Est. (${sym})`;
   document.getElementById('kpiSemanalLabel').textContent = `Costo Semanal Acum (${sym})`;
 
-  // KPI 3: Costo/Kg estimado
+  // KPI 3: Costo/Kg estimado = CostoKgCongelado × Personal / PT
   const crossData = getCrossAppData(hoy);
+  const costoKgCongVal = parseFloat(document.getElementById('fCostoKgManual').value) || 3.51;
   let costoKg = 0;
-  if (tarifaUsd > 0 && crossData.personal > 0 && crossData.ptKg > 0) {
-    costoKg = (tarifaUsd * crossData.personal) / crossData.ptKg;
-    const displayTarifa = monedaSoles ? tarifaSol : tarifaUsd;
-    document.getElementById('kpiCostoKgSub').textContent = `${sym}${displayTarifa.toFixed(2)} x ${crossData.personal} / ${crossData.ptKg.toLocaleString('es-PE')} kg`;
+  if (costoKgCongVal > 0 && crossData.personal > 0 && crossData.ptKg > 0) {
+    costoKg = (costoKgCongVal * crossData.personal) / crossData.ptKg;
+    document.getElementById('kpiCostoKgSub').textContent = `$${costoKgCongVal.toFixed(2)} x ${crossData.personal} / ${crossData.ptKg.toLocaleString('es-PE')} kg`;
   } else {
     document.getElementById('kpiCostoKgSub').textContent = 'Sin datos de produccion hoy';
   }
@@ -1298,12 +1298,13 @@ function renderHoraTable() {
     const costoMOD = monedaSoles ? costoMODSoles : (costoMODSoles / tc);
     totalCostoMOD += costoMODSoles;
 
-    // Costo/Kg congelado for this hour
+    // Costo/Kg congelado for this hour: CostoKgCong × Personal / PT
+    const costoKgCong = parseFloat(document.getElementById('fCostoKgManual').value) || 3.51;
     let costoKg = 0;
     let costoKgStr = '-';
     let costClass = '';
     if (data.pt > 0 && data.personal > 0) {
-      const costoKgUsd = (tarifaUsd * data.personal) / data.pt;
+      const costoKgUsd = (costoKgCong * data.personal) / data.pt;
       costoKg = monedaSoles ? (costoKgUsd * tc) : costoKgUsd;
       costoKgStr = sym + costoKg.toFixed(4);
       if (costoKgUsd < 0.50) costClass = 'cost-good';
@@ -1337,10 +1338,10 @@ function renderHoraTable() {
   let avgCostoKg = 0;
   let avgCostoKgStr = '-';
   let avgCostClass = '';
-  if (totalPT > 0 && totalCostoMOD > 0) {
-    const avgSoles = totalCostoMOD / totalPT;
-    const avgUsd = avgSoles / tc;
-    avgCostoKg = monedaSoles ? avgSoles : avgUsd;
+  if (totalPT > 0 && latestPersonal > 0) {
+    const costoKgCongFooter = parseFloat(document.getElementById('fCostoKgManual').value) || 3.51;
+    const avgUsd = (costoKgCongFooter * latestPersonal) / totalPT;
+    avgCostoKg = monedaSoles ? (avgUsd * tc) : avgUsd;
     avgCostoKgStr = sym + avgCostoKg.toFixed(4);
     if (avgUsd < 0.50) avgCostClass = 'cost-good';
     else if (avgUsd < 1.00) avgCostClass = 'cost-warn';
