@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -2548,7 +2547,7 @@ function initAllCharts() {
       {label:'Rendimiento %',data:[45.8,46.2,45.1,45.9,46.5,45.4,44.8],borderColor:COLORS.verde,backgroundColor:COLORS.verdeLight,fill:true,tension:0.4,pointRadius:6,pointBackgroundColor:COLORS.verde,pointBorderColor:'#fff',pointBorderWidth:2},
       {label:'Objetivo (50%)',data:[50,50,50,50,50,50,50],borderColor:'rgba(220,38,38,0.4)',borderDash:[6,4],pointRadius:0,fill:false,tension:0}
     ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{min:38,max:55,grid:{color:'rgba(0,0,0,0.08)'},ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}}
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:true,anchor:'end',align:'top',color:COLORS.verde,font:{weight:'bold',size:11},formatter:v=>v.toFixed(1)+'%'}},scales:{y:{beginAtZero:true,max:100,grid:{color:'rgba(0,0,0,0.08)'},ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}}
   });
 
   // Rendimiento Historico
