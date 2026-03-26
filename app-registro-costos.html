@@ -273,6 +273,7 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
     </div>
   </div>
   <div class="topbar-right">
+    <div id="supabaseStatus" style="width:12px;height:12px;border-radius:50%;background:#ef4444;box-shadow:0 0 6px rgba(0,0,0,0.3);cursor:help;flex-shrink:0" title="Supabase: Verificando..."></div>
     <button class="btn-moneda active-soles" id="btnMoneda" onclick="toggleMoneda()">💱 Mostrar en $</button>
     <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema"></div>
     <div class="topbar-dev-signature">
@@ -368,16 +369,6 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
         <label>Costo Hora Hombre (S/)</label>
         <input type="number" id="fCostoHoraHombre" step="0.01" min="0" value="5.95" oninput="onCostoHoraHombreChange()">
         <div class="form-hint">Costo por hora por trabajador en soles</div>
-      </div>
-      <div class="form-group">
-        <label>Hora Inicio Turno</label>
-        <input type="time" id="fHoraInicio" value="07:00">
-        <div class="form-hint">Hora de inicio del turno</div>
-      </div>
-      <div class="form-group">
-        <label>Hora Fin Turno</label>
-        <input type="time" id="fHoraFin" value="19:00">
-        <div class="form-hint">Hora de fin del turno</div>
       </div>
       <div class="form-group">
         <label>Costo Kg Congelado ($)</label>
@@ -619,6 +610,9 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(() => {
     loadCrossAppFromSupabase();
   }, 10000);
+
+  // Check Supabase connection status indicator
+  checkSupabaseConnection();
 });
 
 // ===================== THEME =====================
@@ -671,8 +665,6 @@ function initForm() {
   // Set default costo kg from fruit
   onFrutaChange();
 
-  // Set hora inicio/fin based on turno
-  updateHorasTurno();
 
   // Restore last registrado por
   const lastPor = localStorage.getItem('costos_last_registrado');
@@ -945,6 +937,10 @@ function readCrossAppData() {
 
 // ===================== SAVE RECORD =====================
 async function guardarRegistro() {
+  if (typeof supabaseClient === 'undefined' || !supabaseClient) {
+    showToast('ERROR: Supabase no conectado');
+    return;
+  }
   const fecha = document.getElementById('fFecha').value;
   const turno = document.getElementById('fTurno').value;
   const fruta = document.getElementById('fFruta').value;
@@ -964,8 +960,6 @@ async function guardarRegistro() {
   const created_at = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
 
   const costoHoraHombre = parseFloat(document.getElementById('fCostoHoraHombre').value) || 5.95;
-  const horaInicioTurno = document.getElementById('fHoraInicio').value || '07:00';
-  const horaFinTurno = document.getElementById('fHoraFin').value || '19:00';
 
   const registro = {
     id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
@@ -977,8 +971,6 @@ async function guardarRegistro() {
     tipo_cambio: tipoCambio,
     costo_kg_congelado: costoKgCongelado,
     costo_hora_hombre: costoHoraHombre,
-    hora_inicio_turno: horaInicioTurno,
-    hora_fin_turno: horaFinTurno,
     hora_almuerzo: null,
     registrado_por: registradoPor,
     created_at,
@@ -1005,8 +997,6 @@ async function guardarRegistro() {
     tarifa_usd: parseFloat(tarifaUsd.toFixed(4)),
     costo_kg_congelado: costoKgCongelado,
     costo_hora_hombre: costoHoraHombre,
-    hora_inicio_turno: horaInicioTurno,
-    hora_fin_turno: horaFinTurno,
     hora_almuerzo: null,
     registrado_por: registradoPor,
     created_at
@@ -1028,15 +1018,20 @@ async function guardarRegistro() {
         tipo_cambio: parseFloat(registro.tipo_cambio),
         costo_kg_congelado: parseFloat(registro.costo_kg_congelado),
         costo_hora_hombre: parseFloat(registro.costo_hora_hombre),
-        hora_inicio_turno: registro.hora_inicio_turno || null,
-        hora_fin_turno: registro.hora_fin_turno || null,
         observacion: registro.observacion,
         registrado_por: registro.registrado_por
       }, { onConflict: 'fecha,turno' });
 
-    if (error) console.error('Supabase error:', error);
-    else showSupabaseToast('Costos guardados en Supabase ✅');
-  } catch(e) { console.error('Supabase offline', e); }
+    if (error) {
+      console.error('Supabase error:', error);
+      showSupabaseToast('ERROR Supabase: ' + error.message, '#ef4444');
+    } else {
+      showSupabaseToast('Registrado en Supabase', '#16a34a');
+    }
+  } catch(e) {
+    console.error('Supabase offline', e);
+    showSupabaseToast('Supabase sin conexion - guardado local', '#ef4444');
+  }
 
   renderAll();
 }
@@ -1048,8 +1043,6 @@ function limpiarForm() {
   document.getElementById('fTurno').value = 'DIA';
   document.getElementById('fFruta').value = 'MANGO';
   document.getElementById('fCostoHoraHombre').value = '5.95';
-  document.getElementById('fHoraInicio').value = '07:00';
-  document.getElementById('fHoraFin').value = '19:00';
   document.getElementById('chkManualCosto').checked = false;
   toggleManualCosto();
   initForm();
@@ -1593,17 +1586,6 @@ function updateChartCostoKgHora() {
   chartCostoKg.update();
 }
 
-// ===================== HORA INICIO/FIN TURNO =====================
-function updateHorasTurno() {
-  const turno = document.getElementById('fTurno').value;
-  if (turno === 'NOCHE') {
-    document.getElementById('fHoraInicio').value = '19:00';
-    document.getElementById('fHoraFin').value = '07:00';
-  } else {
-    document.getElementById('fHoraInicio').value = '07:00';
-    document.getElementById('fHoraFin').value = '19:00';
-  }
-}
 
 // ===================== COSTO HORA HOMBRE HANDLER =====================
 function onCostoHoraHombreChange() {
@@ -1624,14 +1606,23 @@ function getLocalToday() {
   return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
 }
 
-function showSupabaseToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
+function showSupabaseToast(msg, color) {
+  const existing = document.getElementById('supaToast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.id = 'supaToast';
+  toast.textContent = msg;
+  toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 28px;border-radius:12px;color:#fff;font-weight:700;font-size:14px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,0.3);background:'+(color||'#16a34a')+';transition:opacity 0.3s';
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
 }
 
 async function loadFromSupabase() {
+  if (typeof supabaseClient === 'undefined' || !supabaseClient) {
+    console.warn('Supabase no disponible');
+    showSupabaseToast('Supabase no conectado - usando datos locales', '#ef4444');
+    return;
+  }
   try {
     const { data, error } = await supabaseClient
       .from('config_costos')
@@ -1640,29 +1631,42 @@ async function loadFromSupabase() {
       .order('created_at', { ascending: false })
       .limit(1);
 
+    if (error) {
+      console.error('Supabase load error:', error);
+      showSupabaseToast('Error al cargar de Supabase: ' + error.message, '#ef4444');
+      return;
+    }
+
     if (data && data.length > 0) {
       const config = data[0];
       localStorage.setItem('costos_config', JSON.stringify(config));
-      // Update form fields with loaded data
       const el = (id) => document.getElementById(id);
       if (el('fTarifaSol')) el('fTarifaSol').value = config.tarifa_almuerzo_soles;
       if (el('fTipoCambio')) el('fTipoCambio').value = config.tipo_cambio;
       if (el('fCostoKgManual')) el('fCostoKgManual').value = config.costo_kg_congelado;
       if (el('fCostoHoraHombre')) el('fCostoHoraHombre').value = config.costo_hora_hombre;
     }
-  } catch(e) { console.log('Supabase offline'); }
+  } catch(e) {
+    console.log('Supabase offline');
+    showSupabaseToast('Supabase sin conexion - usando datos locales', '#ef4444');
+  }
 }
 
 async function loadCrossAppFromSupabase() {
+  if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
   try {
     const today = getLocalToday();
     const [prodRes, persRes] = await Promise.all([
       supabaseClient.from('registro_produccion').select('*').eq('fecha', today).order('hora'),
       supabaseClient.from('registro_personal').select('*').eq('fecha', today).order('hora')
     ]);
+    if (prodRes.error) { console.error('Supabase prod load error:', prodRes.error); }
+    if (persRes.error) { console.error('Supabase pers load error:', persRes.error); }
     if (prodRes.data) localStorage.setItem('prod_registros', JSON.stringify(prodRes.data));
     if (persRes.data) localStorage.setItem('personal_registros', JSON.stringify(persRes.data));
-  } catch(e) {}
+  } catch(e) {
+    console.log('Supabase cross-app load offline');
+  }
 }
 
 // ===================== TOAST =====================
@@ -1684,7 +1688,6 @@ document.getElementById('fFecha').addEventListener('change', () => {
 });
 
 document.getElementById('fTurno').addEventListener('change', () => {
-  updateHorasTurno();
   renderHoraTable();
   prevChartMODData = '';
   prevChartCostoKgData = '';
