@@ -3032,7 +3032,7 @@ function loadPdLiveData(){
 
   const todayProd = prodRecs.filter(r => r.fecha === todayStr);
   const todayPers = persRecs.filter(r => r.fecha === todayStr);
-  const tarifaUsd = costCfg.tarifa_usd || (costCfg.tarifa_soles ? costCfg.tarifa_soles/(costCfg.tipo_cambio||3.35) : 3.51);
+  const costoKgCongPd = costCfg.costo_kg_congelado || 3.51;
 
   let totalConsumo=0, totalPT=0, totalPersonal=0;
   todayProd.forEach(r => { totalConsumo += (parseFloat(r.consumo_kg)||0); totalPT += (parseFloat(r.pt_aprox_kg)||0); });
@@ -3071,7 +3071,7 @@ function loadPdLiveData(){
     const rd = c>0?(p/c*100):0;
     const persForHour = todayPers.find(pr=>(pr.hora||'').substring(0,5)===(r.hora||'').substring(0,5));
     const pers = persForHour?(parseInt(persForHour.num_personal)||parseInt(persForHour.total_personal)||0):totalPersonal;
-    const costoKg = (pers>0&&p>0)?(tarifaUsd*pers/p):0;
+    const costoKg = (pers>0&&p>0)?(costoKgCongPd*pers/p):0;
     tCons+=c; tPt+=p; tPers=pers;
 
     // Almuerzo row - show once before the first record after lunch
@@ -3090,7 +3090,7 @@ function loadPdLiveData(){
   tbody.innerHTML=html;
 
   const tRend = tCons>0?(tPt/tCons*100):0;
-  const tCosto = (tPers>0&&tPt>0)?(tarifaUsd*tPers/tPt):0;
+  const tCosto = (tPers>0&&tPt>0)?(costoKgCongPd*tPers/tPt):0;
   if(tfoot) tfoot.innerHTML='<tr class="table-footer"><td><b>TOTAL</b></td><td><b>'+sorted.length+' hrs</b></td><td></td><td class="num"><b>'+tCons.toLocaleString('es-PE')+'</b></td><td class="num"><b>'+tPt.toLocaleString('es-PE')+'</b></td><td style="color:var(--verde);font-weight:800"><b>'+tRend.toFixed(1)+'%</b></td><td class="num"><b>'+tPers+'</b></td><td class="pd-costo-col num" style="display:'+costoDisplay+'"><b>$'+tCosto.toFixed(4)+'</b></td></tr>';
 }
 
