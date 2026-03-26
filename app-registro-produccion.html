@@ -569,6 +569,44 @@ body {
   .kpi-value { font-size: 22px; }
   .topbar-right { gap: 8px; }
 }
+
+/* ═══ MOBILE RESPONSIVE ═══ */
+@media (max-width: 768px) {
+  body { padding:0 !important; min-width:auto !important; }
+  .topbar, [class*="topbar"] { flex-wrap:wrap; padding:10px 12px; gap:6px; }
+  .topbar-dev-signature, [class*="dev-signature"] { padding:5px 10px; max-width:140px; }
+  .topbar-dev-signature .signature-name { font-size:10px; }
+  .topbar-dev-signature .signature-role { font-size:7px; }
+  .topbar h1, .topbar-title { font-size:16px; }
+  .topbar-sub, .topbar h1 + div { font-size:10px; }
+  .dash-logo, .topbar img { width:32px; height:32px; }
+  .portal-back-link, .topbar-back { font-size:11px; padding:4px 8px; }
+  main, .main-content, [class*="content"] { padding:12px !important; }
+  .form-grid, [class*="form-grid"], .config-grid { grid-template-columns:1fr !important; gap:10px; }
+  .kpi-grid, .kpis, [class*="kpi-grid"] { grid-template-columns:repeat(2, 1fr) !important; gap:8px; }
+  .kpi-card, [class*="kpi-card"] { padding:12px; }
+  .kpi-value, [class*="kpi-value"] { font-size:22px; }
+  .grid-2, [class*="grid-2"], .charts-grid { grid-template-columns:1fr !important; }
+  .chart-wrap, [class*="chart"] canvas { height:200px; }
+  .card, [class*="card"]:not(.kpi-card) { padding:12px; border-radius:12px; }
+  table, .data-table { font-size:11px; }
+  th, td { padding:6px 8px; white-space:nowrap; }
+  .filter-bar, [class*="filter"] { flex-wrap:wrap; gap:6px; }
+  .btn-submit, [class*="btn-submit"] { width:100%; }
+  .form-actions { flex-direction:column; }
+  input, select, textarea { font-size:14px; }
+  .area-group { margin-bottom:12px; }
+  .area-positions { grid-template-columns:repeat(2, 1fr) !important; gap:6px; }
+  .cross-app-grid, [class*="cross-app"] { grid-template-columns:repeat(2, 1fr) !important; gap:8px; }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid, .kpis, [class*="kpi-grid"] { grid-template-columns:1fr !important; }
+  .topbar-dev-signature, [class*="dev-signature"] { display:none; }
+  .area-positions { grid-template-columns:1fr !important; }
+  .cross-app-grid, [class*="cross-app"] { grid-template-columns:1fr !important; }
+  .chart-wrap, [class*="chart"] canvas { height:170px; }
+}
 </style>
 </head>
 <body>
