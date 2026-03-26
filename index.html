@@ -2224,17 +2224,17 @@ function doLogin() {
     document.getElementById('loginError').textContent = 'Usuario o contrasena incorrectos';
   }
 }
-// Auto-login si la sesion sigue activa
-(function(){
+// Auto-login si la sesion sigue activa (esperar a que todo cargue)
+window.addEventListener('load', function(){
   try {
     const s = JSON.parse(sessionStorage.getItem('portal_session'));
-    if (s && s.user && s.expires > Date.now()) {
+    if (s && s.user && s.expires > Date.now() && USERS[s.user]) {
       document.getElementById('loginUser').value = s.user;
       document.getElementById('loginPass').value = USERS[s.user].pass;
       doLogin();
     }
-  } catch(e){}
-})();
+  } catch(e){ console.log('Auto-login error:', e); }
+});
 function doLogout() {
   sessionStorage.removeItem('portal_session');
   if (window._sessionTimer) clearTimeout(window._sessionTimer);
