@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -2248,32 +2247,28 @@ function doLogin() {
     const tn = document.getElementById('topbarName'); if(tn) tn.textContent = user.name;
     const tr = document.getElementById('topbarRole'); if(tr) tr.textContent = user.role;
     const ta = document.getElementById('topbarAvatar'); if(ta) ta.textContent = user.initials;
-    // Briefly show all panels so charts get correct dimensions
-    document.querySelectorAll('.panel-container').forEach(p=>{
-      p.style.visibility='hidden';
-      p.style.position='absolute';
-      p.style.height='0';
-      p.style.overflow='hidden';
-      p.classList.add('active');
-    });
-    initAllCharts();
-    // Restore: hide all, show only resumen
-    setTimeout(function(){
+    // Destroy existing charts before re-init
+    document.querySelectorAll('canvas').forEach(c=>{ const ch=Chart.getChart(c); if(ch) ch.destroy(); });
+    // Init charts - show all panels briefly for dimensions
+    try {
       document.querySelectorAll('.panel-container').forEach(p=>{
-        p.classList.remove('active');
-        p.style.visibility='';
-        p.style.position='';
-        p.style.height='';
-        p.style.overflow='';
+        p.style.cssText='visibility:hidden;position:absolute;height:0;overflow:hidden;display:block';
+        p.classList.add('active');
       });
-      document.getElementById('panel-resumen').classList.add('active');
-      setTimeout(function(){
-        document.querySelectorAll('canvas').forEach(function(c){
-          const ch = Chart.getChart(c);
-          if(ch) { ch.resize(); ch.update('none'); }
-        });
-      }, 500);
-    }, 300);
+      initAllCharts();
+    } catch(e) { console.error('initAllCharts error:', e); }
+    // Restore panels
+    document.querySelectorAll('.panel-container').forEach(p=>{
+      p.classList.remove('active');
+      p.style.cssText='';
+    });
+    document.getElementById('panel-resumen').classList.add('active');
+    // Resize charts after panels settle
+    setTimeout(function(){
+      document.querySelectorAll('canvas').forEach(function(c){
+        try { const ch = Chart.getChart(c); if(ch) { ch.resize(); ch.update('none'); } } catch(e){}
+      });
+    }, 500);
     syncFromSupabase();
     subscribeRealtime();
     // Sesion activa por 5 minutos
@@ -2418,6 +2413,8 @@ const COLORS = {
 };
 
 function initAllCharts() {
+  // Destroy ALL existing charts first to prevent "canvas already in use"
+  document.querySelectorAll('canvas').forEach(c=>{ try{const ch=Chart.getChart(c);if(ch)ch.destroy();}catch(e){} });
   // Resumen Semanal
   new Chart(document.getElementById('chartResumenSemanal'), {
     type:'bar',
