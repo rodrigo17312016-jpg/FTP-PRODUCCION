@@ -459,7 +459,6 @@ body.dark-mode .sidebar { background:linear-gradient(180deg,#080f0b 0%,#0d1f14 3
 @media(max-width:768px) {
   .kpi-grid { grid-template-columns:1fr 1fr; }
   .grid-4 { grid-template-columns:1fr; }
-  .panel-container { padding:16px; }
 }
 
 /* Mobile menu toggle */
@@ -746,45 +745,56 @@ body.dark-mode .topbar-dev-signature .signature-name {
   .sidebar-overlay.active { display:block; }
   .app-layout { grid-template-columns:1fr; }
   .main-content { margin-left:0; }
-  .topbar { flex-wrap:wrap; padding:10px 14px; gap:8px; }
+  .topbar { padding:8px 12px; gap:6px; }
   .topbar-left { order:1; }
   .topbar-center { order:3; width:100%; justify-content:center; }
   .topbar-right { order:2; margin-left:auto; }
-  .topbar-dev-signature { padding:6px 12px; }
-  .topbar-dev-signature .signature-name { font-size:11px; }
+  .topbar-dev-signature { padding:4px 10px; }
+  .topbar-dev-signature .signature-name { font-size:10px; }
   .topbar-dev-signature .signature-role { font-size:7px; }
-  .topbar-sig-label { font-size:6px; }
-  .panel-container { padding:12px; }
-  .section-title { font-size:18px; flex-direction:column; align-items:flex-start; }
-  .kpi-grid { grid-template-columns:repeat(2, 1fr); gap:10px; }
-  .kpi-value { font-size:24px; }
-  .grid-2, .grid-23 { grid-template-columns:1fr; }
-  .card { padding:14px; }
-  .chart-wrap, .chart-wrap-lg { height:200px; }
-  .data-table { font-size:11px; }
-  .data-table th, .data-table td { padding:6px 8px; }
-  .filter-bar { flex-wrap:wrap; gap:6px; }
-  .filter-chip { font-size:11px; padding:4px 10px; }
+  .topbar-sig-label { font-size:5px; letter-spacing:1px; }
+  .panel-container { padding:14px 10px; }
+  .section-title { font-size:17px; gap:8px; }
+  .section-subtitle { font-size:12px; }
+  .kpi-grid { grid-template-columns:repeat(2, 1fr); gap:8px; }
+  .kpi-card { padding:12px 10px; }
+  .kpi-value { font-size:22px; }
+  .kpi-label { font-size:9px; }
+  .kpi-meta { font-size:10px; }
+  .kpi-icon { width:36px; height:36px; font-size:18px; }
+  .card { margin-bottom:12px; padding:12px; }
+  .card-header { flex-wrap:wrap; gap:4px; }
+  .card-title { font-size:13px; }
+  .chart-wrap { height:200px; min-height:200px; }
+  .chart-wrap-lg { height:220px; min-height:220px; }
+  .data-table { font-size:11px; display:block; overflow-x:auto; }
+  .data-table th, .data-table td { padding:6px 8px; min-width:60px; }
+  .grid-2, .grid-23 { grid-template-columns:1fr; gap:12px; }
+  .filter-bar { gap:6px; padding:0; }
+  .filter-chip { font-size:11px; padding:5px 10px; }
   .filter-select { font-size:11px; }
+  .area-header-bar { padding:12px; flex-direction:column; text-align:center; gap:8px; }
+  .area-header-title { font-size:16px; }
+  .area-header-actions { justify-content:center; }
   .btn-app-link { font-size:11px; padding:6px 12px; }
-  .area-header-bar { flex-direction:column; gap:8px; text-align:center; }
-  .area-header-actions { justify-content:center; flex-wrap:wrap; }
+  .form-section { margin-bottom:12px; }
   .form-grid-portal { grid-template-columns:1fr; }
-  .tunnel-grid-portal { grid-template-columns:1fr; }
+  .tunnel-grid-portal { grid-template-columns:1fr; gap:10px; }
   .process-flow { flex-direction:column; }
   .process-step { min-width:auto; }
   .process-arrow { transform:rotate(90deg); }
-  #pdKpiRow { grid-template-columns:repeat(2, 1fr) !important; }
+  #pdKpiRow { grid-template-columns:repeat(3, 1fr) !important; gap:6px; }
   .mobile-menu-btn { display:flex; }
 }
 
 @media (max-width: 480px) {
   .kpi-grid { grid-template-columns:1fr; }
-  #pdKpiRow { grid-template-columns:1fr !important; }
+  #pdKpiRow { grid-template-columns:repeat(2, 1fr) !important; }
   .topbar-dev-signature { display:none; }
-  .section-title { font-size:16px; }
+  .chart-wrap, .chart-wrap-lg { height:180px; min-height:180px; }
+  .section-title { font-size:15px; }
   .kpi-value { font-size:20px; }
-  .chart-wrap, .chart-wrap-lg { height:180px; }
+  .topbar-center { display:none; }
 }
 </style>
 </head>
@@ -2255,11 +2265,17 @@ function doLogin() {
         p.style.overflow='';
       });
       document.getElementById('panel-resumen').classList.add('active');
-    }, 100);
+      setTimeout(function(){
+        document.querySelectorAll('canvas').forEach(function(c){
+          const ch = Chart.getChart(c);
+          if(ch) { ch.resize(); ch.update('none'); }
+        });
+      }, 500);
+    }, 300);
     syncFromSupabase();
     subscribeRealtime();
     // Sesion activa por 5 minutos
-    sessionStorage.setItem('portal_session', JSON.stringify({user:u, expires: Date.now() + 5*60*1000}));
+    localStorage.setItem('portal_session', JSON.stringify({user:u, expires: Date.now() + 5*60*1000}));
     if (window._sessionTimer) clearTimeout(window._sessionTimer);
     window._sessionTimer = setTimeout(function(){ doLogout(); }, 5*60*1000);
   } else {
@@ -2269,7 +2285,7 @@ function doLogin() {
 // Auto-login si la sesion sigue activa (esperar a que todo cargue)
 window.addEventListener('load', function(){
   try {
-    const s = JSON.parse(sessionStorage.getItem('portal_session'));
+    const s = JSON.parse(localStorage.getItem('portal_session'));
     if (s && s.user && s.expires > Date.now() && USERS[s.user]) {
       document.getElementById('loginUser').value = s.user;
       document.getElementById('loginPass').value = USERS[s.user].pass;
@@ -2278,7 +2294,7 @@ window.addEventListener('load', function(){
   } catch(e){ console.log('Auto-login error:', e); }
 });
 function doLogout() {
-  sessionStorage.removeItem('portal_session');
+  localStorage.removeItem('portal_session');
   if (window._sessionTimer) clearTimeout(window._sessionTimer);
   document.getElementById('appScreen').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
