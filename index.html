@@ -744,15 +744,15 @@ body.dark-mode .topbar-dev-signature .signature-name {
 .pd-avance-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,#16a34a,#22c55e,#0891b2,#16a34a); background-size:300% 100%; animation:pdGradientFlow 3s linear infinite; }
 .pd-avance-pct { font-size:28px; font-weight:900; background:linear-gradient(135deg,#16a34a,#22c55e,#0891b2); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:pdPctPulse 2s ease infinite; }
 .pd-live-pulse { width:10px; height:10px; border-radius:50%; background:#22c55e; box-shadow:0 0 0 0 rgba(34,197,94,0.6); animation:pdPulseRing 1.5s ease infinite; }
-.pd-bar-track { background:var(--bg-subtle,#e5e7eb); border-radius:14px; height:36px; overflow:hidden; position:relative; box-shadow:inset 0 2px 6px rgba(0,0,0,0.1); }
-.pd-bar-fill { height:100%; border-radius:14px; background:linear-gradient(90deg,#059669,#16a34a,#22c55e,#34d399); background-size:200% 100%; animation:pdBarFlow 2s linear infinite; transition:width 1s cubic-bezier(0.4,0,0.2,1); width:0%; position:relative; display:flex; align-items:center; justify-content:flex-end; padding-right:12px; min-width:0; }
-.pd-bar-shine { position:absolute; top:0; left:-100%; width:60%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent); animation:pdShineSwipe 2.5s ease-in-out infinite; pointer-events:none; }
-.pd-bar-wave { position:absolute; top:0; right:0; width:20px; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2)); animation:pdWavePulse 1s ease infinite; pointer-events:none; border-radius:0 14px 14px 0; }
-.pd-bar-label { color:#fff; font-size:12px; font-weight:900; text-shadow:0 1px 3px rgba(0,0,0,0.4); position:relative; z-index:1; white-space:nowrap; }
-@keyframes pdGradientFlow { 0%{background-position:0% 0} 100%{background-position:300% 0} }
-@keyframes pdBarFlow { 0%{background-position:0% 0} 100%{background-position:200% 0} }
-@keyframes pdShineSwipe { 0%{left:-100%} 60%,100%{left:200%} }
-@keyframes pdWavePulse { 0%,100%{opacity:0.3;width:15px} 50%{opacity:0.7;width:25px} }
+.pd-bar-track { background:rgba(148,163,184,0.15); border-radius:14px; height:36px; overflow:hidden; position:relative; box-shadow:inset 0 2px 6px rgba(0,0,0,0.15); border:1px solid rgba(148,163,184,0.1); }
+.pd-bar-fill { height:100%; border-radius:14px; background:linear-gradient(90deg,#059669,#16a34a,#22c55e,#059669); background-size:300% 100%; animation:pdBarFlow 3s linear infinite; transition:width 1s cubic-bezier(0.4,0,0.2,1); width:0%; position:relative; display:flex; align-items:center; justify-content:flex-end; padding-right:12px; min-width:0; box-shadow:0 0 12px rgba(22,163,74,0.3); }
+.pd-bar-shine { position:absolute; top:0; left:-50%; width:50%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent); animation:pdShineSwipe 3s ease-in-out infinite; pointer-events:none; }
+.pd-bar-wave { position:absolute; top:0; right:-2px; width:6px; height:100%; background:rgba(255,255,255,0.5); animation:pdWavePulse 1.5s ease infinite; pointer-events:none; border-radius:0 14px 14px 0; }
+.pd-bar-label { color:#fff; font-size:12px; font-weight:900; text-shadow:0 1px 3px rgba(0,0,0,0.5); position:relative; z-index:1; white-space:nowrap; }
+@keyframes pdGradientFlow { from{background-position:0% 0} to{background-position:300% 0} }
+@keyframes pdBarFlow { from{background-position:300% 0} to{background-position:0% 0} }
+@keyframes pdShineSwipe { 0%{left:-50%} 100%{left:120%} }
+@keyframes pdWavePulse { 0%,100%{opacity:0.4} 50%{opacity:0.9} }
 @keyframes pdPulseRing { 0%{box-shadow:0 0 0 0 rgba(34,197,94,0.6)} 70%{box-shadow:0 0 0 8px rgba(34,197,94,0)} 100%{box-shadow:0 0 0 0 rgba(34,197,94,0)} }
 @keyframes pdPctPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.85;transform:scale(1.03)} }
 
@@ -3015,6 +3015,11 @@ function updateAcoCharts(prodRegs) {
     ch2.data.labels = horasLabels;
     ch2.data.datasets[0].data = rendData;
     if (ch2.data.datasets[1]) ch2.data.datasets[1].data = horasLabels.map(() => 50);
+    // Auto-adjust Y axis based on data
+    const minRend = rendData.length > 0 ? Math.min(...rendData) : 0;
+    const maxRend = rendData.length > 0 ? Math.max(...rendData) : 100;
+    ch2.options.scales.y.min = Math.max(0, Math.floor(minRend / 5) * 5 - 5);
+    ch2.options.scales.y.max = Math.min(100, Math.ceil(Math.max(maxRend, 50) / 5) * 5 + 5);
     ch2.update();
   }
 }
