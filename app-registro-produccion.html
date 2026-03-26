@@ -693,16 +693,6 @@ body {
           </select>
         </div>
         <div class="form-group">
-          <label>Hora Inicio Turno</label>
-          <input type="time" id="fHoraInicio" value="07:00">
-          <span class="tooltip-text">Hora real de inicio del turno</span>
-        </div>
-        <div class="form-group">
-          <label>Hora Fin Turno</label>
-          <input type="time" id="fHoraFin" value="19:00">
-          <span class="tooltip-text">Hora real de fin del turno</span>
-        </div>
-        <div class="form-group">
           <label>Linea</label>
           <select id="fLinea">
             <option value="General">General</option>
@@ -734,6 +724,21 @@ body {
         </div>
       </div>
 
+      <!-- HORARIO DEL TURNO SECTION -->
+      <div class="almuerzo-section" style="margin-top:14px;background:rgba(59,130,246,0.08);border-color:rgba(59,130,246,0.3);">
+        <div class="almuerzo-title" style="color:var(--azul,#3b82f6);">🕐 Horario del Turno</div>
+        <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="form-group">
+            <label>Hora Inicio Turno</label>
+            <input type="time" id="fHoraInicio" value="07:00">
+          </div>
+          <div class="form-group">
+            <label>Hora Fin Turno</label>
+            <input type="time" id="fHoraFin" value="19:00">
+          </div>
+        </div>
+      </div>
+
       <!-- ALMUERZO SECTION -->
       <div class="almuerzo-section" id="almuerzoSection">
         <div class="almuerzo-title">🍽️ Datos de Almuerzo</div>
@@ -752,6 +757,9 @@ body {
               <label for="fSinAlmuerzo">Sin almuerzo / Corrido</label>
             </div>
           </div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text-muted,#94a3b8);font-style:italic;">
+          Completar cuando se confirme la hora de almuerzo (usualmente despues de las 10am)
         </div>
       </div>
 
@@ -1038,6 +1046,40 @@ function limpiarForm() {
 }
 
 // ═══════════════ DELETE RECORD ═══════════════
+function editRecord(id) {
+  const records = getRecords();
+  const r = records.find(rec => rec.id === id);
+  if (!r) return;
+  // Populate form with record data
+  document.getElementById('fFecha').value = r.fecha || '';
+  const turnoSel = document.getElementById('fTurno');
+  if (turnoSel) { for(let o of turnoSel.options){ if(o.value===r.turno) o.selected=true; } }
+  const frutaSel = document.getElementById('fFruta');
+  if (frutaSel) { for(let o of frutaSel.options){ if(o.value===r.fruta) o.selected=true; } }
+  const horaSel = document.getElementById('fHora');
+  if (horaSel) { for(let o of horaSel.options){ if(o.value===r.hora) o.selected=true; } }
+  const lineaSel = document.getElementById('fLinea');
+  if (lineaSel) { for(let o of lineaSel.options){ if(o.value===r.linea) o.selected=true; } }
+  document.getElementById('fConsumo').value = r.consumo_kg || '';
+  document.getElementById('fPT').value = r.pt_aprox_kg || '';
+  const proy = document.getElementById('fProyectado');
+  if (proy) proy.value = r.proyectado_tn || '16';
+  const obs = document.getElementById('fObs');
+  if (obs) obs.value = r.observacion || '';
+  const sup = document.getElementById('fSupervisor');
+  if (sup) sup.value = r.supervisor || '';
+  const hInicio = document.getElementById('fHoraInicio');
+  if (hInicio && r.hora_inicio_turno) hInicio.value = r.hora_inicio_turno;
+  const hFin = document.getElementById('fHoraFin');
+  if (hFin && r.hora_fin_turno) hFin.value = r.hora_fin_turno;
+  // Delete old record so the new save replaces it
+  const filtered = records.filter(rec => rec.id !== id);
+  saveRecords(filtered);
+  // Scroll to form
+  document.querySelector('.form-section-header, .form-card, form')?.scrollIntoView({behavior:'smooth'});
+  showToast('Editando registro ' + r.hora + ' — modifica y guarda');
+}
+
 async function deleteRecord(id) {
   if (!confirm('¿Eliminar este registro?')) return;
   let records = getRecords();
@@ -1164,7 +1206,7 @@ function updateTable(recs) {
       <td class="num">${formatNum(r.pt_aprox_kg)}</td>
       <td class="num"><span class="badge ${rendClass}">${r.rendimiento}%</span></td>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${obs}">${obs}</td>
-      <td style="text-align:center"><button class="delete-btn" onclick="deleteRecord('${r.id}')" title="Eliminar">🗑️</button></td>
+      <td style="text-align:center;white-space:nowrap"><button class="edit-btn" onclick="editRecord('${r.id}')" title="Editar" style="background:none;border:none;cursor:pointer;font-size:16px;padding:4px">✏️</button><button class="delete-btn" onclick="deleteRecord('${r.id}')" title="Eliminar">🗑️</button></td>
     </tr>`;
   });
 
