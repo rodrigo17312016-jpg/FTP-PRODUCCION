@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -738,6 +739,23 @@ body.dark-mode .topbar-dev-signature .signature-name {
 }
 .portal-toast.show { transform:translateY(0);opacity:1; }
 
+/* ═══ PREMIUM PROGRESS BAR ═══ */
+.pd-avance-card { padding:18px 22px; position:relative; overflow:hidden; }
+.pd-avance-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,#16a34a,#22c55e,#0891b2,#16a34a); background-size:300% 100%; animation:pdGradientFlow 3s linear infinite; }
+.pd-avance-pct { font-size:28px; font-weight:900; background:linear-gradient(135deg,#16a34a,#22c55e,#0891b2); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:pdPctPulse 2s ease infinite; }
+.pd-live-pulse { width:10px; height:10px; border-radius:50%; background:#22c55e; box-shadow:0 0 0 0 rgba(34,197,94,0.6); animation:pdPulseRing 1.5s ease infinite; }
+.pd-bar-track { background:var(--bg-subtle,#e5e7eb); border-radius:14px; height:36px; overflow:hidden; position:relative; box-shadow:inset 0 2px 6px rgba(0,0,0,0.1); }
+.pd-bar-fill { height:100%; border-radius:14px; background:linear-gradient(90deg,#059669,#16a34a,#22c55e,#34d399); background-size:200% 100%; animation:pdBarFlow 2s linear infinite; transition:width 1s cubic-bezier(0.4,0,0.2,1); width:0%; position:relative; display:flex; align-items:center; justify-content:flex-end; padding-right:12px; min-width:0; }
+.pd-bar-shine { position:absolute; top:0; left:-100%; width:60%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent); animation:pdShineSwipe 2.5s ease-in-out infinite; pointer-events:none; }
+.pd-bar-wave { position:absolute; top:0; right:0; width:20px; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2)); animation:pdWavePulse 1s ease infinite; pointer-events:none; border-radius:0 14px 14px 0; }
+.pd-bar-label { color:#fff; font-size:12px; font-weight:900; text-shadow:0 1px 3px rgba(0,0,0,0.4); position:relative; z-index:1; white-space:nowrap; }
+@keyframes pdGradientFlow { 0%{background-position:0% 0} 100%{background-position:300% 0} }
+@keyframes pdBarFlow { 0%{background-position:0% 0} 100%{background-position:200% 0} }
+@keyframes pdShineSwipe { 0%{left:-100%} 60%,100%{left:200%} }
+@keyframes pdWavePulse { 0%,100%{opacity:0.3;width:15px} 50%{opacity:0.7;width:25px} }
+@keyframes pdPulseRing { 0%{box-shadow:0 0 0 0 rgba(34,197,94,0.6)} 70%{box-shadow:0 0 0 8px rgba(34,197,94,0)} 100%{box-shadow:0 0 0 0 rgba(34,197,94,0)} }
+@keyframes pdPctPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.85;transform:scale(1.03)} }
+
 /* ═══ MOBILE RESPONSIVE ═══ */
 @media (max-width: 768px) {
   .sidebar { transform:translateX(-100%); position:fixed; z-index:1000; height:100vh; width:260px; }
@@ -1264,6 +1282,28 @@ body.dark-mode .topbar-dev-signature .signature-name {
     <div class="kpi-card" style="--kpi-color:var(--cyan);padding:14px"><div class="kpi-label" style="font-size:9px">REGISTROS</div><div class="kpi-value" style="font-size:24px" id="pdRegistros">0</div><div class="kpi-meta" style="font-size:10px">Horas registradas</div></div>
   </div>
 
+  <!-- Barra de avance meta diaria PREMIUM -->
+  <div class="card mb-24 pd-avance-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="pd-live-pulse"></div>
+        <div style="font-weight:800;font-size:15px;letter-spacing:0.3px">🎯 Avance Meta Diaria — Consumo de Materia Prima</div>
+      </div>
+      <div class="pd-avance-pct" id="pdAvancePct">0%</div>
+    </div>
+    <div class="pd-bar-track">
+      <div class="pd-bar-fill" id="pdAvanceBar">
+        <div class="pd-bar-shine"></div>
+        <div class="pd-bar-wave"></div>
+        <span class="pd-bar-label" id="pdAvanceKg">0 kg</span>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--text-muted)">
+      <span>0 kg</span>
+      <span>Meta: 16,000 kg</span>
+    </div>
+  </div>
+
   <!-- Tabla hora a hora LIVE -->
   <div class="card mb-24">
     <div class="card-header">
@@ -1292,6 +1332,17 @@ body.dark-mode .topbar-dev-signature .signature-name {
     <div class="card">
       <div class="card-header"><div class="card-title">🎯 Rendimiento % por Hora</div></div>
       <div class="chart-wrap"><canvas id="chartHoraRend"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Produccion Acumulada por Hora</div></div>
+      <div class="chart-wrap"><canvas id="chartPdAcumulado"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Comparativo Turnos Dia vs Noche</div></div>
+      <div class="chart-wrap"><canvas id="chartPdTurnos"></canvas></div>
     </div>
   </div>
 </div>
@@ -3069,6 +3120,11 @@ function loadPdLiveData(){
   const peE=document.getElementById('pdPersonal'); if(peE) peE.innerHTML=totalPersonal+' <span class="kpi-unit">op.</span>';
   const rgE=document.getElementById('pdRegistros'); if(rgE) rgE.textContent=todayProd.length;
 
+  // Update progress bar
+  const avBar=document.getElementById('pdAvanceBar'); if(avBar) avBar.style.width=cumplPct+'%';
+  const avPct=document.getElementById('pdAvancePct'); if(avPct) avPct.textContent=cumplPct+'%';
+  const avKg=document.getElementById('pdAvanceKg'); if(avKg) avKg.textContent=totalConsumo.toLocaleString('es-PE')+' kg';
+
   // Table
   const tbody = document.getElementById('pdLiveBody');
   const tfoot = document.getElementById('pdLiveFoot');
@@ -3127,6 +3183,63 @@ function loadPdLiveData(){
   const avgPers = hoursWithPers>0?Math.round(totalPersSum/hoursWithPers):0;
   const tCosto = (totalPersSum>0&&tPt>0)?(costoKgCongPd*totalPersSum/tPt):0;
   if(tfoot) tfoot.innerHTML='<tr class="table-footer"><td><b>TOTAL</b></td><td><b>'+sorted.length+' hrs</b></td><td></td><td class="num"><b>'+tCons.toLocaleString('es-PE')+'</b></td><td class="num"><b>'+tPt.toLocaleString('es-PE')+'</b></td><td style="color:var(--verde);font-weight:800"><b>'+tRend.toFixed(1)+'%</b></td><td class="num"><b>'+avgPers+' prom</b></td><td class="pd-costo-col num" style="display:'+costoDisplay+'"><b>$'+tCosto.toFixed(4)+'</b></td></tr>';
+
+  // Update live charts with real data
+  updatePdCharts(sorted, todayProd, todayPers);
+}
+
+function updatePdCharts(sorted, todayProd, todayPers){
+  const labels=[],consumos=[],pts=[],rends=[],acums=[];
+  let acum=0;
+  sorted.forEach(r=>{
+    const h=(r.hora||'').substring(0,5);
+    const c=parseFloat(r.consumo_kg)||0, p=parseFloat(r.pt_aprox_kg)||0;
+    labels.push(h); consumos.push(c); pts.push(p);
+    rends.push(c>0?(p/c*100):0);
+    acum+=c; acums.push(acum);
+  });
+
+  // Chart 1: Consumo vs PT (chartHoraKg)
+  const ch1=Chart.getChart(document.getElementById('chartHoraKg'));
+  if(ch1){ch1.data.labels=labels;ch1.data.datasets[0].data=consumos;ch1.data.datasets[1].data=pts;ch1.update('none');}
+
+  // Chart 2: Rendimiento (chartHoraRend)
+  const ch2=Chart.getChart(document.getElementById('chartHoraRend'));
+  if(ch2){ch2.data.labels=labels;ch2.data.datasets[0].data=rends;ch2.data.datasets[1].data=labels.map(()=>50);ch2.update('none');}
+
+  // Chart 3: Acumulado (chartPdAcumulado) - create/update
+  const c3=document.getElementById('chartPdAcumulado');
+  if(c3){
+    let ch3=Chart.getChart(c3);
+    if(!ch3){
+      ch3=new Chart(c3,{type:'bar',data:{labels,datasets:[
+        {label:'Consumo por Hora (kg)',data:consumos,backgroundColor:'rgba(234,88,12,0.6)',borderRadius:6,yAxisID:'y'},
+        {label:'Acumulado (kg)',data:acums,type:'line',borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,0.1)',fill:true,tension:0.4,pointRadius:5,pointBackgroundColor:'#16a34a',yAxisID:'y1'}
+      ]},options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:'Kg/hora'}},y1:{position:'right',beginAtZero:true,title:{display:true,text:'Acumulado (kg)'},grid:{display:false}},x:{grid:{display:false}}}}});
+    } else {ch3.data.labels=labels;ch3.data.datasets[0].data=consumos;ch3.data.datasets[1].data=acums;ch3.update('none');}
+  }
+
+  // Chart 4: Turnos (chartPdTurnos) - create/update
+  const c4=document.getElementById('chartPdTurnos');
+  if(c4){
+    let ch4=Chart.getChart(c4);
+    const dias=['Lun','Mar','Mie','Jue','Vie','Sab'];
+    const diaData=[0,0,0,0,0,0], nocheData=[0,0,0,0,0,0];
+    const allProd=JSON.parse(localStorage.getItem('prod_registros')||'[]');
+    allProd.forEach(r=>{
+      if(!r.fecha) return;
+      const d=new Date(r.fecha); const dow=d.getDay(); if(dow===0||dow>6) return;
+      const c=parseFloat(r.consumo_kg)||0;
+      if((r.turno||'').includes('NOCHE')) nocheData[dow-1]+=c;
+      else diaData[dow-1]+=c;
+    });
+    if(!ch4){
+      ch4=new Chart(c4,{type:'bar',data:{labels:dias,datasets:[
+        {label:'Turno Dia',data:diaData,backgroundColor:'rgba(22,163,74,0.7)',borderRadius:6},
+        {label:'Turno Noche',data:nocheData,backgroundColor:'rgba(124,58,237,0.6)',borderRadius:6}
+      ]},options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:'Consumo (kg)'}},x:{grid:{display:false}}}}});
+    } else {ch4.data.datasets[0].data=diaData;ch4.data.datasets[1].data=nocheData;ch4.update('none');}
+  }
 }
 
 window.addEventListener('storage', loadPdLiveData);
