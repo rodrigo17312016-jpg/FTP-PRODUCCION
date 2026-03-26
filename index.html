@@ -1198,9 +1198,6 @@ body.dark-mode .topbar-dev-signature .signature-name {
   <div class="section-subtitle">Datos en tiempo real desde Supabase · <span id="pdFechaHoy"></span></div>
 
   <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
-    <a href="app-registro-produccion.html" target="_blank" class="btn-app-link" style="--area-color:#16a34a;font-size:12px;padding:6px 14px">📋 Registro Produccion</a>
-    <a href="app-registro-personal.html" target="_blank" class="btn-app-link" style="--area-color:#d97706;font-size:12px;padding:6px 14px">👥 Registro Personal</a>
-    <a href="app-registro-costos.html" target="_blank" class="btn-app-link" style="--area-color:#dc2626;font-size:12px;padding:6px 14px">💰 Registro Costos</a>
     <button id="pdToggleCosto" onclick="togglePdCosto()" style="margin-left:auto;padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:var(--text-muted);cursor:pointer;font-size:12px;font-weight:600">🔒 Mostrar Costos</button>
   </div>
 
@@ -2195,7 +2192,14 @@ function doLogin() {
     const tn = document.getElementById('topbarName'); if(tn) tn.textContent = user.name;
     const tr = document.getElementById('topbarRole'); if(tr) tr.textContent = user.role;
     const ta = document.getElementById('topbarAvatar'); if(ta) ta.textContent = user.initials;
+    // Briefly show all panels so charts get correct dimensions
+    document.querySelectorAll('.panel-container').forEach(p=>{p.classList.add('active');p.style.opacity='0';p.style.position='absolute';p.style.pointerEvents='none';});
     initAllCharts();
+    // Restore: hide all, show only resumen
+    setTimeout(function(){
+      document.querySelectorAll('.panel-container').forEach(p=>{p.classList.remove('active');p.style.opacity='';p.style.position='';p.style.pointerEvents='';});
+      document.getElementById('panel-resumen').classList.add('active');
+    }, 50);
     syncFromSupabase();
     subscribeRealtime();
     // Sesion activa por 5 minutos
@@ -2247,6 +2251,14 @@ document.querySelectorAll('.nav-item[data-panel]').forEach(item => {
     };
     document.getElementById('topbarTitle').textContent = titles[panel] || panel;
     if (window.innerWidth <= 1024) toggleSidebar();
+    // Fix blank charts: force resize after panel is fully visible
+    setTimeout(function(){
+      if(!target) return;
+      target.querySelectorAll('canvas').forEach(function(c){
+        const ch = Chart.getChart(c);
+        if(ch) { ch.resize(); ch.update(); }
+      });
+    }, 500);
   });
 });
 
@@ -2993,31 +3005,35 @@ function loadPdLiveData(){
 
   const sorted = [...todayProd].sort((a,b)=>(a.hora||'').localeCompare(b.hora||''));
   let html='', tCons=0, tPt=0, tPers=0;
+  const colSpan = pdCostoVisible ? 7 : 6;
+  const costoDisplay = pdCostoVisible ? '' : 'none';
+  let almuerzoShown = false;
   sorted.forEach(r => {
     const c=parseFloat(r.consumo_kg)||0, p=parseFloat(r.pt_aprox_kg)||0;
     const rd = c>0?(p/c*100):0;
-    const persForHour = todayPers.find(pr=>pr.hora===r.hora);
+    const persForHour = todayPers.find(pr=>(pr.hora||'').substring(0,5)===(r.hora||'').substring(0,5));
     const pers = persForHour?(parseInt(persForHour.num_personal)||parseInt(persForHour.total_personal)||0):totalPersonal;
     const costoKg = (pers>0&&p>0)?(tarifaUsd*pers/p):0;
     tCons+=c; tPt+=p; tPers=pers;
 
-    // Check almuerzo
-    if(r.almuerzo_inicio && r.almuerzo_fin){
-      html+='<tr style="background:var(--amber-bg)"><td>'+r.almuerzo_inicio+'-'+r.almuerzo_fin+'</td><td colspan="'+(pdCostoVisible?7:6)+'" style="text-align:center;font-style:italic;color:var(--amber)">🍽️ Almuerzo '+r.almuerzo_inicio+' — '+r.almuerzo_fin+'</td></tr>';
+    // Almuerzo row - show once before the first record after lunch
+    if(!almuerzoShown && r.almuerzo_inicio && r.almuerzo_fin){
+      almuerzoShown = true;
+      html+='<tr style="background:var(--amber-bg)"><td>'+r.almuerzo_inicio+'-'+r.almuerzo_fin+'</td><td colspan="'+colSpan+'" style="text-align:center;font-style:italic;color:var(--amber)">🍽️ Almuerzo '+r.almuerzo_inicio+' — '+r.almuerzo_fin+'</td></tr>';
     }
 
     const rendColor = rd>=50?'color:var(--verde)':rd>=45?'color:var(--amber)':'color:var(--danger)';
-    html+='<tr><td><b>'+r.hora+'</b></td><td>'+r.fruta+'</td><td>'+(r.linea||'Gral')+'</td>';
+    html+='<tr><td><b>'+(r.hora||'').substring(0,11)+'</b></td><td>'+(r.fruta||'')+'</td><td>'+(r.linea==='General'?'Gral':r.linea||'Gral')+'</td>';
     html+='<td class="num">'+c.toLocaleString('es-PE')+'</td><td class="num">'+p.toLocaleString('es-PE')+'</td>';
     html+='<td style="'+rendColor+';font-weight:700">'+rd.toFixed(1)+'%</td>';
     html+='<td class="num">'+pers+'</td>';
-    html+='<td class="pd-costo-col num" style="display:'+(pdCostoVisible?'':'none')+'">$'+costoKg.toFixed(4)+'</td></tr>';
+    html+='<td class="pd-costo-col num" style="display:'+costoDisplay+'">$'+costoKg.toFixed(4)+'</td></tr>';
   });
   tbody.innerHTML=html;
 
   const tRend = tCons>0?(tPt/tCons*100):0;
   const tCosto = (tPers>0&&tPt>0)?(tarifaUsd*tPers/tPt):0;
-  if(tfoot) tfoot.innerHTML='<tr class="table-footer"><td><b>TOTAL</b></td><td><b>'+sorted.length+' hrs</b></td><td></td><td class="num"><b>'+tCons.toLocaleString('es-PE')+'</b></td><td class="num"><b>'+tPt.toLocaleString('es-PE')+'</b></td><td style="color:var(--verde);font-weight:800"><b>'+tRend.toFixed(1)+'%</b></td><td class="num"><b>'+tPers+'</b></td><td class="pd-costo-col num" style="display:'+(pdCostoVisible?'':'none')+'"><b>$'+tCosto.toFixed(4)+'</b></td></tr>';
+  if(tfoot) tfoot.innerHTML='<tr class="table-footer"><td><b>TOTAL</b></td><td><b>'+sorted.length+' hrs</b></td><td></td><td class="num"><b>'+tCons.toLocaleString('es-PE')+'</b></td><td class="num"><b>'+tPt.toLocaleString('es-PE')+'</b></td><td style="color:var(--verde);font-weight:800"><b>'+tRend.toFixed(1)+'%</b></td><td class="num"><b>'+tPers+'</b></td><td class="pd-costo-col num" style="display:'+costoDisplay+'"><b>$'+tCosto.toFixed(4)+'</b></td></tr>';
 }
 
 window.addEventListener('storage', loadPdLiveData);
