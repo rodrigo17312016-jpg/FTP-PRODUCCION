@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App Recepcion MP — FTP Planta</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f0f2f5;--surface:#fff;--border:rgba(0,0,0,0.07);--verde:#16a34a;--verde-bg:rgba(22,163,74,0.08);--naranja:#ea580c;--naranja-bg:rgba(234,88,12,0.08);--azul:#2563eb;--azul-bg:rgba(37,99,235,0.08);--amber:#d97706;--amber-bg:rgba(217,119,6,0.08);--texto:#0f172a;--muted:#64748b;--radius:14px;--shadow:0 4px 16px rgba(0,0,0,0.07);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--texto);min-height:100vh;-webkit-font-smoothing:antialiased;}
+#loginScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#1c0e00 0%,#3d2200 50%,#1c0e00 100%);display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:rgba(40,22,0,0.92);backdrop-filter:blur(30px);border-radius:20px;padding:40px 36px;width:100%;max-width:380px;text-align:center;border:1px solid rgba(255,255,255,0.08);box-shadow:0 24px 60px rgba(0,0,0,0.5);}
+.app-icon{font-size:48px;margin-bottom:12px;}
+.login-title{font-size:20px;font-weight:900;color:#fff;margin-bottom:4px;}
+.login-area{font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:24px;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+.login-field{text-align:left;margin-bottom:14px;}
+.login-field label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;}
+.login-field input{width:100%;padding:12px 16px;border:2px solid rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.06);color:#fff;font-size:14px;outline:none;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;}
+.login-field input:focus{border-color:#fb923c;}
+.login-field input::placeholder{color:rgba(255,255,255,0.3);}
+.login-btn{width:100%;padding:13px;background:linear-gradient(135deg,#ea580c,#c2410c);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(234,88,12,0.45);}
+.login-error{color:#f87171;font-size:12px;margin-top:8px;min-height:16px;font-weight:600;}
+#appScreen{display:none;}
+.header{background:linear-gradient(135deg,#1c0e00,#3d2200,#1c0e00);color:#fff;padding:16px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.35);}
+.header-icon{font-size:28px;}
+.header-title{font-size:18px;font-weight:800;}
+.header-sub{font-size:11px;color:rgba(255,255,255,0.45);font-weight:600;text-transform:uppercase;letter-spacing:1px;}
+.header-spacer{flex:1;}
+.header-live{display:flex;align-items:center;gap:6px;background:rgba(234,88,12,0.2);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;color:#fb923c;}
+.dot{width:6px;height:6px;border-radius:50%;background:#fb923c;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.4)}}
+.header-sig-dev{font-size:8px;color:rgba(212,175,55,0.6);text-transform:uppercase;letter-spacing:2px;font-weight:800;}
+.header-sig-name{font-size:11px;font-weight:900;background:linear-gradient(135deg,#d4af37,#fff8dc,#c0c0c0,#fff8dc,#d4af37);background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s ease infinite;}
+@keyframes shimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.header-time{font-size:12px;color:rgba(255,255,255,0.5);text-align:right;}
+.header-logout{background:rgba(255,255,255,0.08);border:none;color:rgba(255,255,255,0.5);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;}
+.header-logout:hover{background:rgba(248,113,113,0.2);color:#f87171;}
+.content{padding:20px;max-width:1200px;margin:0 auto;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:20px;}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kpi-c,var(--naranja));}
+.kpi-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;}
+.kpi-value{font-size:26px;font-weight:900;color:var(--kpi-c,var(--texto));line-height:1;}
+.kpi-unit{font-size:12px;font-weight:600;color:var(--muted);}
+.kpi-meta{font-size:11px;color:var(--muted);margin-top:6px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow);}
+.card-title{font-size:15px;font-weight:800;color:var(--texto);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.form-group input,.form-group select{padding:10px 12px;border:2px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;color:var(--texto);background:var(--surface);outline:none;transition:border-color 0.2s;font-family:'Plus Jakarta Sans',sans-serif;}
+.form-group input:focus,.form-group select:focus{border-color:var(--naranja);}
+.form-row{display:flex;gap:12px;margin-top:12px;align-items:flex-end;flex-wrap:wrap;}
+.btn{padding:11px 24px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.btn-primary{background:linear-gradient(135deg,#ea580c,#c2410c);color:#fff;}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(234,88,12,0.35);}
+.btn-secondary{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.data-table{width:100%;border-collapse:collapse;font-size:13px;}
+.data-table th{background:var(--bg);padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--border);}
+.data-table td{padding:10px 12px;border-bottom:1px solid var(--border);}
+.data-table tbody tr:hover{background:rgba(234,88,12,0.03);}
+.data-table .num{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;}
+.table-wrap{overflow-x:auto;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.chart-wrap{height:240px;position:relative;}
+/* Quality badge */
+.qual{display:inline-block;padding:3px 10px;border-radius:8px;font-size:11px;font-weight:800;}
+.qual-a{background:var(--verde-bg);color:var(--verde);}
+.qual-b{background:var(--amber-bg);color:var(--amber);}
+.qual-c{background:var(--naranja-bg);color:var(--naranja);}
+.qual-d{background:rgba(220,38,38,0.08);color:#dc2626;}
+.section-divider{border:none;border-top:2px dashed var(--border);margin:8px 0 16px;}
+.toast{position:fixed;bottom:24px;right:24px;background:#ea580c;color:#fff;padding:14px 20px;border-radius:12px;font-weight:700;font-size:14px;box-shadow:0 8px 24px rgba(234,88,12,0.45);transform:translateY(80px);opacity:0;transition:all 0.3s;z-index:9999;}
+.toast.show{transform:translateY(0);opacity:1;}
+@media(max-width:600px){.grid-2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="app-icon">🚛</div>
+    <div class="login-title">Recepcion MP</div>
+    <div class="login-area">Frutos Tropicales Peru S.A.C.</div>
+    <div class="login-field">
+      <label>Usuario</label>
+      <input type="text" id="loginUser" placeholder="usuario" autocomplete="off">
+    </div>
+    <div class="login-field">
+      <label>Contrasena</label>
+      <input type="password" id="loginPass" placeholder="••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<div id="appScreen">
+  <div class="header">
+    <div class="header-icon">🚛</div>
+    <div>
+      <div class="header-title">Recepcion de Materia Prima</div>
+      <div class="header-sub">Control de Ingresos y Calidad</div>
+    </div>
+    <div class="header-spacer"></div>
+    <div class="header-live"><span class="dot"></span> En vivo</div>
+    <div>
+      <div class="header-sig-dev">Developer</div>
+      <div class="header-sig-name">Rodrigo Garcia</div>
+    </div>
+    <div>
+      <div class="header-time" id="headerTime"></div>
+      <button class="header-logout" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-c:var(--naranja)">
+        <div class="kpi-label">TN Recepcionadas Hoy</div>
+        <div class="kpi-value" id="kpiTN">0.0 <span class="kpi-unit">TN</span></div>
+        <div class="kpi-meta">Materia prima ingresada</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--verde)">
+        <div class="kpi-label">Lotes Recibidos</div>
+        <div class="kpi-value" id="kpiLotes">0</div>
+        <div class="kpi-meta">N° ingresos registrados</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--azul)">
+        <div class="kpi-label">Proveedores</div>
+        <div class="kpi-value" id="kpiProv">0</div>
+        <div class="kpi-meta">Proveedores distintos hoy</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--verde)">
+        <div class="kpi-label">Calidad A/A+</div>
+        <div class="kpi-value" id="kpiCalA">0 <span class="kpi-unit">lotes</span></div>
+        <div class="kpi-meta">Calidad premium aprobada</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--amber)">
+        <div class="kpi-label">Calidad B</div>
+        <div class="kpi-value" id="kpiCalB">0 <span class="kpi-unit">lotes</span></div>
+        <div class="kpi-meta">Calidad estandar</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:#dc2626">
+        <div class="kpi-label">Rechazados</div>
+        <div class="kpi-value" id="kpiRec">0 <span class="kpi-unit">lotes</span></div>
+        <div class="kpi-meta">No conformes</div>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="card">
+      <div class="card-title">📝 Registro de Ingreso de MP</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>N° Lote</label>
+          <input type="text" id="fLote" placeholder="Ej: CFT041K">
+        </div>
+        <div class="form-group">
+          <label>Proveedor</label>
+          <select id="fProveedor">
+            <option>FTP (Campo Propio)</option><option>Oscar Carranza</option>
+            <option>Agro Huaral</option><option>Agricultores Huacho</option>
+            <option>Coop. La Esperanza</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Fruta</label>
+          <select id="fFruta">
+            <option>Mango</option>
+            <option>Arandano</option><option>Granada</option>
+            <option>Palta Hass</option><option>Fresa</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="fTipo">
+            <option>Convencional</option><option>Organico</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Peso Bruto (kg)</label>
+          <input type="number" id="fPesoBruto" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>Peso Neto (kg)</label>
+          <input type="number" id="fPesoNeto" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>N° Jabas / Bins</label>
+          <input type="number" id="fJabas" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>Unidad</label>
+          <select id="fUnidad">
+            <option>Jabas</option><option>Bins</option><option>Sacos</option><option>Cajas</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Hora Ingreso</label>
+          <input type="time" id="fHora">
+        </div>
+        <div class="form-group">
+          <label>Calidad</label>
+          <select id="fCalidad">
+            <option value="A+">A+ (Premium)</option>
+            <option value="A">A (Buena)</option>
+            <option value="B">B (Estandar)</option>
+            <option value="C">C (Deficiente)</option>
+            <option value="Rechazado">Rechazado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Brix (°)</label>
+          <input type="number" id="fBrix" placeholder="Ej: 14.5" min="0" max="30" step="0.1">
+        </div>
+        <div class="form-group">
+          <label>Estado Materia Prima</label>
+          <select id="fEstado">
+            <option value="aprobado">✅ Aprobado</option>
+            <option value="cuarentena">⚠️ En Cuarentena</option>
+            <option value="rechazado">❌ Rechazado</option>
+          </select>
+        </div>
+      </div>
+      <hr class="section-divider">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Placas del Vehiculo</label>
+          <input type="text" id="fPlacas" placeholder="Ej: ABC-123">
+        </div>
+        <div class="form-group">
+          <label>Transportista</label>
+          <input type="text" id="fTransportista" placeholder="Nombre">
+        </div>
+        <div class="form-group">
+          <label>Responsable Recepcion</label>
+          <input type="text" id="fResponsable" placeholder="Nombre">
+        </div>
+        <div class="form-group">
+          <label>Observaciones Calidad</label>
+          <input type="text" id="fObs" placeholder="(opcional)">
+        </div>
+      </div>
+      <div class="form-row">
+        <button class="btn btn-primary" onclick="registrar()">✅ Registrar Ingreso</button>
+        <button class="btn btn-secondary" onclick="limpiarForm()">Limpiar</button>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">📊 TN Recepcionadas por Fruta — Hoy</div>
+        <div class="chart-wrap"><canvas id="chartFruta"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🎯 Distribucion de Calidad</div>
+        <div class="chart-wrap"><canvas id="chartCalidad"></canvas></div>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="card">
+      <div class="card-title">📋 Lotes Recepcionados — Hoy</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>Lote</th><th>Hora</th><th>Fruta</th><th>Tipo</th><th>Proveedor</th>
+            <th>Peso Neto</th><th>Jabas</th><th>Brix°</th><th>Calidad</th><th>Estado</th>
+          </tr></thead>
+          <tbody id="registrosTbody">
+            <tr><td colspan="10" style="text-align:center;padding:30px;color:var(--muted);font-style:italic;">Sin ingresos registrados hoy.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast">✅ Lote registrado exitosamente</div>
+
+<script>
+const USERS = {'rodrigo':{pass:'2026'},'jefe':{pass:'2026'},'gerencia':{pass:'2026'},'admin':{pass:'admin'},'recepcion':{pass:'2026'},'operario':{pass:'2026'}};
+let registros = JSON.parse(localStorage.getItem('rec_registros')||'[]');
+let chartFruta, chartCalidad;
+const loteCounter = { val: parseInt(localStorage.getItem('rec_lote_counter')||'40') };
+
+function doLogin() {
+  const u = document.getElementById('loginUser').value.toLowerCase().trim();
+  const p = document.getElementById('loginPass').value;
+  if (USERS[u] && USERS[u].pass === p) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+    initApp();
+  } else { document.getElementById('loginError').textContent = 'Usuario o contrasena incorrectos'; }
+}
+function doLogout() {
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginUser').value = ''; document.getElementById('loginPass').value = '';
+}
+function initApp() {
+  updateTime(); setInterval(updateTime,60000);
+  initCharts(); renderTabla(); updateKPIs();
+  // Set default hora
+  const now = new Date();
+  document.getElementById('fHora').value = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  // Auto-generate lote suggestion
+  autoLote();
+}
+function autoLote() {
+  const fruta = document.getElementById('fFruta').value;
+  const prefixes = {'Mango':'CFT','Arandano':'CFTA','Granada':'CFTP','Palta Hass':'CFTP','Fresa':'CFTP'};
+  const sufixes = {'Mango':'M','Arandano':'A','Granada':'G','Palta Hass':'P','Fresa':'F'};
+  const p = prefixes[fruta]||'CFT'; const s = sufixes[fruta]||'';
+  document.getElementById('fLote').placeholder = p+(loteCounter.val+1)+s;
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const sel = document.getElementById('fFruta');
+  if(sel) sel.addEventListener('change', autoLote);
+});
+function updateTime() {
+  const now = new Date();
+  const days=['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
+  const months=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  document.getElementById('headerTime').textContent = days[now.getDay()]+' '+now.getDate()+' '+months[now.getMonth()]+' · '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+}
+function registrar() {
+  const pesoNeto = parseFloat(document.getElementById('fPesoNeto').value)||0;
+  const lote = document.getElementById('fLote').value.trim();
+  if (!pesoNeto) { alert('Ingrese el Peso Neto del lote.'); return; }
+  if (!lote) { alert('Ingrese el N° de Lote.'); return; }
+  loteCounter.val++;
+  localStorage.setItem('rec_lote_counter', loteCounter.val);
+  const reg = {
+    lote, proveedor: document.getElementById('fProveedor').value,
+    fruta: document.getElementById('fFruta').value,
+    tipo: document.getElementById('fTipo').value,
+    pesoBruto: parseFloat(document.getElementById('fPesoBruto').value)||0,
+    pesoNeto, jabas: parseInt(document.getElementById('fJabas').value)||0,
+    unidad: document.getElementById('fUnidad').value,
+    hora: document.getElementById('fHora').value,
+    calidad: document.getElementById('fCalidad').value,
+    brix: parseFloat(document.getElementById('fBrix').value)||null,
+    estado: document.getElementById('fEstado').value,
+    placas: document.getElementById('fPlacas').value,
+    transportista: document.getElementById('fTransportista').value,
+    responsable: document.getElementById('fResponsable').value,
+    obs: document.getElementById('fObs').value,
+    ts: new Date().toISOString()
+  };
+  registros.push(reg);
+  localStorage.setItem('rec_registros', JSON.stringify(registros));
+  renderTabla(); updateKPIs(); updateCharts(); limpiarForm();
+  document.getElementById('toast').classList.add('show');
+  setTimeout(()=>document.getElementById('toast').classList.remove('show'),2800);
+}
+function limpiarForm() {
+  ['fLote','fPesoBruto','fPesoNeto','fJabas','fBrix','fPlacas','fTransportista','fResponsable','fObs'].forEach(id=>document.getElementById(id).value='');
+  autoLote();
+}
+function getHoy() { return registros.filter(r=>r.ts.startsWith(new Date().toISOString().slice(0,10))); }
+function updateKPIs() {
+  const hoy = getHoy();
+  const totalTN = hoy.reduce((a,r)=>a+r.pesoNeto,0)/1000;
+  const provs = new Set(hoy.map(r=>r.proveedor)).size;
+  const calA = hoy.filter(r=>r.calidad==='A'||r.calidad==='A+').length;
+  const calB = hoy.filter(r=>r.calidad==='B').length;
+  const rec = hoy.filter(r=>r.estado==='rechazado').length;
+  document.getElementById('kpiTN').innerHTML = totalTN.toFixed(2)+' <span class="kpi-unit">TN</span>';
+  document.getElementById('kpiLotes').textContent = hoy.length;
+  document.getElementById('kpiProv').textContent = provs;
+  document.getElementById('kpiCalA').innerHTML = calA+' <span class="kpi-unit">lotes</span>';
+  document.getElementById('kpiCalB').innerHTML = calB+' <span class="kpi-unit">lotes</span>';
+  document.getElementById('kpiRec').innerHTML = rec+' <span class="kpi-unit">lotes</span>';
+}
+function renderTabla() {
+  const hoy = getHoy();
+  const tbody = document.getElementById('registrosTbody');
+  if (!hoy.length) { tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--muted);font-style:italic;">Sin ingresos registrados hoy.</td></tr>'; return; }
+  const qualClass = {A:'qual-a','A+':'qual-a',B:'qual-b',C:'qual-c','Rechazado':'qual-d'};
+  const estadoMap = {aprobado:'✅ Aprobado',cuarentena:'⚠️ Cuarentena',rechazado:'❌ Rechazado'};
+  tbody.innerHTML = hoy.slice().reverse().map(r=>`<tr>
+    <td><b>${r.lote}</b></td>
+    <td>${r.hora}</td>
+    <td>${r.fruta}</td>
+    <td style="font-size:11px;color:var(--muted);font-weight:600">${r.tipo}</td>
+    <td style="font-size:12px">${r.proveedor}</td>
+    <td class="num">${r.pesoNeto.toLocaleString()} kg</td>
+    <td class="num">${r.jabas} ${r.unidad}</td>
+    <td class="num">${r.brix!==null?r.brix+'°':'—'}</td>
+    <td><span class="qual ${qualClass[r.calidad]||'qual-b'}">${r.calidad}</span></td>
+    <td>${estadoMap[r.estado]||r.estado}</td>
+  </tr>`).join('');
+}
+function initCharts() {
+  const NARANJA='#ea580c', VERDE='#16a34a', AZUL='#2563eb', PURPLE='#7c3aed', AMBER='#d97706';
+  chartFruta = new Chart(document.getElementById('chartFruta'),{
+    type:'bar',
+    data:{labels:['Mango','Arandano','Granada','Palta','Fresa'],
+      datasets:[{label:'TN',data:[0,0,0,0,0],backgroundColor:[NARANJA,PURPLE,'#e11d48','#0891b2','#ec4899'],borderRadius:8}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false},legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>v+' TN'}},x:{grid:{display:false}}}}
+  });
+  chartCalidad = new Chart(document.getElementById('chartCalidad'),{
+    type:'doughnut',
+    data:{labels:['A+ Premium','A Buena','B Estandar','C Deficiente','Rechazado'],
+      datasets:[{data:[0,0,0,0,0],backgroundColor:[VERDE,'#4ade80',AMBER,NARANJA,'#dc2626'],borderWidth:2,borderColor:'#fff',hoverOffset:8}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'right',labels:{font:{size:11},padding:12}},datalabels:{display:false}}}
+  });
+}
+function updateCharts() {
+  const hoy = getHoy();
+  const frutaMap = {'Mango':0,'Arandano':1,'Granada':2,'Palta Hass':3,'Fresa':4};
+  const frutaTN = [0,0,0,0,0];
+  hoy.forEach(r=>{ const i=frutaMap[r.fruta]; if(i!==undefined) frutaTN[i]+=r.pesoNeto/1000; });
+  chartFruta.data.datasets[0].data = frutaTN.map(v=>Math.round(v*100)/100);
+  chartFruta.update();
+  const calMap = {'A+':0,'A':1,'B':2,'C':3,'Rechazado':4};
+  const calCount = [0,0,0,0,0];
+  hoy.forEach(r=>{ const i=calMap[r.calidad]; if(i!==undefined) calCount[i]++; });
+  chartCalidad.data.datasets[0].data = calCount;
+  chartCalidad.update();
+}
+</script>
+</body>
+</html>

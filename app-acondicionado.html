@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App Acondicionado — FTP Planta</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f0f2f5;--surface:#fff;--border:rgba(0,0,0,0.07);--verde:#16a34a;--verde-bg:rgba(22,163,74,0.08);--naranja:#ea580c;--naranja-bg:rgba(234,88,12,0.08);--azul:#2563eb;--azul-bg:rgba(37,99,235,0.08);--texto:#0f172a;--muted:#64748b;--radius:14px;--shadow:0 4px 16px rgba(0,0,0,0.07);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--texto);min-height:100vh;-webkit-font-smoothing:antialiased;}
+
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#0a1f10 0%,#143d25 50%,#0d2a17 100%);display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:rgba(15,40,22,0.9);backdrop-filter:blur(30px);border-radius:20px;padding:40px 36px;width:100%;max-width:380px;text-align:center;border:1px solid rgba(255,255,255,0.08);box-shadow:0 24px 60px rgba(0,0,0,0.4);}
+.app-icon{font-size:48px;margin-bottom:12px;}
+.login-title{font-size:20px;font-weight:900;color:#fff;margin-bottom:4px;}
+.login-area{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:24px;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+.login-field{text-align:left;margin-bottom:14px;}
+.login-field label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;}
+.login-field input{width:100%;padding:12px 16px;border:2px solid rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.08);color:#fff;font-size:14px;outline:none;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;}
+.login-field input:focus{border-color:#4ade80;background:rgba(255,255,255,0.12);}
+.login-field input::placeholder{color:rgba(255,255,255,0.3);}
+.login-btn{width:100%;padding:13px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(22,163,74,0.4);}
+.login-error{color:#f87171;font-size:12px;margin-top:8px;min-height:16px;font-weight:600;}
+
+/* APP */
+#appScreen{display:none;}
+.header{background:linear-gradient(135deg,#0f2b1a,#1a4d2e);color:#fff;padding:16px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.2);}
+.header-icon{font-size:28px;}
+.header-title{font-size:18px;font-weight:800;}
+.header-sub{font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;text-transform:uppercase;letter-spacing:1px;}
+.header-spacer{flex:1;}
+.header-time{font-size:12px;color:rgba(255,255,255,0.6);text-align:right;}
+.header-live{display:flex;align-items:center;gap:6px;background:rgba(22,163,74,0.2);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;color:#4ade80;}
+.dot{width:6px;height:6px;border-radius:50%;background:#4ade80;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.4)}}
+.header-sig{text-align:right;}
+.header-sig-dev{font-size:8px;color:rgba(212,175,55,0.6);text-transform:uppercase;letter-spacing:2px;font-weight:800;}
+.header-sig-name{font-size:11px;font-weight:900;background:linear-gradient(135deg,#d4af37,#fff8dc,#c0c0c0,#fff8dc,#d4af37);background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s ease infinite;}
+@keyframes shimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.header-logout{background:rgba(255,255,255,0.1);border:none;color:rgba(255,255,255,0.6);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;}
+.header-logout:hover{background:rgba(248,113,113,0.2);color:#f87171;}
+
+.content{padding:20px;max-width:1200px;margin:0 auto;}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px;}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kpi-c,var(--verde));}
+.kpi-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;}
+.kpi-value{font-size:28px;font-weight:900;color:var(--kpi-c,var(--texto));line-height:1;}
+.kpi-unit{font-size:13px;font-weight:600;color:var(--muted);}
+.kpi-meta{font-size:11px;color:var(--muted);margin-top:6px;}
+
+/* FORM */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow);}
+.card-title{font-size:15px;font-weight:800;color:var(--texto);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.form-group input,.form-group select{padding:10px 12px;border:2px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;color:var(--texto);background:var(--surface);outline:none;transition:border-color 0.2s;font-family:'Plus Jakarta Sans',sans-serif;}
+.form-group input:focus,.form-group select:focus{border-color:var(--verde);}
+.form-row{display:flex;gap:12px;margin-top:12px;align-items:flex-end;}
+.btn{padding:11px 24px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.btn-primary{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(22,163,74,0.35);}
+.btn-secondary{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:13px;}
+.data-table th{background:var(--bg);padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--border);}
+.data-table td{padding:10px 12px;border-bottom:1px solid var(--border);}
+.data-table tbody tr:hover{background:rgba(22,163,74,0.03);}
+.data-table .num{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;}
+.badge-green{background:var(--verde-bg);color:var(--verde);}
+.badge-orange{background:var(--naranja-bg);color:var(--naranja);}
+.badge-blue{background:var(--azul-bg);color:var(--azul);}
+.table-wrap{overflow-x:auto;}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.chart-wrap{height:260px;position:relative;}
+
+/* SUCCESS TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:#16a34a;color:#fff;padding:14px 20px;border-radius:12px;font-weight:700;font-size:14px;box-shadow:0 8px 24px rgba(22,163,74,0.4);transform:translateY(80px);opacity:0;transition:all 0.3s;z-index:9999;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+@media(max-width:600px){.grid-2{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="app-icon">🔪</div>
+    <div class="login-title">Area Acondicionado</div>
+    <div class="login-area">Frutos Tropicales Peru S.A.C.</div>
+    <div class="login-field">
+      <label>Usuario</label>
+      <input type="text" id="loginUser" placeholder="usuario" autocomplete="off">
+    </div>
+    <div class="login-field">
+      <label>Contrasena</label>
+      <input type="password" id="loginPass" placeholder="••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appScreen">
+  <div class="header">
+    <div class="header-icon">🔪</div>
+    <div>
+      <div class="header-title">Acondicionado</div>
+      <div class="header-sub">Reporte de Produccion en Tiempo Real</div>
+    </div>
+    <div class="header-spacer"></div>
+    <div class="header-live"><span class="dot"></span> En vivo</div>
+    <div class="header-sig">
+      <div class="header-sig-dev">Developer</div>
+      <div class="header-sig-name">Rodrigo Garcia</div>
+    </div>
+    <div>
+      <div class="header-time" id="headerTime"></div>
+      <button class="header-logout" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-c:var(--verde)">
+        <div class="kpi-label">Consumo Total Hoy</div>
+        <div class="kpi-value" id="kpiConsumo">0 <span class="kpi-unit">kg</span></div>
+        <div class="kpi-meta">MP ingresada al proceso</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--naranja)">
+        <div class="kpi-label">Chunks IQF Hoy</div>
+        <div class="kpi-value" id="kpiChunks">0 <span class="kpi-unit">kg</span></div>
+        <div class="kpi-meta">Producto terminado 1ra</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--azul)">
+        <div class="kpi-label">Rendimiento</div>
+        <div class="kpi-value" id="kpiRend">— <span class="kpi-unit">%</span></div>
+        <div class="kpi-meta">Chunks / Consumo · Obj: 50%</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:#7c3aed">
+        <div class="kpi-label">Personal Activo</div>
+        <div class="kpi-value" id="kpiPersonal">0 <span class="kpi-unit">op.</span></div>
+        <div class="kpi-meta">Operarios en turno</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--naranja)">
+        <div class="kpi-label">ByP</div>
+        <div class="kpi-value" id="kpiByP">0 <span class="kpi-unit">kg</span></div>
+        <div class="kpi-meta">Bits &amp; Pieces</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:#0891b2">
+        <div class="kpi-label">Registros del Turno</div>
+        <div class="kpi-value" id="kpiRegistros">0</div>
+        <div class="kpi-meta">Horas reportadas</div>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="card">
+      <div class="card-title">📝 Registro de Produccion por Hora</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Hora</label>
+          <select id="fHora">
+            <option>07:00-08:00</option><option>08:00-09:00</option><option>09:00-10:00</option>
+            <option>10:00-11:00</option><option>11:00-12:00</option><option>12:00-13:00</option>
+            <option>13:00-14:00</option><option>14:00-15:00</option><option>15:00-16:00</option>
+            <option>16:00-17:00</option><option>17:00-18:00</option><option>18:00-19:00</option>
+            <option>19:00-20:00</option><option>20:00-21:00</option><option>21:00-22:00</option>
+            <option>22:00-23:00</option><option>23:00-00:00</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Fruta / Variedad</label>
+          <select id="fFruta">
+            <option>Mango</option><option>Arandano</option>
+            <option>Granada</option><option>Palta</option><option>Fresa</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Turno</label>
+          <select id="fTurno">
+            <option>Dia (07:00-19:00)</option><option>Noche (19:00-07:00)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Consumo MP (kg)</label>
+          <input type="number" id="fConsumo" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>Chunks IQF (kg)</label>
+          <input type="number" id="fChunks" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>ByP / Bits&amp;Pieces (kg)</label>
+          <input type="number" id="fByP" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>N° Operarios</label>
+          <input type="number" id="fPersonal" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>Linea</label>
+          <select id="fLinea">
+            <option>Linea 1</option><option>Linea 2</option><option>Linea 3</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Observacion</label>
+          <input type="text" id="fObs" placeholder="(opcional)">
+        </div>
+      </div>
+      <div class="form-row">
+        <button class="btn btn-primary" onclick="registrar()">✅ Registrar Hora</button>
+        <button class="btn btn-secondary" onclick="limpiarForm()">Limpiar</button>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">📊 Consumo vs Chunks por Hora</div>
+        <div class="chart-wrap"><canvas id="chartHora"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🎯 Rendimiento % por Hora</div>
+        <div class="chart-wrap"><canvas id="chartRend"></canvas></div>
+      </div>
+    </div>
+
+    <!-- TABLA REGISTROS -->
+    <div class="card">
+      <div class="card-title">📋 Registros del Turno</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>Hora</th><th>Fruta</th><th>Linea</th><th>Consumo (kg)</th>
+            <th>Chunks (kg)</th><th>ByP (kg)</th><th>Rend %</th><th>Operarios</th><th>Obs.</th>
+          </tr></thead>
+          <tbody id="registrosTbody">
+            <tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted);font-style:italic;">Sin registros aun. Ingrese datos en el formulario.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast">✅ Registro guardado con exito</div>
+
+<script>
+const USERS = {
+  'rodrigo':{pass:'2026'},'jefe':{pass:'2026'},'gerencia':{pass:'2026'},
+  'admin':{pass:'admin'},'aco':{pass:'2026'},'operario':{pass:'2026'}
+};
+
+let registros = JSON.parse(localStorage.getItem('aco_registros') || '[]');
+let chartHora, chartRend;
+
+function doLogin() {
+  const u = document.getElementById('loginUser').value.toLowerCase().trim();
+  const p = document.getElementById('loginPass').value;
+  if (USERS[u] && USERS[u].pass === p) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+    initApp();
+  } else {
+    document.getElementById('loginError').textContent = 'Usuario o contrasena incorrectos';
+  }
+}
+
+function doLogout() {
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+function initApp() {
+  updateTime();
+  setInterval(updateTime, 60000);
+  initCharts();
+  renderTabla();
+  updateKPIs();
+  // Auto-set current hour
+  autoSetHora();
+}
+
+function autoSetHora() {
+  const h = new Date().getHours();
+  const next = h + 1;
+  const fmt = t => String(t).padStart(2,'0');
+  const opt = `${fmt(h)}:00-${fmt(next)}:00`;
+  const sel = document.getElementById('fHora');
+  for(let i=0;i<sel.options.length;i++){
+    if(sel.options[i].value.startsWith(fmt(h))){sel.selectedIndex=i;break;}
+  }
+}
+
+function updateTime() {
+  const now = new Date();
+  const days=['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
+  const months=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  document.getElementById('headerTime').textContent =
+    days[now.getDay()]+' '+now.getDate()+' '+months[now.getMonth()]+' · '+
+    String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+}
+
+function registrar() {
+  const consumo = parseFloat(document.getElementById('fConsumo').value) || 0;
+  const chunks = parseFloat(document.getElementById('fChunks').value) || 0;
+  const byp = parseFloat(document.getElementById('fByP').value) || 0;
+  const personal = parseInt(document.getElementById('fPersonal').value) || 0;
+
+  if (!consumo || !chunks) {
+    alert('Complete los campos de Consumo y Chunks.');
+    return;
+  }
+  if (chunks > consumo) {
+    alert('Los Chunks no pueden superar el Consumo.');
+    return;
+  }
+
+  const rend = ((chunks / consumo) * 100).toFixed(1);
+  const reg = {
+    hora: document.getElementById('fHora').value,
+    fruta: document.getElementById('fFruta').value,
+    turno: document.getElementById('fTurno').value,
+    linea: document.getElementById('fLinea').value,
+    consumo, chunks, byp, personal, rend: parseFloat(rend),
+    obs: document.getElementById('fObs').value,
+    ts: new Date().toISOString()
+  };
+
+  registros.push(reg);
+  localStorage.setItem('aco_registros', JSON.stringify(registros));
+  renderTabla();
+  updateKPIs();
+  updateCharts();
+  limpiarForm();
+  showToast();
+}
+
+function limpiarForm() {
+  ['fConsumo','fChunks','fByP','fPersonal','fObs'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+function updateKPIs() {
+  const hoy = registros.filter(r => r.ts.startsWith(new Date().toISOString().slice(0,10)));
+  const totalConsumo = hoy.reduce((a,r)=>a+r.consumo,0);
+  const totalChunks = hoy.reduce((a,r)=>a+r.chunks,0);
+  const totalByP = hoy.reduce((a,r)=>a+r.byp,0);
+  const lastPersonal = hoy.length ? hoy[hoy.length-1].personal : 0;
+  const rend = totalConsumo ? ((totalChunks/totalConsumo)*100).toFixed(1) : '—';
+
+  document.getElementById('kpiConsumo').innerHTML = totalConsumo.toLocaleString()+' <span class="kpi-unit">kg</span>';
+  document.getElementById('kpiChunks').innerHTML = totalChunks.toLocaleString()+' <span class="kpi-unit">kg</span>';
+  document.getElementById('kpiByP').innerHTML = totalByP.toLocaleString()+' <span class="kpi-unit">kg</span>';
+  document.getElementById('kpiRend').innerHTML = rend+' <span class="kpi-unit">%</span>';
+  document.getElementById('kpiPersonal').innerHTML = lastPersonal+' <span class="kpi-unit">op.</span>';
+  document.getElementById('kpiRegistros').textContent = hoy.length;
+}
+
+function renderTabla() {
+  const tbody = document.getElementById('registrosTbody');
+  const hoy = registros.filter(r => r.ts.startsWith(new Date().toISOString().slice(0,10)));
+  if (!hoy.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted);font-style:italic;">Sin registros aun. Ingrese datos en el formulario.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = hoy.slice().reverse().map(r => {
+    const rendColor = r.rend >= 50 ? 'var(--verde)' : r.rend >= 45 ? 'var(--naranja)' : '#dc2626';
+    return `<tr>
+      <td>${r.hora}</td>
+      <td>${r.fruta}</td>
+      <td>${r.linea}</td>
+      <td class="num">${r.consumo.toLocaleString()}</td>
+      <td class="num">${r.chunks.toLocaleString()}</td>
+      <td class="num">${r.byp.toLocaleString()}</td>
+      <td class="num" style="color:${rendColor};font-weight:800">${r.rend}%</td>
+      <td class="num">${r.personal}</td>
+      <td style="font-size:12px;color:var(--muted)">${r.obs||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function initCharts() {
+  const VERDE = '#16a34a'; const NARANJA = '#ea580c'; const AZUL = '#2563eb';
+  chartHora = new Chart(document.getElementById('chartHora'), {
+    type:'bar',
+    data:{labels:[],datasets:[
+      {label:'Consumo MP',data:[],backgroundColor:'rgba(37,99,235,0.15)',borderColor:AZUL,borderWidth:2,borderRadius:6},
+      {label:'Chunks IQF',data:[],backgroundColor:'rgba(22,163,74,0.15)',borderColor:VERDE,borderWidth:2,borderRadius:6}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.04)'}},x:{grid:{display:false}}}}
+  });
+  chartRend = new Chart(document.getElementById('chartRend'), {
+    type:'line',
+    data:{labels:[],datasets:[
+      {label:'Rendimiento %',data:[],borderColor:VERDE,backgroundColor:'rgba(22,163,74,0.1)',fill:true,tension:0.4,pointRadius:6,pointBackgroundColor:VERDE,pointBorderColor:'#fff',pointBorderWidth:2},
+      {label:'Objetivo 50%',data:[],borderColor:'rgba(220,38,38,0.35)',borderDash:[6,4],pointRadius:0,fill:false,tension:0}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{min:30,max:70,ticks:{callback:v=>v+'%'},grid:{color:'rgba(0,0,0,0.04)'}},x:{grid:{display:false}}}}
+  });
+}
+
+function updateCharts() {
+  const hoy = registros.filter(r => r.ts.startsWith(new Date().toISOString().slice(0,10)));
+  const labels = hoy.map(r => r.hora.split('-')[0]);
+  chartHora.data.labels = labels;
+  chartHora.data.datasets[0].data = hoy.map(r=>r.consumo);
+  chartHora.data.datasets[1].data = hoy.map(r=>r.chunks);
+  chartHora.update();
+  chartRend.data.labels = labels;
+  chartRend.data.datasets[0].data = hoy.map(r=>r.rend);
+  chartRend.data.datasets[1].data = hoy.map(()=>50);
+  chartRend.update();
+}
+
+function showToast() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+</script>
+</body>
+</html>

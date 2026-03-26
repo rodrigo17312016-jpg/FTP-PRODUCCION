@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App Tuneles IQF — FTP Planta</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f0f2f5;--surface:#fff;--border:rgba(0,0,0,0.07);--verde:#16a34a;--verde-bg:rgba(22,163,74,0.08);--azul:#2563eb;--azul-bg:rgba(37,99,235,0.08);--cyan:#0891b2;--cyan-bg:rgba(8,145,178,0.08);--naranja:#ea580c;--naranja-bg:rgba(234,88,12,0.08);--danger:#dc2626;--danger-bg:rgba(220,38,38,0.08);--texto:#0f172a;--muted:#64748b;--radius:14px;--shadow:0 4px 16px rgba(0,0,0,0.07);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--texto);min-height:100vh;-webkit-font-smoothing:antialiased;}
+#loginScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#050f20 0%,#0a1e3d 50%,#051226 100%);display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:rgba(8,20,45,0.92);backdrop-filter:blur(30px);border-radius:20px;padding:40px 36px;width:100%;max-width:380px;text-align:center;border:1px solid rgba(255,255,255,0.08);box-shadow:0 24px 60px rgba(0,0,0,0.5);}
+.app-icon{font-size:48px;margin-bottom:12px;}
+.login-title{font-size:20px;font-weight:900;color:#fff;margin-bottom:4px;}
+.login-area{font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:24px;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+.login-field{text-align:left;margin-bottom:14px;}
+.login-field label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;}
+.login-field input{width:100%;padding:12px 16px;border:2px solid rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.06);color:#fff;font-size:14px;outline:none;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;}
+.login-field input:focus{border-color:#22d3ee;background:rgba(255,255,255,0.1);}
+.login-field input::placeholder{color:rgba(255,255,255,0.3);}
+.login-btn{width:100%;padding:13px;background:linear-gradient(135deg,#0891b2,#0e7490);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(8,145,178,0.45);}
+.login-error{color:#f87171;font-size:12px;margin-top:8px;min-height:16px;font-weight:600;}
+#appScreen{display:none;}
+.header{background:linear-gradient(135deg,#051226,#0a2040,#061832);color:#fff;padding:16px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.35);}
+.header-icon{font-size:28px;}
+.header-title{font-size:18px;font-weight:800;}
+.header-sub{font-size:11px;color:rgba(255,255,255,0.45);font-weight:600;text-transform:uppercase;letter-spacing:1px;}
+.header-spacer{flex:1;}
+.header-live{display:flex;align-items:center;gap:6px;background:rgba(8,145,178,0.2);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;color:#22d3ee;}
+.dot{width:6px;height:6px;border-radius:50%;background:#22d3ee;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.4)}}
+.header-sig-dev{font-size:8px;color:rgba(212,175,55,0.6);text-transform:uppercase;letter-spacing:2px;font-weight:800;}
+.header-sig-name{font-size:11px;font-weight:900;background:linear-gradient(135deg,#d4af37,#fff8dc,#c0c0c0,#fff8dc,#d4af37);background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s ease infinite;}
+@keyframes shimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.header-time{font-size:12px;color:rgba(255,255,255,0.5);text-align:right;}
+.header-logout{background:rgba(255,255,255,0.08);border:none;color:rgba(255,255,255,0.5);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;}
+.header-logout:hover{background:rgba(248,113,113,0.2);color:#f87171;}
+.content{padding:20px;max-width:1200px;margin:0 auto;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:20px;}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kpi-c,var(--cyan));}
+.kpi-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;}
+.kpi-value{font-size:26px;font-weight:900;color:var(--kpi-c,var(--texto));line-height:1;}
+.kpi-unit{font-size:12px;font-weight:600;color:var(--muted);}
+.kpi-meta{font-size:11px;color:var(--muted);margin-top:6px;}
+
+/* Tunnel status cards */
+.tunnel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
+.tunnel-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;position:relative;overflow:hidden;transition:all 0.2s;}
+.tunnel-card.activo{border-color:var(--cyan);box-shadow:0 0 20px rgba(8,145,178,0.15);}
+.tunnel-card.libre{border-color:var(--verde);box-shadow:0 0 20px rgba(22,163,74,0.12);}
+.tunnel-card.cargando{border-color:var(--naranja);box-shadow:0 0 20px rgba(234,88,12,0.15);}
+.tunnel-name{font-size:14px;font-weight:800;margin-bottom:6px;}
+.tunnel-status-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;}
+.status-activo{background:var(--cyan-bg);color:var(--cyan);}
+.status-libre{background:var(--verde-bg);color:var(--verde);}
+.status-cargando{background:var(--naranja-bg);color:var(--naranja);}
+.tunnel-metric{font-size:12px;color:var(--muted);margin:4px 0;}
+.tunnel-metric b{color:var(--texto);}
+.tunnel-coches{font-size:36px;font-weight:900;margin:8px 0;}
+.tunnel-temp{font-size:20px;font-weight:800;}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow);}
+.card-title{font-size:15px;font-weight:800;color:var(--texto);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.form-group input,.form-group select{padding:10px 12px;border:2px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;color:var(--texto);background:var(--surface);outline:none;transition:border-color 0.2s;font-family:'Plus Jakarta Sans',sans-serif;}
+.form-group input:focus,.form-group select:focus{border-color:var(--cyan);}
+.form-row{display:flex;gap:12px;margin-top:12px;align-items:flex-end;}
+.btn{padding:11px 24px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.btn-primary{background:linear-gradient(135deg,#0891b2,#0e7490);color:#fff;}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(8,145,178,0.35);}
+.btn-secondary{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.data-table{width:100%;border-collapse:collapse;font-size:13px;}
+.data-table th{background:var(--bg);padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--border);}
+.data-table td{padding:10px 12px;border-bottom:1px solid var(--border);}
+.data-table tbody tr:hover{background:rgba(8,145,178,0.03);}
+.data-table .num{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;}
+.table-wrap{overflow-x:auto;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.chart-wrap{height:240px;position:relative;}
+.toast{position:fixed;bottom:24px;right:24px;background:#0891b2;color:#fff;padding:14px 20px;border-radius:12px;font-weight:700;font-size:14px;box-shadow:0 8px 24px rgba(8,145,178,0.45);transform:translateY(80px);opacity:0;transition:all 0.3s;z-index:9999;}
+.toast.show{transform:translateY(0);opacity:1;}
+@media(max-width:768px){.tunnel-grid{grid-template-columns:1fr;}.grid-2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="app-icon">❄️</div>
+    <div class="login-title">Tuneles IQF</div>
+    <div class="login-area">Frutos Tropicales Peru S.A.C.</div>
+    <div class="login-field">
+      <label>Usuario</label>
+      <input type="text" id="loginUser" placeholder="usuario" autocomplete="off">
+    </div>
+    <div class="login-field">
+      <label>Contrasena</label>
+      <input type="password" id="loginPass" placeholder="••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<div id="appScreen">
+  <div class="header">
+    <div class="header-icon">❄️</div>
+    <div>
+      <div class="header-title">Tuneles IQF</div>
+      <div class="header-sub">Control de Congelamiento en Tiempo Real</div>
+    </div>
+    <div class="header-spacer"></div>
+    <div class="header-live"><span class="dot"></span> En vivo</div>
+    <div>
+      <div class="header-sig-dev">Developer</div>
+      <div class="header-sig-name">Rodrigo Garcia</div>
+    </div>
+    <div>
+      <div class="header-time" id="headerTime"></div>
+      <button class="header-logout" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-c:var(--cyan)">
+        <div class="kpi-label">Coches en Proceso</div>
+        <div class="kpi-value" id="kpiCoches">0 <span class="kpi-unit">coches</span></div>
+        <div class="kpi-meta">En los 3 tuneles activos</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--azul)">
+        <div class="kpi-label">Ciclos Completados</div>
+        <div class="kpi-value" id="kpiCiclos">0</div>
+        <div class="kpi-meta">Hoy · Objetivo: 1.5 hr/ciclo</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--verde)">
+        <div class="kpi-label">Temp. Promedio</div>
+        <div class="kpi-value" id="kpiTemp">—°C</div>
+        <div class="kpi-meta">Objetivo: -30°C a -35°C</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:#7c3aed">
+        <div class="kpi-label">Tiempo Promedio</div>
+        <div class="kpi-value" id="kpiTiempo">— <span class="kpi-unit">hr</span></div>
+        <div class="kpi-meta">Congelamiento por ciclo</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--naranja)">
+        <div class="kpi-label">Kg Congelados Hoy</div>
+        <div class="kpi-value" id="kpiKg">0 <span class="kpi-unit">kg</span></div>
+        <div class="kpi-meta">Estimado (25kg/coche)</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--verde)">
+        <div class="kpi-label">Eficiencia</div>
+        <div class="kpi-value" id="kpiEfic">— <span class="kpi-unit">%</span></div>
+        <div class="kpi-meta">Ciclos a tiempo / Total</div>
+      </div>
+    </div>
+
+    <!-- Estado de Tuneles -->
+    <div class="tunnel-grid">
+      <div class="tunnel-card activo" id="tunnel1Card">
+        <div class="tunnel-name">🧊 TUNEL IQF-1</div>
+        <div class="tunnel-status-badge status-activo">En proceso</div>
+        <div class="tunnel-coches" id="t1coches" style="color:var(--cyan)">—</div>
+        <div class="tunnel-metric">Coches cargados</div>
+        <div class="tunnel-temp" id="t1temp" style="color:var(--azul)">—°C</div>
+        <div class="tunnel-metric">Temperatura actual</div>
+        <div class="tunnel-metric">Inicio: <b id="t1inicio">—</b></div>
+        <div class="tunnel-metric">T. ciclo est.: <b id="t1tiempo">—</b></div>
+      </div>
+      <div class="tunnel-card libre" id="tunnel2Card">
+        <div class="tunnel-name">🧊 TUNEL IQF-2</div>
+        <div class="tunnel-status-badge status-libre">Libre</div>
+        <div class="tunnel-coches" id="t2coches" style="color:var(--verde)">—</div>
+        <div class="tunnel-metric">Coches cargados</div>
+        <div class="tunnel-temp" id="t2temp" style="color:var(--azul)">—°C</div>
+        <div class="tunnel-metric">Temperatura actual</div>
+        <div class="tunnel-metric">Inicio: <b id="t2inicio">—</b></div>
+        <div class="tunnel-metric">T. ciclo est.: <b id="t2tiempo">—</b></div>
+      </div>
+      <div class="tunnel-card activo" id="tunnel3Card">
+        <div class="tunnel-name">🧊 TUNEL IQF-3</div>
+        <div class="tunnel-status-badge status-activo">En proceso</div>
+        <div class="tunnel-coches" id="t3coches" style="color:var(--cyan)">—</div>
+        <div class="tunnel-metric">Coches cargados</div>
+        <div class="tunnel-temp" id="t3temp" style="color:var(--danger)">—°C ⚠️</div>
+        <div class="tunnel-metric">Temperatura (fuera de rango)</div>
+        <div class="tunnel-metric">Inicio: <b id="t3inicio">—</b></div>
+        <div class="tunnel-metric">T. ciclo est.: <b id="t3tiempo">—</b></div>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="card">
+      <div class="card-title">📝 Registrar Ciclo de Tunel</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Tunel</label>
+          <select id="fTunel">
+            <option>IQF-1</option><option>IQF-2</option><option>IQF-3</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Fruta / Producto</label>
+          <select id="fFruta">
+            <option>Mango</option><option>Arandano</option>
+            <option>Granada</option><option>Palta</option><option>Fresa</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Lote</label>
+          <input type="text" id="fLote" placeholder="Ej: CFT040K">
+        </div>
+        <div class="form-group">
+          <label>N° Coches</label>
+          <input type="number" id="fCoches" placeholder="0" min="1" max="45">
+        </div>
+        <div class="form-group">
+          <label>Hora Inicio</label>
+          <input type="time" id="fInicio">
+        </div>
+        <div class="form-group">
+          <label>Hora Fin</label>
+          <input type="time" id="fFin">
+        </div>
+        <div class="form-group">
+          <label>Temperatura (°C)</label>
+          <input type="number" id="fTemp" placeholder="-32" min="-45" max="-20" step="0.1">
+        </div>
+        <div class="form-group">
+          <label>Estado</label>
+          <select id="fEstado">
+            <option value="completado">Ciclo Completado</option>
+            <option value="cargando">Cargando</option>
+            <option value="descargando">Descargando</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Observacion</label>
+          <input type="text" id="fObs" placeholder="(opcional)">
+        </div>
+      </div>
+      <div class="form-row">
+        <button class="btn btn-primary" onclick="registrar()">✅ Registrar Ciclo</button>
+        <button class="btn btn-secondary" onclick="limpiarForm()">Limpiar</button>
+      </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">📊 Ciclos por Tunel — Hoy</div>
+        <div class="chart-wrap"><canvas id="chartCiclos"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🌡️ Temperatura por Ciclo</div>
+        <div class="chart-wrap"><canvas id="chartTemp"></canvas></div>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="card">
+      <div class="card-title">📋 Registro de Ciclos — Hoy</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>Tunel</th><th>Fruta</th><th>Lote</th><th>Coches</th>
+            <th>Inicio</th><th>Fin</th><th>Hrs Ciclo</th><th>Temp °C</th><th>Estado</th>
+          </tr></thead>
+          <tbody id="registrosTbody">
+            <tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted);font-style:italic;">Sin registros. Ingrese el primer ciclo.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✅ Ciclo registrado</div>
+
+<script>
+const USERS = {'rodrigo':{pass:'2026'},'jefe':{pass:'2026'},'gerencia':{pass:'2026'},'admin':{pass:'admin'},'tuneles':{pass:'2026'},'operario':{pass:'2026'}};
+let registros = JSON.parse(localStorage.getItem('tunel_registros')||'[]');
+let chartCiclos, chartTemp;
+
+function doLogin() {
+  const u = document.getElementById('loginUser').value.toLowerCase().trim();
+  const p = document.getElementById('loginPass').value;
+  if (USERS[u] && USERS[u].pass === p) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+    initApp();
+  } else { document.getElementById('loginError').textContent = 'Usuario o contrasena incorrectos'; }
+}
+function doLogout() {
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+function initApp() {
+  updateTime(); setInterval(updateTime,60000);
+  initCharts(); renderTabla(); updateKPIs(); updateTunnelCards();
+  const now = new Date();
+  document.getElementById('fInicio').value = String(now.getHours()).padStart(2,'0')+':00';
+}
+function updateTime() {
+  const now = new Date();
+  const days=['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
+  const months=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  document.getElementById('headerTime').textContent = days[now.getDay()]+' '+now.getDate()+' '+months[now.getMonth()]+' · '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+}
+function registrar() {
+  const coches = parseInt(document.getElementById('fCoches').value)||0;
+  const inicio = document.getElementById('fInicio').value;
+  const fin = document.getElementById('fFin').value;
+  const temp = parseFloat(document.getElementById('fTemp').value)||null;
+  if (!coches||!inicio) { alert('Complete Coches y Hora Inicio.'); return; }
+  let hrs = null;
+  if (inicio && fin) {
+    const [h1,m1]=inicio.split(':').map(Number);
+    const [h2,m2]=fin.split(':').map(Number);
+    hrs = ((h2*60+m2)-(h1*60+m1))/60;
+    if (hrs < 0) hrs += 24;
+    hrs = Math.round(hrs*10)/10;
+  }
+  const reg = {
+    tunel: document.getElementById('fTunel').value,
+    fruta: document.getElementById('fFruta').value,
+    lote: document.getElementById('fLote').value,
+    coches, inicio, fin, hrs, temp,
+    estado: document.getElementById('fEstado').value,
+    obs: document.getElementById('fObs').value,
+    ts: new Date().toISOString()
+  };
+  registros.push(reg);
+  localStorage.setItem('tunel_registros', JSON.stringify(registros));
+  renderTabla(); updateKPIs(); updateCharts(); updateTunnelCards(); limpiarForm();
+  document.getElementById('toast').classList.add('show');
+  setTimeout(()=>document.getElementById('toast').classList.remove('show'),2800);
+}
+function limpiarForm() {
+  ['fLote','fCoches','fFin','fTemp','fObs'].forEach(id=>document.getElementById(id).value='');
+}
+function getHoy() { return registros.filter(r=>r.ts.startsWith(new Date().toISOString().slice(0,10))); }
+function updateKPIs() {
+  const hoy = getHoy();
+  const completados = hoy.filter(r=>r.estado==='completado');
+  const totalCoches = hoy.reduce((a,r)=>a+r.coches,0);
+  const totalKg = totalCoches * 250; // ~250kg per coche estimated
+  const temps = hoy.filter(r=>r.temp).map(r=>r.temp);
+  const avgTemp = temps.length ? (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1) : '—';
+  const hrs = completados.filter(r=>r.hrs).map(r=>r.hrs);
+  const avgHrs = hrs.length ? (hrs.reduce((a,b)=>a+b,0)/hrs.length).toFixed(1) : '—';
+  const efic = completados.length ? Math.round(completados.filter(r=>r.hrs&&r.hrs<=2).length/completados.length*100) : '—';
+  document.getElementById('kpiCoches').innerHTML = totalCoches+' <span class="kpi-unit">coches</span>';
+  document.getElementById('kpiCiclos').textContent = completados.length;
+  document.getElementById('kpiTemp').textContent = avgTemp!=='—' ? avgTemp+'°C' : '—°C';
+  document.getElementById('kpiTiempo').innerHTML = avgHrs+' <span class="kpi-unit">hr</span>';
+  document.getElementById('kpiKg').innerHTML = totalKg.toLocaleString()+' <span class="kpi-unit">kg</span>';
+  document.getElementById('kpiEfic').innerHTML = (efic!=='—'?efic+'':'—')+' <span class="kpi-unit">%</span>';
+}
+function updateTunnelCards() {
+  const hoy = getHoy();
+  ['IQF-1','IQF-2','IQF-3'].forEach((tname,i)=>{
+    const idx = i+1;
+    const tRegs = hoy.filter(r=>r.tunel===tname).slice(-1);
+    const last = tRegs[0];
+    if (last) {
+      document.getElementById(`t${idx}coches`).textContent = last.coches;
+      document.getElementById(`t${idx}temp`).textContent = last.temp ? last.temp+'°C' : '—°C';
+      document.getElementById(`t${idx}inicio`).textContent = last.inicio||'—';
+      document.getElementById(`t${idx}tiempo`).textContent = last.hrs ? last.hrs+' hr' : 'En proceso';
+    }
+  });
+}
+function renderTabla() {
+  const hoy = getHoy();
+  const tbody = document.getElementById('registrosTbody');
+  if (!hoy.length) { tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted);font-style:italic;">Sin registros. Ingrese el primer ciclo.</td></tr>'; return; }
+  const statusMap = {completado:'✅ Completado',cargando:'🔄 Cargando',descargando:'📤 Descargando'};
+  tbody.innerHTML = hoy.slice().reverse().map(r=>{
+    const tempColor = r.temp && r.temp > -28 ? '#dc2626' : 'var(--azul)';
+    return `<tr>
+      <td><b>${r.tunel}</b></td><td>${r.fruta}</td><td>${r.lote||'—'}</td>
+      <td class="num">${r.coches}</td><td>${r.inicio}</td><td>${r.fin||'—'}</td>
+      <td class="num" style="color:${r.hrs&&r.hrs>2?'#dc2626':'var(--verde)'};font-weight:700">${r.hrs!==null?r.hrs+' hr':'—'}</td>
+      <td class="num" style="color:${tempColor};font-weight:800">${r.temp!==null?r.temp+'°C':'—'}</td>
+      <td>${statusMap[r.estado]||r.estado}</td>
+    </tr>`;
+  }).join('');
+}
+function initCharts() {
+  chartCiclos = new Chart(document.getElementById('chartCiclos'),{
+    type:'bar',
+    data:{labels:['IQF-1','IQF-2','IQF-3'],datasets:[{label:'Ciclos Completados',data:[0,0,0],backgroundColor:['rgba(8,145,178,0.7)','rgba(22,163,74,0.7)','rgba(124,58,237,0.7)'],borderRadius:8}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false},legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{grid:{display:false}}}}
+  });
+  chartTemp = new Chart(document.getElementById('chartTemp'),{
+    type:'line',
+    data:{labels:[],datasets:[
+      {label:'Temperatura',data:[],borderColor:'#0891b2',backgroundColor:'rgba(8,145,178,0.1)',fill:true,tension:0.4,pointRadius:5,pointBackgroundColor:'#0891b2'},
+      {label:'Límite -30°C',data:[],borderColor:'rgba(220,38,38,0.4)',borderDash:[5,5],pointRadius:0,fill:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{min:-45,max:-15,ticks:{callback:v=>v+'°C'}},x:{grid:{display:false}}}}
+  });
+}
+function updateCharts() {
+  const hoy = getHoy();
+  const ciclosPorTunel = ['IQF-1','IQF-2','IQF-3'].map(t=>hoy.filter(r=>r.tunel===t&&r.estado==='completado').length);
+  chartCiclos.data.datasets[0].data = ciclosPorTunel;
+  chartCiclos.update();
+  const conTemp = hoy.filter(r=>r.temp);
+  chartTemp.data.labels = conTemp.map(r=>r.tunel+' '+r.inicio);
+  chartTemp.data.datasets[0].data = conTemp.map(r=>r.temp);
+  chartTemp.data.datasets[1].data = conTemp.map(()=>-30);
+  chartTemp.update();
+}
+</script>
+</body>
+</html>

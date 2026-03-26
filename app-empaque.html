@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App Empaque — FTP Planta</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f0f2f5;--surface:#fff;--border:rgba(0,0,0,0.07);--verde:#16a34a;--verde-bg:rgba(22,163,74,0.08);--naranja:#ea580c;--naranja-bg:rgba(234,88,12,0.08);--azul:#2563eb;--azul-bg:rgba(37,99,235,0.08);--purple:#7c3aed;--purple-bg:rgba(124,58,237,0.08);--amber:#d97706;--texto:#0f172a;--muted:#64748b;--radius:14px;--shadow:0 4px 16px rgba(0,0,0,0.07);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--texto);min-height:100vh;-webkit-font-smoothing:antialiased;}
+#loginScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#1a0a30 0%,#2d1060 50%,#150825 100%);display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:rgba(25,10,50,0.92);backdrop-filter:blur(30px);border-radius:20px;padding:40px 36px;width:100%;max-width:380px;text-align:center;border:1px solid rgba(255,255,255,0.08);box-shadow:0 24px 60px rgba(0,0,0,0.5);}
+.app-icon{font-size:48px;margin-bottom:12px;}
+.login-title{font-size:20px;font-weight:900;color:#fff;margin-bottom:4px;}
+.login-area{font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:24px;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+.login-field{text-align:left;margin-bottom:14px;}
+.login-field label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;}
+.login-field input{width:100%;padding:12px 16px;border:2px solid rgba(255,255,255,0.1);border-radius:12px;background:rgba(255,255,255,0.06);color:#fff;font-size:14px;outline:none;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;}
+.login-field input:focus{border-color:#a78bfa;}
+.login-field input::placeholder{color:rgba(255,255,255,0.3);}
+.login-btn{width:100%;padding:13px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,58,237,0.45);}
+.login-error{color:#f87171;font-size:12px;margin-top:8px;min-height:16px;font-weight:600;}
+#appScreen{display:none;}
+.header{background:linear-gradient(135deg,#1a0840,#2d1060,#1a0840);color:#fff;padding:16px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.35);}
+.header-icon{font-size:28px;}
+.header-title{font-size:18px;font-weight:800;}
+.header-sub{font-size:11px;color:rgba(255,255,255,0.45);font-weight:600;text-transform:uppercase;letter-spacing:1px;}
+.header-spacer{flex:1;}
+.header-live{display:flex;align-items:center;gap:6px;background:rgba(124,58,237,0.25);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;color:#a78bfa;}
+.dot{width:6px;height:6px;border-radius:50%;background:#a78bfa;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.4)}}
+.header-sig-dev{font-size:8px;color:rgba(212,175,55,0.6);text-transform:uppercase;letter-spacing:2px;font-weight:800;}
+.header-sig-name{font-size:11px;font-weight:900;background:linear-gradient(135deg,#d4af37,#fff8dc,#c0c0c0,#fff8dc,#d4af37);background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s ease infinite;}
+@keyframes shimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.header-time{font-size:12px;color:rgba(255,255,255,0.5);text-align:right;}
+.header-logout{background:rgba(255,255,255,0.08);border:none;color:rgba(255,255,255,0.5);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;}
+.header-logout:hover{background:rgba(248,113,113,0.2);color:#f87171;}
+.content{padding:20px;max-width:1200px;margin:0 auto;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:20px;}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kpi-c,var(--purple));}
+.kpi-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;}
+.kpi-value{font-size:26px;font-weight:900;color:var(--kpi-c,var(--texto));line-height:1;}
+.kpi-unit{font-size:12px;font-weight:600;color:var(--muted);}
+.kpi-meta{font-size:11px;color:var(--muted);margin-top:6px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow);}
+.card-title{font-size:15px;font-weight:800;color:var(--texto);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.form-group input,.form-group select{padding:10px 12px;border:2px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;color:var(--texto);background:var(--surface);outline:none;transition:border-color 0.2s;font-family:'Plus Jakarta Sans',sans-serif;}
+.form-group input:focus,.form-group select:focus{border-color:var(--purple);}
+.form-row{display:flex;gap:12px;margin-top:12px;align-items:flex-end;flex-wrap:wrap;}
+.btn{padding:11px 24px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.btn-primary{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(124,58,237,0.35);}
+.btn-secondary{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.data-table{width:100%;border-collapse:collapse;font-size:13px;}
+.data-table th{background:var(--bg);padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--border);}
+.data-table td{padding:10px 12px;border-bottom:1px solid var(--border);}
+.data-table tbody tr:hover{background:rgba(124,58,237,0.03);}
+.data-table .num{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;}
+.table-wrap{overflow-x:auto;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.chart-wrap{height:240px;position:relative;}
+
+/* Progress bar for hourly target */
+.prog-bar-wrap{margin-top:12px;}
+.prog-label{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;}
+.prog-bar{height:10px;background:var(--bg);border-radius:6px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--purple),#a78bfa);transition:width 0.5s ease;}
+
+.toast{position:fixed;bottom:24px;right:24px;background:#7c3aed;color:#fff;padding:14px 20px;border-radius:12px;font-weight:700;font-size:14px;box-shadow:0 8px 24px rgba(124,58,237,0.45);transform:translateY(80px);opacity:0;transition:all 0.3s;z-index:9999;}
+.toast.show{transform:translateY(0);opacity:1;}
+@media(max-width:600px){.grid-2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="app-icon">📦</div>
+    <div class="login-title">Area Empaque</div>
+    <div class="login-area">Frutos Tropicales Peru S.A.C.</div>
+    <div class="login-field">
+      <label>Usuario</label>
+      <input type="text" id="loginUser" placeholder="usuario" autocomplete="off">
+    </div>
+    <div class="login-field">
+      <label>Contrasena</label>
+      <input type="password" id="loginPass" placeholder="••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<div id="appScreen">
+  <div class="header">
+    <div class="header-icon">📦</div>
+    <div>
+      <div class="header-title">Empaque</div>
+      <div class="header-sub">Control de Cajas y Produccion</div>
+    </div>
+    <div class="header-spacer"></div>
+    <div class="header-live"><span class="dot"></span> En vivo</div>
+    <div>
+      <div class="header-sig-dev">Developer</div>
+      <div class="header-sig-name">Rodrigo Garcia</div>
+    </div>
+    <div>
+      <div class="header-time" id="headerTime"></div>
+      <button class="header-logout" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-c:var(--purple)">
+        <div class="kpi-label">Cajas Producidas Hoy</div>
+        <div class="kpi-value" id="kpiCajas">0 <span class="kpi-unit">cajas</span></div>
+        <div class="kpi-meta">Meta: 1,600 cajas/dia</div>
+        <div class="prog-bar-wrap">
+          <div class="prog-label"><span>Avance</span><span id="kpiCajasAvance">0%</span></div>
+          <div class="prog-bar"><div class="prog-fill" id="kpiCajasBar" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--verde)">
+        <div class="kpi-label">Cajas/Hora</div>
+        <div class="kpi-value" id="kpiCajasHr">— <span class="kpi-unit">cj/hr</span></div>
+        <div class="kpi-meta">Real vs Proyectado: 91.6 cj/hr</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--naranja)">
+        <div class="kpi-label">Hrs Efectivas</div>
+        <div class="kpi-value" id="kpiHrs">0 <span class="kpi-unit">hr</span></div>
+        <div class="kpi-meta">Acumulado hoy</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--azul)">
+        <div class="kpi-label">Kg Empacados</div>
+        <div class="kpi-value" id="kpiKg">0 <span class="kpi-unit">kg</span></div>
+        <div class="kpi-meta">Cajas × 10 kg</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--amber)">
+        <div class="kpi-label">Operarios</div>
+        <div class="kpi-value" id="kpiOp">0 <span class="kpi-unit">op.</span></div>
+        <div class="kpi-meta">En empaque</div>
+      </div>
+      <div class="kpi-card" style="--kpi-c:var(--verde)">
+        <div class="kpi-label">Eficiencia MOD</div>
+        <div class="kpi-value" id="kpiEfic">— <span class="kpi-unit">%</span></div>
+        <div class="kpi-meta">Cj/hr por operario</div>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="card">
+      <div class="card-title">📝 Registrar Produccion por Hora</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Hora</label>
+          <select id="fHora">
+            <option>07:00-08:00</option><option>08:00-09:00</option><option>09:00-10:00</option>
+            <option>10:00-11:00</option><option>11:00-12:00</option><option>12:00-13:00</option>
+            <option>14:00-15:00</option><option>15:00-16:00</option><option>16:00-17:00</option>
+            <option>17:00-18:00</option><option>19:00-20:00</option><option>20:00-21:00</option>
+            <option>21:00-22:00</option><option>22:00-23:00</option><option>23:00-00:00</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Turno</label>
+          <select id="fTurno">
+            <option>Dia (07:00-19:00)</option><option>Noche (19:00-07:00)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Producto</label>
+          <select id="fFruta">
+            <option>Mango</option><option>Arandano</option>
+            <option>Granada</option><option>Palta</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tipo de Corte</label>
+          <select id="fCorte">
+            <option>Chunks</option><option>Slices</option><option>Diced</option><option>Whole</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Cajas Ejecutadas</label>
+          <input type="number" id="fCajas" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>Cajas Proyectadas</label>
+          <input type="number" id="fCajasProy" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>N° Operarios</label>
+          <input type="number" id="fPersonal" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>Lote</label>
+          <input type="text" id="fLote" placeholder="Ej: CFT040K">
+        </div>
+        <div class="form-group">
+          <label>Encargado</label>
+          <input type="text" id="fEncargado" placeholder="Nombre del encargado">
+        </div>
+        <div class="form-group">
+          <label>Estado de Cajas</label>
+          <select id="fEstado">
+            <option value="ok">✅ OK</option>
+            <option value="reproceso">⚠️ Reproceso</option>
+            <option value="rechazo">❌ Rechazo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Observacion</label>
+          <input type="text" id="fObs" placeholder="(opcional)">
+        </div>
+      </div>
+      <div class="form-row">
+        <button class="btn btn-primary" onclick="registrar()">✅ Registrar Hora</button>
+        <button class="btn btn-secondary" onclick="limpiarForm()">Limpiar</button>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">📊 Cajas Ejecutadas vs Proyectadas por Hora</div>
+        <div class="chart-wrap"><canvas id="chartCajas"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚡ Cajas/Hora (Productividad)</div>
+        <div class="chart-wrap"><canvas id="chartEfic"></canvas></div>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="card">
+      <div class="card-title">📋 Registros del Turno</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>Hora</th><th>Producto</th><th>Corte</th><th>Cajas Ej.</th><th>Cajas Proy.</th>
+            <th>Cjs/Hr</th><th>Cjs/Hr*Op</th><th>Operarios</th><th>Encargado</th><th>Estado</th>
+          </tr></thead>
+          <tbody id="registrosTbody">
+            <tr><td colspan="10" style="text-align:center;padding:30px;color:var(--muted);font-style:italic;">Sin registros. Ingrese el primer reporte.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast">✅ Registro guardado</div>
+
+<script>
+const USERS = {'rodrigo':{pass:'2026'},'jefe':{pass:'2026'},'gerencia':{pass:'2026'},'admin':{pass:'admin'},'empaque':{pass:'2026'},'operario':{pass:'2026'}};
+let registros = JSON.parse(localStorage.getItem('emp_registros')||'[]');
+let chartCajas, chartEfic;
+
+function doLogin() {
+  const u = document.getElementById('loginUser').value.toLowerCase().trim();
+  const p = document.getElementById('loginPass').value;
+  if (USERS[u] && USERS[u].pass === p) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+    initApp();
+  } else { document.getElementById('loginError').textContent = 'Usuario o contrasena incorrectos'; }
+}
+function doLogout() {
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+function initApp() {
+  updateTime(); setInterval(updateTime,60000);
+  initCharts(); renderTabla(); updateKPIs();
+}
+function updateTime() {
+  const now = new Date();
+  const days=['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
+  const months=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  document.getElementById('headerTime').textContent = days[now.getDay()]+' '+now.getDate()+' '+months[now.getMonth()]+' · '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+}
+function registrar() {
+  const cajas = parseInt(document.getElementById('fCajas').value)||0;
+  const cajasP = parseInt(document.getElementById('fCajasProy').value)||0;
+  const personal = parseInt(document.getElementById('fPersonal').value)||0;
+  if (!cajas) { alert('Ingrese la cantidad de cajas ejecutadas.'); return; }
+  const cajasHr = cajas; // 1 hora = 1 registro
+  const cajasHrOp = personal ? Math.round((cajasHr/personal)*10)/10 : 0;
+  const reg = {
+    hora: document.getElementById('fHora').value,
+    turno: document.getElementById('fTurno').value,
+    fruta: document.getElementById('fFruta').value,
+    corte: document.getElementById('fCorte').value,
+    cajas, cajasP, cajasHr, cajasHrOp, personal,
+    lote: document.getElementById('fLote').value,
+    encargado: document.getElementById('fEncargado').value,
+    estado: document.getElementById('fEstado').value,
+    obs: document.getElementById('fObs').value,
+    ts: new Date().toISOString()
+  };
+  registros.push(reg);
+  localStorage.setItem('emp_registros', JSON.stringify(registros));
+  renderTabla(); updateKPIs(); updateCharts(); limpiarForm();
+  document.getElementById('toast').classList.add('show');
+  setTimeout(()=>document.getElementById('toast').classList.remove('show'),2800);
+}
+function limpiarForm() {
+  ['fCajas','fCajasProy','fPersonal','fLote','fEncargado','fObs'].forEach(id=>document.getElementById(id).value='');
+}
+function getHoy() { return registros.filter(r=>r.ts.startsWith(new Date().toISOString().slice(0,10))); }
+function updateKPIs() {
+  const hoy = getHoy();
+  const totalCajas = hoy.reduce((a,r)=>a+r.cajas,0);
+  const totalHrs = hoy.length;
+  const avgCajasHr = totalHrs ? Math.round(totalCajas/totalHrs) : 0;
+  const totalKg = totalCajas * 10;
+  const lastOp = hoy.length ? hoy[hoy.length-1].personal : 0;
+  const efic = lastOp ? Math.round((avgCajasHr/lastOp)*10)/10 : 0;
+  const avance = Math.min(100, Math.round(totalCajas/1600*100));
+
+  document.getElementById('kpiCajas').innerHTML = totalCajas.toLocaleString()+' <span class="kpi-unit">cajas</span>';
+  document.getElementById('kpiCajasAvance').textContent = avance+'%';
+  document.getElementById('kpiCajasBar').style.width = avance+'%';
+  document.getElementById('kpiCajasHr').innerHTML = (avgCajasHr||'—')+' <span class="kpi-unit">cj/hr</span>';
+  document.getElementById('kpiHrs').innerHTML = totalHrs+' <span class="kpi-unit">hr</span>';
+  document.getElementById('kpiKg').innerHTML = totalKg.toLocaleString()+' <span class="kpi-unit">kg</span>';
+  document.getElementById('kpiOp').innerHTML = lastOp+' <span class="kpi-unit">op.</span>';
+  document.getElementById('kpiEfic').innerHTML = (efic||'—')+' <span class="kpi-unit">%</span>';
+}
+function renderTabla() {
+  const hoy = getHoy();
+  const tbody = document.getElementById('registrosTbody');
+  if (!hoy.length) { tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--muted);font-style:italic;">Sin registros. Ingrese el primer reporte.</td></tr>'; return; }
+  const estadoMap = {ok:'✅ OK',reproceso:'⚠️ Reproceso',rechazo:'❌ Rechazo'};
+  tbody.innerHTML = hoy.slice().reverse().map(r=>{
+    const vs = r.cajasP ? Math.round(r.cajas/r.cajasP*100) : 100;
+    const vColor = vs>=95?'var(--verde)':vs>=80?'var(--amber)':'#dc2626';
+    return `<tr>
+      <td>${r.hora}</td>
+      <td style="font-size:12px">${r.fruta}</td>
+      <td>${r.corte}</td>
+      <td class="num" style="color:var(--purple);font-weight:800">${r.cajas}</td>
+      <td class="num" style="color:var(--muted)">${r.cajasP||'—'}</td>
+      <td class="num" style="color:${vColor};font-weight:700">${r.cajasHr}</td>
+      <td class="num">${r.cajasHrOp}</td>
+      <td class="num">${r.personal}</td>
+      <td style="font-size:12px">${r.encargado||'—'}</td>
+      <td>${estadoMap[r.estado]||r.estado}</td>
+    </tr>`;
+  }).join('');
+}
+function initCharts() {
+  chartCajas = new Chart(document.getElementById('chartCajas'),{
+    type:'bar',
+    data:{labels:[],datasets:[
+      {label:'Ejecutadas',data:[],backgroundColor:'rgba(124,58,237,0.7)',borderRadius:6},
+      {label:'Proyectadas',data:[],backgroundColor:'rgba(0,0,0,0.06)',borderRadius:6}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}}
+  });
+  chartEfic = new Chart(document.getElementById('chartEfic'),{
+    type:'line',
+    data:{labels:[],datasets:[
+      {label:'Cj/Hr Real',data:[],borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,0.1)',fill:true,tension:0.4,pointRadius:6,pointBackgroundColor:'#7c3aed',pointBorderColor:'#fff',pointBorderWidth:2},
+      {label:'Objetivo 91.6',data:[],borderColor:'rgba(22,163,74,0.4)',borderDash:[5,5],pointRadius:0,fill:false,tension:0}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}}
+  });
+}
+function updateCharts() {
+  const hoy = getHoy();
+  chartCajas.data.labels = hoy.map(r=>r.hora.split('-')[0]);
+  chartCajas.data.datasets[0].data = hoy.map(r=>r.cajas);
+  chartCajas.data.datasets[1].data = hoy.map(r=>r.cajasP||0);
+  chartCajas.update();
+  chartEfic.data.labels = hoy.map(r=>r.hora.split('-')[0]);
+  chartEfic.data.datasets[0].data = hoy.map(r=>r.cajasHr);
+  chartEfic.data.datasets[1].data = hoy.map(()=>91.6);
+  chartEfic.update();
+}
+</script>
+</body>
+</html>

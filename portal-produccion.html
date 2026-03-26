@@ -1,0 +1,2745 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Produccion — Frutos Tropicales Peru</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+/* ================================================================
+   FRUTOS TROPICALES — PORTAL PRODUCCION v1.0 ENTERPRISE
+   Premium Production Intelligence Dashboard
+   ================================================================ */
+:root {
+  --bg: #f0f2f5;
+  --surface: #ffffff;
+  --surface2: #f8fafc;
+  --surface3: #f1f5f9;
+  --surface-glass: rgba(255,255,255,0.72);
+  --border: rgba(0,0,0,0.06);
+  --border-subtle: rgba(0,0,0,0.03);
+  --verde: #16a34a;
+  --verde2: #22c55e;
+  --verde-bg: rgba(22,163,74,0.08);
+  --verde-glow: rgba(22,163,74,0.25);
+  --naranja: #ea580c;
+  --naranja-bg: rgba(234,88,12,0.08);
+  --azul: #2563eb;
+  --azul-bg: rgba(37,99,235,0.08);
+  --cyan: #0891b2;
+  --cyan-bg: rgba(8,145,178,0.08);
+  --purple: #7c3aed;
+  --purple-bg: rgba(124,58,237,0.08);
+  --amber: #d97706;
+  --amber-bg: rgba(217,119,6,0.08);
+  --rose: #e11d48;
+  --rose-bg: rgba(225,29,72,0.08);
+  --warn: #d97706;
+  --warn-bg: rgba(217,119,6,0.1);
+  --danger: #dc2626;
+  --danger-bg: rgba(220,38,38,0.08);
+  --texto: #0f172a;
+  --muted: #64748b;
+  --sidebar-w: 272px;
+  --topbar-h: 64px;
+  --radius: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow: 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.1);
+  --shadow-glow-verde: 0 0 20px rgba(22,163,74,0.15);
+  --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+body.dark-mode {
+  --bg: #0a0f1a;
+  --surface: rgba(30,41,59,0.85);
+  --surface2: rgba(38,53,72,0.7);
+  --surface3: rgba(30,41,59,0.5);
+  --surface-glass: rgba(30,41,59,0.65);
+  --border: rgba(255,255,255,0.06);
+  --border-subtle: rgba(255,255,255,0.03);
+  --verde: #22c55e; --verde2: #4ade80; --verde-bg: rgba(34,197,94,0.12); --verde-glow: rgba(34,197,94,0.2);
+  --naranja: #f97316; --naranja-bg: rgba(249,115,22,0.12);
+  --azul: #3b82f6; --azul-bg: rgba(59,130,246,0.12);
+  --cyan: #22d3ee; --cyan-bg: rgba(34,211,238,0.12);
+  --purple: #a78bfa; --purple-bg: rgba(167,139,250,0.12);
+  --amber: #fbbf24; --amber-bg: rgba(251,191,36,0.12);
+  --rose: #fb7185; --rose-bg: rgba(251,113,133,0.12);
+  --warn: #fbbf24; --warn-bg: rgba(251,191,36,0.12);
+  --danger: #f87171; --danger-bg: rgba(248,113,113,0.1);
+  --texto: #f1f5f9; --muted: #94a3b8;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family:'Plus Jakarta Sans','Inter',system-ui,sans-serif; background:var(--bg); color:var(--texto); min-height:100vh; -webkit-font-smoothing:antialiased; }
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(0,0,0,0.12); border-radius:6px; }
+::-webkit-scrollbar-thumb:hover { background:rgba(0,0,0,0.2); }
+body.dark-mode ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); }
+
+/* ═══ ANIMATIONS ═══ */
+@keyframes fadeInUp { from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)} }
+@keyframes fadeInScale { from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)} }
+@keyframes slideInLeft { from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)} }
+@keyframes shimmer { 0%{background-position:-200% center}100%{background-position:200% center} }
+@keyframes glow { 0%,100%{box-shadow:0 0 5px rgba(22,163,74,0.2)}50%{box-shadow:0 0 20px rgba(22,163,74,0.4)} }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.3)} }
+@keyframes pulseRing { 0%{box-shadow:0 0 0 0 rgba(22,163,74,0.4)}70%{box-shadow:0 0 0 10px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)} }
+@keyframes livePulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+@keyframes loginSlideUp { from{opacity:0;transform:translateY(60px) scale(0.9)}to{opacity:1;transform:translateY(0) scale(1)} }
+@keyframes bgShift { 0%{background-position:0% 0%}50%{background-position:100% 100%}100%{background-position:0% 0%} }
+@keyframes gradientFlow { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
+@keyframes countUp { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }
+@keyframes floatParticle { 0%,100%{transform:translateY(0) rotate(0deg);opacity:0.15}50%{transform:translateY(-20px) rotate(180deg);opacity:0.4} }
+@keyframes signatureShimmer { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
+
+/* ═══ LOGIN ═══ */
+#loginScreen {
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(135deg,#061a0b 0%,#0d3d15 25%,#1a5c25 50%,#c2410c 85%,#7c2d12 100%);
+  background-size:400% 400%;animation:bgShift 15s ease infinite;
+  display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden;
+}
+#loginScreen::before {
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 50% at 30% 40%,rgba(22,163,74,0.15) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 70% 60%,rgba(234,88,12,0.1) 0%,transparent 60%);
+  pointer-events:none;
+}
+.login-particles { position:absolute;inset:0;pointer-events:none;overflow:hidden; }
+.login-particle { position:absolute;border-radius:50%;pointer-events:none;background:rgba(255,255,255,0.06);animation:floatParticle 8s ease-in-out infinite; }
+.login-particle:nth-child(1){width:4px;height:4px;top:15%;left:10%;animation-delay:0s;animation-duration:7s}
+.login-particle:nth-child(2){width:6px;height:6px;top:25%;left:80%;animation-delay:1s;animation-duration:9s}
+.login-particle:nth-child(3){width:3px;height:3px;top:60%;left:20%;animation-delay:2s;animation-duration:6s}
+.login-particle:nth-child(4){width:5px;height:5px;top:70%;left:70%;animation-delay:0.5s;animation-duration:8s}
+.login-particle:nth-child(5){width:4px;height:4px;top:40%;left:50%;animation-delay:3s;animation-duration:10s}
+.login-particle:nth-child(6){width:3px;height:3px;top:85%;left:35%;animation-delay:1.5s;animation-duration:7s}
+.login-particle:nth-child(7){width:5px;height:5px;top:10%;left:60%;animation-delay:2.5s;animation-duration:9s}
+.login-particle:nth-child(8){width:4px;height:4px;top:50%;left:90%;animation-delay:4s;animation-duration:8s}
+.login-card {
+  background:rgba(13,61,21,0.85);backdrop-filter:blur(40px) saturate(1.5);
+  border-radius:var(--radius-xl);padding:48px 40px;width:100%;max-width:420px;text-align:center;
+  box-shadow:0 32px 80px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.08);animation:loginSlideUp 0.8s cubic-bezier(0.16,1,0.3,1) both;
+  position:relative;z-index:1;
+}
+.login-logo { height:110px;width:auto;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
+.login-title {
+  font-size:14px;text-transform:uppercase;letter-spacing:5px;color:transparent;
+  font-weight:900;margin-bottom:6px;padding:8px 0;
+  background:linear-gradient(135deg,#d4af37 0%,#fff8dc 20%,#e8e8e8 40%,#fff8dc 60%,#d4af37 80%,#c0c0c0 100%);
+  background-size:400% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:signatureShimmer 3s ease infinite;
+}
+.login-subtitle { font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:24px; }
+.login-field { text-align:left;margin-bottom:16px; }
+.login-field label { font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px; }
+.login-field input {
+  width:100%;padding:14px 18px;border:2px solid rgba(255,255,255,0.12);border-radius:14px;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;color:#0f172a;outline:none;
+  transition:var(--transition);background:rgba(255,255,255,0.9);
+}
+.login-field input:focus { border-color:#4ade80;background:#fff;box-shadow:0 0 0 4px rgba(74,222,128,0.15); }
+.login-field input::placeholder { color:#94a3b8; }
+.login-btn {
+  width:100%;padding:15px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border:none;
+  border-radius:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;margin-top:8px;transition:var(--transition);letter-spacing:0.5px;position:relative;overflow:hidden;
+}
+.login-btn::after { content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);transform:translateX(-100%);transition:transform 0.5s; }
+.login-btn:hover { transform:translateY(-2px);box-shadow:0 8px 30px rgba(22,163,74,0.4); }
+.login-btn:hover::after { transform:translateX(100%); }
+.login-error { color:#f87171;font-size:13px;margin-top:10px;min-height:18px;font-weight:600; }
+.login-hint { font-size:11px;color:rgba(255,255,255,0.25);margin-top:20px; }
+
+/* ═══ LAYOUT ═══ */
+#appScreen { display:none;min-height:100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);
+  background:linear-gradient(180deg,#0f2b1a 0%,#143d25 30%,#0d2916 100%);
+  border-right:1px solid rgba(255,255,255,0.04);
+  display:flex;flex-direction:column;z-index:100;
+  transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  box-shadow:4px 0 24px rgba(0,0,0,0.15);
+}
+body.dark-mode .sidebar { background:linear-gradient(180deg,#080f0b 0%,#0d1f14 30%,#081209 100%); }
+.sidebar-header { padding:0;border-bottom:none;overflow:hidden; }
+.sidebar-header-bg {
+  background:linear-gradient(160deg,rgba(13,31,20,0.6) 0%,rgba(20,61,36,0.5) 35%,rgba(27,94,53,0.4) 65%,rgba(15,51,32,0.5) 100%);
+  padding:20px 16px 16px;display:flex;flex-direction:column;align-items:center;gap:8px;
+  position:relative;overflow:hidden;border-radius:20px;margin:10px 10px 0;
+  box-shadow:0 8px 32px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.08);
+  backdrop-filter:blur(20px);border:1px solid rgba(74,222,128,0.1);
+}
+.sidebar-header-bg::before {
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 20% 0%,rgba(74,222,128,0.12) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(212,175,55,0.08) 0%,transparent 50%);
+  pointer-events:none;border-radius:20px;
+}
+.sidebar-logo { height:68px;width:auto;filter:drop-shadow(0 4px 16px rgba(22,163,74,0.4)) drop-shadow(0 2px 8px rgba(0,0,0,0.3));animation:logoFloat 4s ease-in-out infinite,logoGlow 3s ease-in-out infinite; }
+@keyframes logoFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+@keyframes logoGlow { 0%,100%{filter:drop-shadow(0 4px 16px rgba(22,163,74,0.3)) drop-shadow(0 2px 8px rgba(0,0,0,0.3))} 50%{filter:drop-shadow(0 6px 24px rgba(22,163,74,0.6)) drop-shadow(0 2px 12px rgba(212,175,55,0.2))} }
+.sidebar-portal-label {
+  font-size:10px;text-transform:uppercase;letter-spacing:4px;font-weight:800;
+  background:linear-gradient(135deg,#d4af37,#fff8dc,#d4af37);background-size:300% 100%;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:signatureShimmer 3s ease infinite;
+}
+.sidebar-portal-title { font-size:12px;color:rgba(255,255,255,0.55);font-weight:600;letter-spacing:1px; }
+
+.sidebar-nav { flex:1;overflow-y:auto;padding:12px 10px; }
+.nav-group-label {
+  font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:2.5px;
+  color:rgba(255,255,255,0.3);padding:16px 14px 6px;
+}
+.nav-item {
+  display:flex;align-items:center;gap:12px;padding:11px 14px;margin:2px 0;
+  border-radius:14px;cursor:pointer;transition:var(--transition);color:rgba(255,255,255,0.65);
+  font-size:13px;font-weight:500;position:relative;
+}
+.nav-item:hover { background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.9); }
+.nav-item.active {
+  background:linear-gradient(135deg,rgba(234,88,12,0.9),rgba(194,65,12,0.85));
+  color:#fff;font-weight:700;box-shadow:0 4px 16px rgba(234,88,12,0.3);
+}
+.nav-item .nav-icon { font-size:18px;width:24px;text-align:center; }
+.nav-item .nav-badge {
+  margin-left:auto;background:rgba(234,88,12,0.9);color:#fff;font-size:10px;font-weight:800;
+  padding:2px 7px;border-radius:8px;min-width:20px;text-align:center;
+}
+.nav-item.active .nav-badge { background:rgba(255,255,255,0.25); }
+
+.sidebar-footer {
+  padding:12px;border-top:1px solid rgba(255,255,255,0.06);
+}
+.sidebar-user {
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;
+  background:rgba(255,255,255,0.04);
+}
+.user-avatar {
+  width:36px;height:36px;border-radius:12px;
+  background:linear-gradient(135deg,var(--verde),var(--naranja));
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;
+}
+.user-info { flex:1; }
+.user-name { font-size:12px;font-weight:700;color:rgba(255,255,255,0.9); }
+.user-role { font-size:10px;color:rgba(255,255,255,0.4); }
+.sidebar-logout {
+  margin-left:auto;cursor:pointer;padding:6px;border-radius:8px;color:rgba(255,255,255,0.3);
+  transition:var(--transition);background:none;border:none;
+}
+.sidebar-logout:hover { color:#f87171;background:rgba(248,113,113,0.1); }
+
+/* ── TOPBAR ── */
+.topbar {
+  position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);
+  background:var(--surface-glass);backdrop-filter:blur(20px) saturate(1.5);
+  border-bottom:1px solid var(--border);z-index:90;
+  display:flex;align-items:center;padding:0 28px;gap:16px;
+}
+.topbar-title { font-size:18px;font-weight:800;color:var(--texto); }
+.topbar-breadcrumb { font-size:12px;color:var(--muted); }
+.topbar-spacer { flex:1; }
+.topbar-live {
+  display:flex;align-items:center;gap:6px;padding:6px 14px;
+  border-radius:20px;background:var(--danger-bg);font-size:11px;font-weight:700;color:var(--danger);
+}
+.topbar-live .dot { width:7px;height:7px;border-radius:50%;background:var(--danger);animation:pulse 1.5s infinite; }
+.topbar-alerts {
+  display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;
+  background:var(--naranja-bg);color:var(--naranja);font-size:11px;font-weight:700;
+  cursor:pointer;border:none;transition:var(--transition);
+}
+.topbar-alerts:hover { background:rgba(234,88,12,0.15); }
+.topbar-date { font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px; }
+.topbar-theme {
+  width:36px;height:36px;border-radius:12px;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:16px;transition:var(--transition);
+}
+.topbar-theme:hover { background:var(--surface2);transform:scale(1.05); }
+.topbar-user-chip {
+  display:flex;align-items:center;gap:8px;padding:6px 14px 6px 8px;
+  border-radius:14px;background:var(--surface2);border:1px solid var(--border);
+}
+.topbar-user-avatar {
+  width:28px;height:28px;border-radius:10px;
+  background:linear-gradient(135deg,var(--verde),var(--naranja));
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:11px;
+}
+.topbar-user-name { font-size:12px;font-weight:700;color:var(--texto); }
+.topbar-user-role { font-size:10px;color:var(--naranja);font-weight:600; }
+
+/* ── MAIN CONTENT ── */
+.main-content {
+  margin-left:var(--sidebar-w);padding-top:var(--topbar-h);min-height:100vh;
+}
+.panel-container { padding:24px 28px;display:none; }
+.panel-container.active { display:block;animation:fadeInUp 0.4s ease both; }
+
+/* ═══ CARDS & COMPONENTS ═══ */
+.card {
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px;transition:var(--transition);position:relative;overflow:hidden;
+}
+.card:hover { box-shadow:var(--shadow); }
+.card-header {
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;
+}
+.card-title { font-size:14px;font-weight:700;color:var(--texto);display:flex;align-items:center;gap:8px; }
+.card-subtitle { font-size:11px;color:var(--muted);font-weight:500; }
+.card-badge {
+  font-size:10px;font-weight:700;padding:4px 10px;border-radius:8px;
+  text-transform:uppercase;letter-spacing:0.5px;
+}
+.badge-green { background:var(--verde-bg);color:var(--verde); }
+.badge-orange { background:var(--naranja-bg);color:var(--naranja); }
+.badge-blue { background:var(--azul-bg);color:var(--azul); }
+.badge-purple { background:var(--purple-bg);color:var(--purple); }
+.badge-cyan { background:var(--cyan-bg);color:var(--cyan); }
+.badge-red { background:var(--danger-bg);color:var(--danger); }
+.badge-amber { background:var(--amber-bg);color:var(--amber); }
+
+/* KPI Cards */
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px; }
+.kpi-card {
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;position:relative;overflow:hidden;transition:var(--transition);
+}
+.kpi-card:hover { transform:translateY(-2px);box-shadow:var(--shadow); }
+.kpi-card::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--kpi-color,var(--verde)),transparent);
+}
+.kpi-icon {
+  width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:20px;margin-bottom:12px;
+}
+.kpi-label { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px; }
+.kpi-value { font-size:28px;font-weight:900;color:var(--texto);line-height:1; }
+.kpi-unit { font-size:13px;font-weight:600;color:var(--muted); }
+.kpi-change {
+  display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:12px;font-weight:700;
+  padding:3px 8px;border-radius:6px;
+}
+.kpi-change.up { color:var(--verde);background:var(--verde-bg); }
+.kpi-change.down { color:var(--danger);background:var(--danger-bg); }
+.kpi-meta { font-size:11px;color:var(--muted);margin-top:4px; }
+.kpi-progress { height:4px;border-radius:4px;background:var(--surface3);margin-top:10px;overflow:hidden; }
+.kpi-progress-bar { height:100%;border-radius:4px;transition:width 1s ease; }
+
+/* Grids */
+.grid-2 { display:grid;grid-template-columns:repeat(2,1fr);gap:20px; }
+.grid-3 { display:grid;grid-template-columns:repeat(3,1fr);gap:20px; }
+.grid-4 { display:grid;grid-template-columns:repeat(4,1fr);gap:16px; }
+.grid-23 { display:grid;grid-template-columns:2fr 1fr;gap:20px; }
+.grid-32 { display:grid;grid-template-columns:3fr 2fr;gap:20px; }
+.grid-full { display:grid;grid-template-columns:1fr;gap:20px; }
+.mb-20 { margin-bottom:20px; }
+.mb-24 { margin-bottom:24px; }
+
+/* Tables */
+.data-table { width:100%;border-collapse:separate;border-spacing:0; }
+.data-table thead th {
+  font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;
+  color:var(--muted);padding:12px 14px;text-align:left;border-bottom:2px solid var(--border);
+  background:var(--surface2);position:sticky;top:0;
+}
+.data-table tbody td {
+  font-size:13px;padding:12px 14px;border-bottom:1px solid var(--border-subtle);
+  color:var(--texto);
+}
+.data-table tbody tr { transition:var(--transition); }
+.data-table tbody tr:hover { background:var(--surface2); }
+.data-table .num { font-variant-numeric:tabular-nums;font-weight:600; }
+.data-table .text-green { color:var(--verde);font-weight:700; }
+.data-table .text-red { color:var(--danger);font-weight:700; }
+.data-table .text-orange { color:var(--naranja);font-weight:700; }
+.data-table .text-muted { color:var(--muted);font-style:italic; }
+.table-footer td {
+  font-weight:800!important;background:linear-gradient(135deg,var(--verde-bg),var(--surface2))!important;
+  border-top:2px solid var(--verde)!important;font-size:14px!important;
+}
+
+/* Chart containers */
+.chart-wrap { position:relative;width:100%;height:300px; }
+.chart-wrap-sm { height:200px; }
+.chart-wrap-lg { height:400px; }
+
+/* Status pills */
+.status-pill {
+  display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:8px;
+  font-size:11px;font-weight:700;
+}
+.status-active { background:var(--verde-bg);color:var(--verde); }
+.status-warning { background:var(--warn-bg);color:var(--warn); }
+.status-danger { background:var(--danger-bg);color:var(--danger); }
+.status-info { background:var(--azul-bg);color:var(--azul); }
+.status-purple { background:var(--purple-bg);color:var(--purple); }
+
+/* Filter bar */
+.filter-bar {
+  display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;
+}
+.filter-chip {
+  padding:7px 16px;border-radius:10px;font-size:12px;font-weight:600;
+  border:1px solid var(--border);background:var(--surface);color:var(--muted);
+  cursor:pointer;transition:var(--transition);
+}
+.filter-chip:hover { border-color:var(--verde);color:var(--verde); }
+.filter-chip.active { background:var(--verde);color:#fff;border-color:var(--verde); }
+.filter-select {
+  padding:7px 14px;border-radius:10px;font-size:12px;font-weight:600;
+  border:1px solid var(--border);background:var(--surface);color:var(--texto);
+  font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;outline:none;
+}
+
+/* Live indicator */
+.live-tag {
+  display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:8px;
+  background:var(--verde-bg);font-size:11px;font-weight:700;color:var(--verde);
+}
+.live-tag .dot { width:6px;height:6px;border-radius:50%;background:var(--verde);animation:pulse 1.5s infinite; }
+
+/* Section title */
+.section-title {
+  font-size:20px;font-weight:800;margin-bottom:4px;
+  display:flex;align-items:center;gap:10px;
+}
+.section-subtitle { font-size:13px;color:var(--muted);margin-bottom:20px; }
+
+/* Process flow */
+.process-flow {
+  display:flex;align-items:center;gap:0;margin-bottom:24px;overflow-x:auto;padding:8px 0;
+}
+.process-step {
+  display:flex;flex-direction:column;align-items:center;gap:6px;min-width:120px;position:relative;
+}
+.process-step-icon {
+  width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+  font-size:22px;border:2px solid var(--border);background:var(--surface);
+  transition:var(--transition);position:relative;z-index:1;
+}
+.process-step.active .process-step-icon { border-color:var(--verde);background:var(--verde-bg);animation:pulseRing 2s infinite; }
+.process-step.completed .process-step-icon { border-color:var(--verde);background:var(--verde);color:#fff; }
+.process-step-label { font-size:11px;font-weight:700;color:var(--muted);text-align:center; }
+.process-step.active .process-step-label { color:var(--verde); }
+.process-arrow { font-size:18px;color:var(--border);margin:0 4px;margin-bottom:20px; }
+
+/* Gauge mini */
+.gauge-mini {
+  width:120px;height:120px;position:relative;display:flex;align-items:center;justify-content:center;
+}
+.gauge-mini canvas { position:absolute;top:0;left:0; }
+.gauge-mini-value { font-size:22px;font-weight:900;z-index:1; }
+.gauge-mini-label { font-size:10px;color:var(--muted);font-weight:600;z-index:1;margin-top:2px; }
+
+/* Hora a hora row highlight */
+.hora-actual { background:rgba(22,163,74,0.06)!important; }
+.hora-futuro td { color:var(--muted)!important;font-style:italic; }
+
+/* Responsive */
+@media(max-width:1400px) {
+  .grid-4 { grid-template-columns:repeat(2,1fr); }
+  .grid-3 { grid-template-columns:repeat(2,1fr); }
+}
+@media(max-width:1024px) {
+  .sidebar { transform:translateX(-100%); }
+  .sidebar.open { transform:translateX(0); }
+  .main-content { margin-left:0; }
+  .topbar { left:0; }
+  .grid-2,.grid-23,.grid-32 { grid-template-columns:1fr; }
+}
+@media(max-width:768px) {
+  .kpi-grid { grid-template-columns:1fr 1fr; }
+  .grid-4 { grid-template-columns:1fr; }
+  .panel-container { padding:16px; }
+}
+
+/* Mobile menu toggle */
+.mobile-menu-btn {
+  display:none;width:36px;height:36px;border-radius:10px;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;align-items:center;justify-content:center;font-size:18px;
+}
+@media(max-width:1024px) { .mobile-menu-btn { display:flex; } }
+.sidebar-overlay {
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99;
+}
+.sidebar-overlay.active { display:block; }
+
+/* Donut center text */
+.donut-center {
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;pointer-events:none;
+}
+.donut-center-value { font-size:24px;font-weight:900;color:var(--texto); }
+.donut-center-label { font-size:11px;color:var(--muted);font-weight:600; }
+
+/* Mini sparkline area */
+.sparkline-area { width:100%;height:40px; }
+
+/* Alert list */
+.alert-item {
+  display:flex;align-items:flex-start;gap:12px;padding:12px;border-radius:12px;
+  border:1px solid var(--border);margin-bottom:8px;transition:var(--transition);
+}
+.alert-item:hover { background:var(--surface2); }
+.alert-icon { width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0; }
+.alert-content { flex:1; }
+.alert-title { font-size:13px;font-weight:700; }
+.alert-desc { font-size:11px;color:var(--muted);margin-top:2px; }
+.alert-time { font-size:10px;color:var(--muted);white-space:nowrap; }
+
+/* Turno comparison cards */
+.turno-card {
+  border-radius:var(--radius);padding:20px;border:1px solid var(--border);
+  background:var(--surface);position:relative;overflow:hidden;
+}
+.turno-card::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+}
+.turno-dia::before { background:linear-gradient(90deg,#f59e0b,#fbbf24); }
+.turno-noche::before { background:linear-gradient(90deg,#6366f1,#818cf8); }
+.turno-label { font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px; }
+.turno-dia .turno-label { color:#f59e0b; }
+.turno-noche .turno-label { color:#6366f1; }
+
+/* Heatmap cell */
+.heatmap-cell {
+  width:100%;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:#fff;transition:var(--transition);
+}
+
+/* Tabs */
+.tabs { display:flex;gap:4px;margin-bottom:20px;background:var(--surface2);padding:4px;border-radius:12px; }
+.tab-btn {
+  padding:8px 18px;border-radius:10px;font-size:12px;font-weight:600;
+  border:none;background:transparent;color:var(--muted);cursor:pointer;transition:var(--transition);
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.tab-btn.active { background:var(--surface);color:var(--texto);box-shadow:var(--shadow-sm); }
+.tab-content { display:none; }
+.tab-content.active { display:block;animation:fadeInUp 0.3s ease; }
+
+/* Meal counter */
+.meal-counter {
+  display:flex;align-items:center;gap:16px;padding:16px 20px;border-radius:var(--radius);
+  background:var(--surface2);border:1px solid var(--border);
+}
+.meal-counter-icon { font-size:28px; }
+.meal-counter-value { font-size:32px;font-weight:900; }
+.meal-counter-label { font-size:12px;color:var(--muted);font-weight:600; }
+
+/* Timeline */
+.timeline { position:relative;padding-left:24px; }
+.timeline::before { content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border); }
+.timeline-item { position:relative;padding-bottom:20px; }
+.timeline-dot {
+  position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;
+  border:2px solid var(--verde);background:var(--surface);
+}
+.timeline-item.active .timeline-dot { background:var(--verde);animation:pulseRing 2s infinite; }
+.timeline-time { font-size:11px;font-weight:700;color:var(--muted); }
+.timeline-desc { font-size:13px;font-weight:500;margin-top:2px; }
+
+/* Downtime bar */
+.downtime-bar {
+  display:flex;height:32px;border-radius:8px;overflow:hidden;margin:8px 0;
+}
+.downtime-segment {
+  display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;
+  color:#fff;transition:var(--transition);cursor:pointer;
+}
+.downtime-segment:hover { filter:brightness(1.15); }
+
+/* Cost breakdown */
+.cost-stack {
+  display:flex;flex-direction:column;gap:8px;
+}
+.cost-row {
+  display:flex;align-items:center;gap:12px;
+}
+.cost-color { width:12px;height:12px;border-radius:4px;flex-shrink:0; }
+.cost-label { font-size:12px;color:var(--muted);flex:1; }
+.cost-value { font-size:13px;font-weight:700;font-variant-numeric:tabular-nums; }
+.cost-bar-bg { flex:2;height:8px;border-radius:4px;background:var(--surface3);overflow:hidden; }
+.cost-bar { height:100%;border-radius:4px;transition:width 1s ease; }
+
+/* ── TOPBAR DEVELOPER SIGNATURE ── */
+@keyframes firmaShine {
+  0% { left:-100%; }
+  50%,100% { left:200%; }
+}
+@keyframes firmaBorderGlow {
+  0%,100% { border-color:rgba(212,175,55,0.2); box-shadow:0 2px 12px rgba(0,0,0,0.15); }
+  50% { border-color:rgba(212,175,55,0.45); box-shadow:0 2px 24px rgba(212,175,55,0.15), 0 4px 16px rgba(0,0,0,0.2); }
+}
+@keyframes signatureGlow {
+  0%,100% { text-shadow:0 0 4px rgba(212,175,55,0.3), 0 0 8px rgba(192,192,192,0.1); }
+  33% { text-shadow:0 0 8px rgba(212,175,55,0.5), 0 0 16px rgba(255,215,0,0.2); }
+  66% { text-shadow:0 0 8px rgba(192,192,192,0.5), 0 0 16px rgba(220,220,220,0.2); }
+}
+.topbar-dev-signature {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:8px 22px; border-radius:20px;
+  background:linear-gradient(145deg,rgba(10,18,32,0.85),rgba(20,30,48,0.9),rgba(15,25,40,0.85));
+  border:1px solid rgba(212,175,55,0.3);
+  position:relative; overflow:hidden; backdrop-filter:blur(16px);
+  animation:firmaBorderGlow 4s ease infinite;
+  box-shadow:0 0 20px rgba(212,175,55,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.topbar-dev-signature::before {
+  content:''; position:absolute; top:0; left:-100%; width:50%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,0.08),rgba(255,255,255,0.05),transparent);
+  animation:firmaShine 5s ease-in-out infinite;
+  pointer-events:none;
+}
+.topbar-dev-signature::after {
+  content:''; position:absolute; inset:0; border-radius:16px;
+  background:linear-gradient(135deg,rgba(212,175,55,0.03) 0%,transparent 40%,rgba(192,192,192,0.03) 60%,transparent 100%);
+  pointer-events:none;
+}
+.topbar-dev-signature > * { position:relative; z-index:1; }
+.topbar-sig-label {
+  font-size:7px; color:rgba(212,175,55,0.7); text-transform:uppercase;
+  letter-spacing:2px; font-weight:800;
+}
+.topbar-dev-signature .signature-name {
+  font-size:14px; font-weight:900; letter-spacing:0.3px;
+  background:linear-gradient(135deg,#d4af37 0%,#f5e6a3 25%,#c0c0c0 50%,#f5e6a3 75%,#d4af37 100%);
+  background-size:300% 100%;
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:signatureShimmer 4s ease infinite, signatureGlow 4s ease infinite;
+  line-height:1.3;
+}
+.topbar-dev-signature .signature-role {
+  font-size:9px; font-weight:700; color:#22c55e;
+  letter-spacing:0.5px;
+}
+body.dark-mode .topbar-dev-signature {
+  background:linear-gradient(145deg,rgba(5,10,20,0.9),rgba(12,18,30,0.95),rgba(8,14,25,0.9));
+  border-color:rgba(212,175,55,0.35);
+}
+body.dark-mode .topbar-dev-signature .signature-name {
+  background:linear-gradient(135deg,#ffd700 0%,#fff8dc 25%,#e8e8e8 50%,#fff8dc 75%,#ffd700 100%);
+  background-size:300% 100%;
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+/* ═══ AREA DASHBOARD PANELS ═══ */
+.area-header-bar {
+  display:flex;align-items:center;gap:16px;padding:20px 24px;margin-bottom:20px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.area-header-bar::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:var(--area-color, var(--verde));
+}
+.area-header-icon { font-size:40px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
+.area-header-info { flex:1; }
+.area-header-title { font-size:22px;font-weight:900;color:var(--texto); }
+.area-header-sub { font-size:12px;color:var(--muted);font-weight:500; }
+.area-header-actions { display:flex;gap:10px;align-items:center; }
+.btn-app-link {
+  display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:12px;
+  background:linear-gradient(135deg, var(--area-color, var(--verde)), color-mix(in srgb, var(--area-color, var(--verde)) 80%, black));
+  color:#fff;font-size:13px;font-weight:700;text-decoration:none;
+  box-shadow:0 4px 12px color-mix(in srgb, var(--area-color, var(--verde)) 40%, transparent);
+  transition:all 0.2s;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;
+}
+.btn-app-link:hover { transform:translateY(-2px);box-shadow:0 6px 20px color-mix(in srgb, var(--area-color, var(--verde)) 50%, transparent); }
+
+/* ═══ FORM SECTION ═══ */
+.form-section {
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:0;margin-bottom:20px;overflow:hidden;box-shadow:var(--shadow-sm);
+}
+.form-section-header {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;background:var(--surface2);border-bottom:1px solid var(--border);
+  cursor:pointer;user-select:none;transition:background 0.2s;
+}
+.form-section-header:hover { background:var(--surface3); }
+.form-section-title { font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px; }
+.form-section-toggle { font-size:18px;color:var(--muted);transition:transform 0.3s; }
+.form-section-toggle.open { transform:rotate(180deg); }
+.form-section-body { padding:20px;display:none; }
+.form-section-body.open { display:block;animation:fadeInUp 0.3s ease; }
+.form-grid-portal {
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;
+}
+.form-group-p { display:flex;flex-direction:column;gap:5px; }
+.form-group-p label {
+  font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;
+}
+.form-group-p input, .form-group-p select {
+  padding:10px 14px;border:2px solid var(--border);border-radius:10px;
+  font-size:14px;font-weight:600;color:var(--texto);background:var(--surface);
+  outline:none;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;
+}
+.form-group-p input:focus, .form-group-p select:focus {
+  border-color:var(--area-color, var(--verde));
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--area-color, var(--verde)) 15%, transparent);
+}
+.form-actions { display:flex;gap:12px;margin-top:16px; }
+.btn-submit {
+  padding:12px 28px;border-radius:12px;border:none;font-size:14px;font-weight:700;
+  color:#fff;cursor:pointer;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;
+  background:linear-gradient(135deg, var(--area-color, var(--verde)), color-mix(in srgb, var(--area-color, var(--verde)) 75%, black));
+  box-shadow:0 4px 12px color-mix(in srgb, var(--area-color, var(--verde)) 30%, transparent);
+}
+.btn-submit:hover { transform:translateY(-1px); }
+.btn-clear {
+  padding:12px 24px;border-radius:12px;border:1px solid var(--border);
+  font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;
+  background:var(--surface);transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;
+}
+.btn-clear:hover { background:var(--surface2); }
+
+/* ═══ TUNNEL VISUAL CARDS ═══ */
+.tunnel-grid-portal { display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px; }
+.tunnel-visual {
+  background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);
+  padding:24px 20px;text-align:center;position:relative;overflow:hidden;transition:all 0.3s;
+}
+.tunnel-visual::before {
+  content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,var(--t-glow,rgba(8,145,178,0.06)),transparent 60%);pointer-events:none;
+}
+.tunnel-visual.t-activo { border-color:#0891b2;--t-glow:rgba(8,145,178,0.1); }
+.tunnel-visual.t-libre { border-color:#22c55e;--t-glow:rgba(34,197,94,0.08); }
+.tunnel-visual.t-alerta { border-color:#dc2626;--t-glow:rgba(220,38,38,0.08); }
+.t-name { font-size:15px;font-weight:800;margin-bottom:8px; }
+.t-badge {
+  display:inline-block;padding:4px 14px;border-radius:20px;font-size:11px;font-weight:800;
+  text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;
+}
+.t-badge-activo { background:rgba(8,145,178,0.1);color:#0891b2; }
+.t-badge-libre { background:rgba(34,197,94,0.1);color:#16a34a; }
+.t-badge-alerta { background:rgba(220,38,38,0.1);color:#dc2626; }
+.t-coches { font-size:42px;font-weight:900;line-height:1; }
+.t-metric { font-size:12px;color:var(--muted);margin:4px 0; }
+.t-metric b { color:var(--texto); }
+.t-temp { font-size:22px;font-weight:800;margin:6px 0; }
+
+/* Success toast within portal */
+.portal-toast {
+  position:fixed;bottom:24px;right:24px;padding:14px 24px;border-radius:14px;
+  color:#fff;font-weight:700;font-size:14px;z-index:9999;
+  transform:translateY(80px);opacity:0;transition:all 0.35s cubic-bezier(0.4,0,0.2,1);
+  box-shadow:0 12px 32px rgba(0,0,0,0.2);
+}
+.portal-toast.show { transform:translateY(0);opacity:1; }
+
+@media(max-width:768px) {
+  .tunnel-grid-portal { grid-template-columns:1fr; }
+  .form-grid-portal { grid-template-columns:1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div id="loginScreen">
+  <div class="login-particles">
+    <div class="login-particle"></div><div class="login-particle"></div><div class="login-particle"></div>
+    <div class="login-particle"></div><div class="login-particle"></div><div class="login-particle"></div>
+    <div class="login-particle"></div><div class="login-particle"></div>
+  </div>
+  <div class="login-card">
+    <img src="LOGO.png" alt="Frutos Tropicales" class="login-logo">
+    <div class="login-title">Portal de Produccion</div>
+    <div class="login-subtitle">Sistema de Inteligencia Productiva</div>
+    <div class="login-field">
+      <label>Usuario</label>
+      <input type="text" id="loginUser" placeholder="Ingrese su usuario" autocomplete="off">
+    </div>
+    <div class="login-field">
+      <label>Contrasena</label>
+      <input type="password" id="loginPass" placeholder="Ingrese su contrasena" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Ingresar al Portal</button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-hint">Frutos Tropicales Peru S.A.C. — Planta FTP Huaura</div>
+  </div>
+</div>
+
+<!-- ═══ APP SCREEN ═══ -->
+<div id="appScreen">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-header-bg">
+      <img src="LOGO.png" alt="FTP" class="sidebar-logo">
+      <div class="sidebar-portal-label">Portal de Produccion</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-group-label">General</div>
+    <div class="nav-item active" data-panel="resumen">
+      <span class="nav-icon">📊</span> Resumen Ejecutivo
+    </div>
+
+    <div class="nav-group-label">Produccion</div>
+    <div class="nav-item" data-panel="indicadores">
+      <span class="nav-icon">📈</span> Indicadores
+    </div>
+    <div class="nav-item" data-panel="produccion-dia">
+      <span class="nav-icon">🏭</span> Produccion del Dia
+    </div>
+    <div class="nav-item" data-panel="rendimientos">
+      <span class="nav-icon">🎯</span> Rendimientos
+    </div>
+    <div class="nav-item" data-panel="costos">
+      <span class="nav-icon">💰</span> Costos
+    </div>
+    <div class="nav-item" data-panel="productividad">
+      <span class="nav-icon">⚡</span> Productividad
+    </div>
+
+    <div class="nav-group-label">Operaciones</div>
+    <div class="nav-item" data-panel="proceso">
+      <span class="nav-icon">🔄</span> Flujo de Proceso
+    </div>
+    <div class="nav-item" data-panel="tiempo-muerto">
+      <span class="nav-icon">⏱️</span> Tiempo Muerto
+      <span class="nav-badge">!</span>
+    </div>
+    <div class="nav-item" data-panel="comparativo">
+      <span class="nav-icon">🔀</span> Comparativo Turnos
+    </div>
+
+    <div class="nav-group-label">Logistica</div>
+    <div class="nav-item" data-panel="contenedores">
+      <span class="nav-icon">🚢</span> Contenedores
+    </div>
+    <div class="nav-item" data-panel="stock">
+      <span class="nav-icon">📦</span> Stock General
+    </div>
+    <div class="nav-item" data-panel="programa">
+      <span class="nav-icon">📋</span> Programa Produccion
+    </div>
+
+    <div class="nav-group-label">Analisis</div>
+    <div class="nav-item" data-panel="proyecciones">
+      <span class="nav-icon">🔮</span> Proyecciones
+    </div>
+    <div class="nav-item" data-panel="almuerzos">
+      <span class="nav-icon">🍽️</span> Almuerzos / Personal
+    </div>
+    <div class="nav-item" data-panel="materiales">
+      <span class="nav-icon">🧱</span> Materiales
+    </div>
+
+    <div class="nav-group-label">Areas de Planta</div>
+    <div class="nav-item" data-panel="area-recepcion">
+      <span class="nav-icon">🚛</span> Recepcion MP
+    </div>
+    <div class="nav-item" data-panel="area-acondicionado">
+      <span class="nav-icon">🔪</span> Acondicionado
+    </div>
+    <div class="nav-item" data-panel="area-tuneles">
+      <span class="nav-icon">❄️</span> Tuneles IQF
+      <span class="nav-badge">3</span>
+    </div>
+    <div class="nav-item" data-panel="area-empaque">
+      <span class="nav-icon">📦</span> Empaque
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userAvatarSidebar">RG</div>
+      <div class="user-info">
+        <div class="user-name" id="userNameSidebar">Rodrigo Garcia</div>
+        <div class="user-role" id="userRoleSidebar">Jefe de Produccion</div>
+      </div>
+      <button class="sidebar-logout" onclick="doLogout()" title="Cerrar sesion">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+  <div>
+    <div class="topbar-title" id="topbarTitle">Resumen Ejecutivo</div>
+    <div class="topbar-breadcrumb" id="topbarBreadcrumb">Vista general de la planta</div>
+  </div>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-live"><span class="dot"></span> En tiempo real</div>
+  <button class="topbar-alerts" id="alertsBtn">⚠️ <span id="alertCount">12</span> alertas</button>
+  <div class="topbar-date" id="topbarDate">📅 mie, 25 de marzo · 11:35</div>
+  <button class="topbar-theme" onclick="toggleTheme()" id="themeBtn">🌙</button>
+  <div class="topbar-dev-signature">
+    <div class="topbar-sig-label">Desarrollado por:</div>
+    <div class="signature-name">Rodrigo Garcia</div>
+    <div class="signature-role">Systems Analyst & Developer-QA</div>
+  </div>
+</header>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: RESUMEN EJECUTIVO
+     ═══════════════════════════════════════════════════ -->
+<main class="main-content">
+<div class="panel-container active" id="panel-resumen">
+  <div class="section-title">📊 Resumen Ejecutivo — Planta FTP</div>
+  <div class="section-subtitle">Indicadores clave de produccion en tiempo real · Campana 2026</div>
+
+  <!-- KPIs principales -->
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:var(--verde)">
+      <div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">🏭</div>
+      <div class="kpi-label">Produccion Hoy</div>
+      <div class="kpi-value">14,090 <span class="kpi-unit">kg</span></div>
+      <div class="kpi-change up">▲ 5.2% vs ayer</div>
+      <div class="kpi-progress"><div class="kpi-progress-bar" style="width:88%;background:var(--verde)"></div></div>
+      <div class="kpi-meta">Meta: 16,000 kg</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--azul)">
+      <div class="kpi-icon" style="background:var(--azul-bg);color:var(--azul)">📦</div>
+      <div class="kpi-label">Cajas Producidas</div>
+      <div class="kpi-value">644 <span class="kpi-unit">cajas</span></div>
+      <div class="kpi-change up">▲ 3.8% vs ayer</div>
+      <div class="kpi-progress"><div class="kpi-progress-bar" style="width:40%;background:var(--azul)"></div></div>
+      <div class="kpi-meta">Meta: 1,600 cajas · 10 kg/caja (Chunks IQF)</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--naranja)">
+      <div class="kpi-icon" style="background:var(--naranja-bg);color:var(--naranja)">🎯</div>
+      <div class="kpi-label">Rendimiento</div>
+      <div class="kpi-value">45.7<span class="kpi-unit">%</span></div>
+      <div class="kpi-change down">▼ 0.3% vs objetivo</div>
+      <div class="kpi-progress"><div class="kpi-progress-bar" style="width:91%;background:var(--naranja)"></div></div>
+      <div class="kpi-meta">Objetivo: 50% · Chunks IQF</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--purple)">
+      <div class="kpi-icon" style="background:var(--purple-bg);color:var(--purple)">⏱️</div>
+      <div class="kpi-label">Tiempo Muerto</div>
+      <div class="kpi-value">47 <span class="kpi-unit">min</span></div>
+      <div class="kpi-change down">▲ 12 min vs ayer</div>
+      <div class="kpi-progress"><div class="kpi-progress-bar" style="width:15%;background:var(--danger)"></div></div>
+      <div class="kpi-meta">Limite: 60 min/turno</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--cyan)">
+      <div class="kpi-icon" style="background:var(--cyan-bg);color:var(--cyan)">💰</div>
+      <div class="kpi-label">Costo x Kg Congelado</div>
+      <div class="kpi-value">$0.38 <span class="kpi-unit">USD</span></div>
+      <div class="kpi-change up">▼ $0.02 vs sem. pasada</div>
+      <div class="kpi-meta">Objetivo: $0.40/kg</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--amber)">
+      <div class="kpi-icon" style="background:var(--amber-bg);color:var(--amber)">👥</div>
+      <div class="kpi-label">Personal Activo</div>
+      <div class="kpi-value">127 <span class="kpi-unit">oper.</span></div>
+      <div class="kpi-change up">Turno dia</div>
+      <div class="kpi-meta">Eficiencia MOD: 92%</div>
+    </div>
+  </div>
+
+  <!-- Produccion semanal + Fruta en proceso -->
+  <div class="grid-23 mb-24">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📈 Produccion Semanal — Semana 13</div>
+        <span class="card-badge badge-green">Campana 2026</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chartResumenSemanal"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🍑 Frutas en Proceso</div>
+        <span class="live-tag"><span class="dot"></span> Hoy</span>
+      </div>
+      <div class="chart-wrap" style="height:220px;position:relative">
+        <canvas id="chartFrutaDonut"></canvas>
+        <div class="donut-center">
+          <div class="donut-center-value">54,120</div>
+          <div class="donut-center-label">TN Campana</div>
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-subtle)">
+          <span style="font-size:13px;font-weight:600">🥭 Mango</span>
+          <span style="font-size:13px;font-weight:700;color:var(--naranja)">38,420 TN</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-subtle)">
+          <span style="font-size:13px;font-weight:600">🫐 Arandano</span>
+          <span style="font-size:13px;font-weight:700;color:var(--purple)">8,950 TN</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0">
+          <span style="font-size:13px;font-weight:600">🍎 Granada</span>
+          <span style="font-size:13px;font-weight:700;color:var(--danger)">6,750 TN</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flujo de proceso visual -->
+  <div class="card mb-24">
+    <div class="card-header">
+      <div class="card-title">🔄 Flujo de Proceso en Planta — Estado Actual</div>
+      <span class="live-tag"><span class="dot"></span> En vivo</span>
+    </div>
+    <div class="process-flow">
+      <div class="process-step completed">
+        <div class="process-step-icon">🚛</div>
+        <div class="process-step-label">Recepcion<br><b style="color:var(--verde)">29,762 kg</b></div>
+      </div>
+      <div class="process-arrow">→</div>
+      <div class="process-step completed">
+        <div class="process-step-icon">🔪</div>
+        <div class="process-step-label">Acondicionado<br><b style="color:var(--verde)">14,090 kg</b></div>
+      </div>
+      <div class="process-arrow">→</div>
+      <div class="process-step active">
+        <div class="process-step-icon">❄️</div>
+        <div class="process-step-label">Tuneles IQF<br><b style="color:var(--azul)">2,180 kg</b></div>
+      </div>
+      <div class="process-arrow">→</div>
+      <div class="process-step active">
+        <div class="process-step-icon">📦</div>
+        <div class="process-step-label">Empaque<br><b style="color:var(--cyan)">644 cajas</b></div>
+      </div>
+      <div class="process-arrow">→</div>
+      <div class="process-step">
+        <div class="process-step-icon">🧊</div>
+        <div class="process-step-label">Camara Frio<br><b>29,915 kg</b></div>
+      </div>
+      <div class="process-arrow">→</div>
+      <div class="process-step">
+        <div class="process-step-icon">🚢</div>
+        <div class="process-step-label">Despacho<br><b>3 FCL pend.</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rendimiento por fruta + Alertas -->
+  <div class="grid-23 mb-24">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🎯 Rendimiento por Fruta — Campana 2026</div>
+      </div>
+      <div class="chart-wrap"><canvas id="chartRendFruta"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🔔 Alertas Activas</div>
+        <span class="card-badge badge-red" id="alertBadge">12</span>
+      </div>
+      <div style="max-height:340px;overflow-y:auto">
+        <div class="alert-item">
+          <div class="alert-icon" style="background:var(--danger-bg);color:var(--danger)">🌡️</div>
+          <div class="alert-content">
+            <div class="alert-title">Temperatura Tunel 3 fuera de rango</div>
+            <div class="alert-desc">-24.5°C (objetivo: -30°C) · Tunel IQF-3</div>
+          </div>
+          <div class="alert-time">hace 5 min</div>
+        </div>
+        <div class="alert-item">
+          <div class="alert-icon" style="background:var(--warn-bg);color:var(--warn)">⏱️</div>
+          <div class="alert-content">
+            <div class="alert-title">Tiempo muerto > 30 min</div>
+            <div class="alert-desc">Falla mecanica en linea ACO-1 · Acondicionado</div>
+          </div>
+          <div class="alert-time">hace 18 min</div>
+        </div>
+        <div class="alert-item">
+          <div class="alert-icon" style="background:var(--azul-bg);color:var(--azul)">📦</div>
+          <div class="alert-content">
+            <div class="alert-title">Stock bajo: cajas craft IQF</div>
+            <div class="alert-desc">Quedan 1,200 unidades · Reposicion urgente</div>
+          </div>
+          <div class="alert-time">hace 45 min</div>
+        </div>
+        <div class="alert-item">
+          <div class="alert-icon" style="background:var(--verde-bg);color:var(--verde)">🎯</div>
+          <div class="alert-content">
+            <div class="alert-title">Rendimiento bajo en Turno Noche</div>
+            <div class="alert-desc">42.1% vs objetivo 50% · Mango</div>
+          </div>
+          <div class="alert-time">hace 1h</div>
+        </div>
+        <div class="alert-item">
+          <div class="alert-icon" style="background:var(--purple-bg);color:var(--purple)">🚢</div>
+          <div class="alert-content">
+            <div class="alert-title">Contenedor SAVEUR listo para despacho</div>
+            <div class="alert-desc">FCL-12 · 2,400 cajas Mango Organico</div>
+          </div>
+          <div class="alert-time">hace 2h</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla resumen semanal -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📋 Resumen Semanal de Produccion</div>
+      <div class="filter-bar" style="margin-bottom:0">
+        <select class="filter-select" id="semanaSelect">
+          <option>Semana 13</option><option>Semana 12</option><option>Semana 11</option><option>Semana 10</option>
+        </select>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr>
+          <th>Fecha</th><th>Fruta</th><th>Turno</th><th>Kg Procesados</th><th>Kg Chunks</th>
+          <th>Cajas</th><th>Rend %</th><th>Operarios</th><th>Kg/Hora</th><th>Costo/Kg</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>24/03</td><td>🥭 Mango</td><td><span class="status-pill status-warning">Dia</span></td><td class="num">22,400</td><td class="num">10,305</td><td class="num">1,030</td><td class="text-green">46.0%</td><td class="num">65</td><td class="num">1,867</td><td class="num">$0.37</td></tr>
+          <tr><td>24/03</td><td>🥭 Mango</td><td><span class="status-pill status-purple">Noche</span></td><td class="num">19,600</td><td class="num">8,624</td><td class="num">862</td><td class="text-green">44.0%</td><td class="num">58</td><td class="num">1,633</td><td class="num">$0.41</td></tr>
+          <tr><td>23/03</td><td>🥭 Mango</td><td><span class="status-pill status-warning">Dia</span></td><td class="num">23,742</td><td class="num">9,950</td><td class="num">995</td><td class="text-green">41.9%</td><td class="num">62</td><td class="num">1,978</td><td class="num">$0.39</td></tr>
+          <tr><td>23/03</td><td>🥭 Mango</td><td><span class="status-pill status-purple">Noche</span></td><td class="num">20,900</td><td class="num">9,196</td><td class="num">919</td><td class="text-green">44.0%</td><td class="num">60</td><td class="num">1,742</td><td class="num">$0.40</td></tr>
+          <tr><td>22/03</td><td>🫐 Arandano</td><td><span class="status-pill status-warning">Dia</span></td><td class="num">8,496</td><td class="num">5,438</td><td class="num">543</td><td class="text-green">64.0%</td><td class="num">45</td><td class="num">708</td><td class="num">$0.52</td></tr>
+          <tr><td>22/03</td><td>🫐 Arandano</td><td><span class="status-pill status-purple">Noche</span></td><td class="num">9,045</td><td class="num">5,789</td><td class="num">578</td><td class="text-green">64.0%</td><td class="num">42</td><td class="num">753</td><td class="num">$0.50</td></tr>
+        </tbody>
+        <tfoot><tr class="table-footer">
+          <td colspan="3"><b>TOTAL SEMANA 13</b></td><td class="num">104,183</td><td class="num">49,302</td>
+          <td class="num">4,927</td><td class="text-green">47.3%</td><td class="num">-</td><td class="num">-</td><td class="num">$0.40</td>
+        </tr></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: INDICADORES
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-indicadores">
+  <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">📈 Indicadores de Produccion <a class="btn-app-link" style="--area-color:#2563eb" href="dash-indicadores.html" target="_blank">🚀 Abrir Dashboard Completo</a></div>
+  <div class="section-subtitle">Metricas clave diarias y semanales · Actualizado en tiempo real</div>
+
+  <div class="filter-bar mb-20">
+    <div class="filter-chip active" data-fruta="all">Todas</div>
+    <div class="filter-chip" data-fruta="mango">🥭 Mango</div>
+    <div class="filter-chip" data-fruta="arandano">🫐 Arandano</div>
+    <div class="filter-chip" data-fruta="granada">🍎 Granada</div>
+    <select class="filter-select"><option>Semana 13</option><option>Semana 12</option><option>Semana 11</option></select>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:var(--verde)">
+      <div class="kpi-label">TN Procesadas (Semana)</div>
+      <div class="kpi-value">104.2 <span class="kpi-unit">TN</span></div>
+      <div class="kpi-change up">▲ 8.3% vs S12</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--azul)">
+      <div class="kpi-label">TN Ejecutadas (Campana)</div>
+      <div class="kpi-value">1,507.3 <span class="kpi-unit">TN</span></div>
+      <div class="kpi-meta">Solo Mango · Meta: 2,000 TN</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--naranja)">
+      <div class="kpi-label">Rendimiento Promedio</div>
+      <div class="kpi-value">45.7<span class="kpi-unit">%</span></div>
+      <div class="kpi-change down">▼ 4.3% vs objetivo 50%</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--purple)">
+      <div class="kpi-label">Cajas Producidas (Campana)</div>
+      <div class="kpi-value">14,020 <span class="kpi-unit">cajas</span></div>
+      <div class="kpi-meta">Chunks 10kg · Mango</div>
+    </div>
+  </div>
+
+  <div class="grid-2 mb-24">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📊 TN Procesadas por Semana</div>
+      </div>
+      <div class="chart-wrap"><canvas id="chartTNSemana"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🎯 Rendimiento Semanal</div>
+      </div>
+      <div class="chart-wrap"><canvas id="chartRendSemana"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📋 Indicadores Diarios — Detalle</div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr>
+          <th>Fecha</th><th>Cultivo</th><th>T1 Consumo</th><th>T1 Chunks</th><th>T1 Rend</th>
+          <th>T2 Consumo</th><th>T2 Chunks</th><th>T2 Rend</th><th>Total Consumo</th><th>Total Rend</th><th>Costo MOD</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>24/03</td><td>Mango</td><td class="num">22,400</td><td class="num">10,305</td><td class="text-green">46.0%</td><td class="num">19,600</td><td class="num">8,624</td><td class="text-green">44.0%</td><td class="num">42,000</td><td class="text-green">45.1%</td><td class="num">$0.39</td></tr>
+          <tr><td>23/03</td><td>Mango</td><td class="num">23,742</td><td class="num">9,950</td><td class="text-orange">41.9%</td><td class="num">20,900</td><td class="num">9,196</td><td class="text-green">44.0%</td><td class="num">44,642</td><td class="text-green">42.9%</td><td class="num">$0.40</td></tr>
+          <tr><td>22/03</td><td>Arandano</td><td class="num">8,496</td><td class="num">5,438</td><td class="text-green">64.0%</td><td class="num">9,045</td><td class="num">5,789</td><td class="text-green">64.0%</td><td class="num">17,541</td><td class="text-green">64.0%</td><td class="num">$0.51</td></tr>
+          <tr><td>21/03</td><td>Granada</td><td class="num">10,403</td><td class="num">5,930</td><td class="text-green">57.0%</td><td class="num">-</td><td class="num">-</td><td class="text-muted">-</td><td class="num">10,403</td><td class="text-green">57.0%</td><td class="num">$0.45</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: PRODUCCION DEL DIA
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-produccion-dia">
+  <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">🏭 Produccion del Dia <a class="btn-app-link" style="--area-color:#16a34a" href="dash-produccion-dia.html" target="_blank">🚀 Abrir Dashboard Completo</a></div>
+  <div class="section-subtitle">Avance de produccion hora a hora · Martes 25 de Marzo 2026</div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:var(--naranja)">
+      <div class="kpi-label">Fruta en Proceso</div>
+      <div class="kpi-value" style="color:var(--naranja)">Mango</div>
+      <div class="kpi-meta">Mango · Campana 2026</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--verde)">
+      <div class="kpi-label">Kg Procesados Hoy</div>
+      <div class="kpi-value">14,090</div>
+      <div class="kpi-progress"><div class="kpi-progress-bar" style="width:88%;background:var(--verde)"></div></div>
+      <div class="kpi-meta">Meta: 16,000 kg</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--azul)">
+      <div class="kpi-label">Cajas Producidas</div>
+      <div class="kpi-value">644</div>
+      <div class="kpi-meta">10 kg/caja · Chunks IQF</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--naranja)">
+      <div class="kpi-label">Rendimiento</div>
+      <div class="kpi-value">45.7<span class="kpi-unit">%</span></div>
+      <div class="kpi-meta">Chunks IQF</div>
+    </div>
+  </div>
+
+  <div class="card mb-24">
+    <div class="card-header">
+      <div class="card-title">⚙️ Avance de Produccion por Hora — Hoy 25 Marzo 2026</div>
+      <span class="live-tag"><span class="dot"></span> En tiempo real</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr>
+          <th>Hora</th><th>Fruta</th><th>Linea</th><th>Consumo (kg)</th><th>Chunks IQF (kg)</th>
+          <th>Cajas</th><th>Rend %</th><th>Observacion</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>07:00-08:00</td><td>Mango</td><td>IQF-1</td><td class="num">1,800</td><td class="num">824</td><td class="num">82</td><td class="text-green">45.8%</td><td>Inicio de turno dia</td></tr>
+          <tr><td>08:00-09:00</td><td>Mango</td><td>IQF-1</td><td class="num">2,100</td><td class="num">970</td><td class="num">97</td><td class="text-green">46.2%</td><td>Flujo estable</td></tr>
+          <tr><td>09:00-10:00</td><td>Mango</td><td>IQF-1</td><td class="num">2,000</td><td class="num">902</td><td class="num">90</td><td class="text-green">45.1%</td><td>—</td></tr>
+          <tr><td>10:00-11:00</td><td>Mango</td><td>IQF-1</td><td class="num">2,050</td><td class="num">941</td><td class="num">94</td><td class="text-green">45.9%</td><td>Maximo rendimiento</td></tr>
+          <tr><td>11:00-12:00</td><td>Mango</td><td>IQF-1</td><td class="num">2,200</td><td class="num">1,023</td><td class="num">102</td><td class="text-green">46.5%</td><td>Pico de produccion</td></tr>
+          <tr><td>12:00-13:00</td><td>Mango</td><td>IQF-1</td><td class="num">1,980</td><td class="num">899</td><td class="num">90</td><td class="text-green">45.4%</td><td>—</td></tr>
+          <tr style="background:var(--amber-bg)"><td>13:00-14:00</td><td class="text-muted">—</td><td class="text-muted">—</td><td colspan="4" style="text-align:center;font-style:italic;color:var(--amber)">Almuerzo / Cambio de turno</td><td>—</td></tr>
+          <tr><td>14:00-15:00</td><td>Mango</td><td>IQF-1</td><td class="num">1,960</td><td class="num">878</td><td class="num">88</td><td class="text-green">44.8%</td><td>Inicio turno tarde</td></tr>
+          <tr class="hora-actual"><td>15:00-16:00</td><td>Mango</td><td>IQF-1</td><td class="text-muted">—</td><td class="text-muted">—</td><td class="text-muted">—</td><td class="text-muted">—</td><td><span class="live-tag"><span class="dot"></span> En proceso...</span></td></tr>
+          <tr class="hora-futuro"><td>16:00-17:00</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Pendiente</td></tr>
+          <tr class="hora-futuro"><td>17:00-18:00</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Pendiente</td></tr>
+        </tbody>
+        <tfoot><tr class="table-footer">
+          <td><b>TOTAL</b></td><td><b>7 horas efectivas</b></td><td></td><td class="num"><b>14,090</b></td>
+          <td class="num"><b>6,437</b></td><td class="num"><b>644</b></td><td class="text-green"><b>45.7%</b></td><td></td>
+        </tr></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Produccion por Hora (Kg)</div></div>
+      <div class="chart-wrap"><canvas id="chartHoraKg"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🎯 Rendimiento por Hora</div></div>
+      <div class="chart-wrap"><canvas id="chartHoraRend"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: RENDIMIENTOS
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-rendimientos">
+  <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">🎯 Dashboard de Rendimientos <a class="btn-app-link" style="--area-color:#ea580c" href="dash-rendimientos.html" target="_blank">🚀 Abrir Dashboard Completo</a></div>
+  <div class="section-subtitle">Analisis de rendimiento por fruta, turno, semana y lote</div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:var(--naranja)">
+      <div class="kpi-label">Rend. Mango</div>
+      <div class="kpi-value" style="color:var(--naranja)">45.7%</div>
+      <div class="kpi-meta">Objetivo: 50%</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--purple)">
+      <div class="kpi-label">Rend. Arandano</div>
+      <div class="kpi-value" style="color:var(--purple)">64.0%</div>
+      <div class="kpi-meta">Objetivo: 65%</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--danger)">
+      <div class="kpi-label">Rend. Granada</div>
+      <div class="kpi-value" style="color:var(--danger)">57.0%</div>
+      <div class="kpi-meta">Objetivo: 60%</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--verde)">
+      <div class="kpi-label">Rend. Promedio Planta</div>
+      <div class="kpi-value" style="color:var(--verde)">52.4%</div>
+      <div class="kpi-meta">Ponderado por volumen</div>
+    </div>
+  </div>
+
+  <div class="grid-2 mb-24">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Rendimiento Historico por Fruta</div></div>
+      <div class="chart-wrap"><canvas id="chartRendHistorico"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🔀 Rendimiento Dia vs Noche</div></div>
+      <div class="chart-wrap"><canvas id="chartRendTurno"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">📋 Rendimiento por Lote de Materia Prima</div></div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>Lote</th><th>Proveedor</th><th>Variedad</th><th>Kg MP</th><th>Kg Chunks</th><th>Rend %</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td>CFT038K</td><td>FTP</td><td>Mango</td><td class="num">18,645</td><td class="num">8,576</td><td class="text-green">46.0%</td><td><span class="status-pill status-active">Consumido</span></td></tr>
+          <tr><td>CFT039K</td><td>FTP</td><td>Mango</td><td class="num">20,967</td><td class="num">9,435</td><td class="text-green">45.0%</td><td><span class="status-pill status-active">Consumido</span></td></tr>
+          <tr><td>CFT040K</td><td>FTP</td><td>Mango</td><td class="num">18,771</td><td class="num">8,634</td><td class="text-green">46.0%</td><td><span class="status-pill status-warning">Parcial</span></td></tr>
+          <tr><td>CFT007E</td><td>Oscar Carranza</td><td>Mango</td><td class="num">15,034</td><td class="num">6,464</td><td class="text-orange">43.0%</td><td><span class="status-pill status-active">Consumido</span></td></tr>
+          <tr><td>CFTP004G</td><td>FTP</td><td>Granada</td><td class="num">10,403</td><td class="num">5,930</td><td class="text-green">57.0%</td><td><span class="status-pill status-info">En Stock</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: COSTOS
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-costos">
+  <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">💰 Dashboard de Costos de Produccion <a class="btn-app-link" style="--area-color:#d97706" href="dash-costos.html" target="_blank">🚀 Abrir Dashboard Completo</a></div>
+  <div class="section-subtitle">Analisis de costos por kg congelado, turno y componente</div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:var(--verde)">
+      <div class="kpi-label">Costo Total / Kg</div>
+      <div class="kpi-value">$0.38</div>
+      <div class="kpi-change up">▼ $0.02 vs S12</div>
+      <div class="kpi-meta">Objetivo: $0.40/kg</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--azul)">
+      <div class="kpi-label">Costo MOD / Kg</div>
+      <div class="kpi-value">$0.15</div>
+      <div class="kpi-meta">Tarifa: S/11.75/hr</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--amber)">
+      <div class="kpi-label">Costo Materiales / Kg</div>
+      <div class="kpi-value">$0.08</div>
+      <div class="kpi-meta">Cajas, bolsas, etiquetas</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--cyan)">
+      <div class="kpi-label">Costo Energia / Kg</div>
+      <div class="kpi-value">$0.15</div>
+      <div class="kpi-meta">Tuneles + sala proceso</div>
+    </div>
+  </div>
+
+  <div class="grid-23 mb-24">
+    <div class="card">
+      <div class="card-header"><div class="card-title">💰 Evolucion del Costo por Kg</div></div>
+      <div class="chart-wrap"><canvas id="chartCostoEvol"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🍩 Composicion del Costo</div></div>
+      <div class="chart-wrap" style="height:220px;position:relative">
+        <canvas id="chartCostoDonut"></canvas>
+        <div class="donut-center">
+          <div class="donut-center-value">$0.38</div>
+          <div class="donut-center-label">por Kg</div>
+        </div>
+      </div>
+      <div class="cost-stack" style="margin-top:12px">
+        <div class="cost-row"><div class="cost-color" style="background:#16a34a"></div><div class="cost-label">MOD (Mano de obra)</div><div class="cost-value">$0.15</div><div class="cost-bar-bg"><div class="cost-bar" style="width:39%;background:#16a34a"></div></div></div>
+        <div class="cost-row"><div class="cost-color" style="background:#2563eb"></div><div class="cost-label">Energia / Frio</div><div class="cost-value">$0.15</div><div class="cost-bar-bg"><div class="cost-bar" style="width:39%;background:#2563eb"></div></div></div>
+        <div class="cost-row"><div class="cost-color" style="background:#ea580c"></div><div class="cost-label">Materiales</div><div class="cost-value">$0.08</div><div class="cost-bar-bg"><div class="cost-bar" style="width:21%;background:#ea580c"></div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">📋 Costos por Semana y Fruta</div></div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>Semana</th><th>Fruta</th><th>Kg Procesados</th><th>$/Kg MOD</th><th>$/Kg Mat</th><th>$/Kg Energia</th><th>$/Kg Total</th><th>Precio Venta</th><th>Margen</th></tr></thead>
+        <tbody>
+          <tr><td>S13</td><td>🥭 Mango</td><td class="num">86,642</td><td class="num">$0.15</td><td class="num">$0.08</td><td class="num">$0.15</td><td class="num"><b>$0.38</b></td><td class="num">$2.80</td><td class="text-green">$2.42</td></tr>
+          <tr><td>S13</td><td>🫐 Arandano</td><td class="num">17,541</td><td class="num">$0.22</td><td class="num">$0.10</td><td class="num">$0.19</td><td class="num"><b>$0.51</b></td><td class="num">$5.50</td><td class="text-green">$4.99</td></tr>
+          <tr><td>S12</td><td>🥭 Mango</td><td class="num">92,180</td><td class="num">$0.16</td><td class="num">$0.08</td><td class="num">$0.16</td><td class="num"><b>$0.40</b></td><td class="num">$2.80</td><td class="text-green">$2.40</td></tr>
+          <tr><td>S12</td><td>🍎 Granada</td><td class="num">10,403</td><td class="num">$0.18</td><td class="num">$0.09</td><td class="num">$0.18</td><td class="num"><b>$0.45</b></td><td class="num">$4.20</td><td class="text-green">$3.75</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: PRODUCTIVIDAD
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-productividad">
+  <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">⚡ Productividad y Eficiencia <a class="btn-app-link" style="--area-color:#7c3aed" href="dash-productividad.html" target="_blank">🚀 Abrir Dashboard Completo</a></div>
+  <div class="section-subtitle">KG/HR, horas hombre, eficiencia de mano de obra y lineas</div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:var(--verde)">
+      <div class="kpi-label">Kg/Hora Real</div>
+      <div class="kpi-value">1,867</div>
+      <div class="kpi-meta">Linea ACO-1 · Turno Dia</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--azul)">
+      <div class="kpi-label">Kg/Hora Proyectado</div>
+      <div class="kpi-value">2,000</div>
+      <div class="kpi-change down">▼ 6.6% desviacion</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--amber)">
+      <div class="kpi-label">Horas Hombre / TN</div>
+      <div class="kpi-value">7.8 <span class="kpi-unit">HH</span></div>
+      <div class="kpi-meta">Benchmark: 7.5 HH/TN</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--purple)">
+      <div class="kpi-label">OEE Planta</div>
+      <div class="kpi-value">82.4<span class="kpi-unit">%</span></div>
+      <div class="kpi-change up">▲ 2.1% vs S12</div>
+    </div>
+  </div>
+
+  <div class="grid-2 mb-24">
+    <div class="card">
+      <div class="card-header"><div class="card-title">⚡ KG/HR Real vs Proyectado</div></div>
+      <div class="chart-wrap"><canvas id="chartKgHr"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">👥 Productividad por Operario</div></div>
+      <div class="chart-wrap"><canvas id="chartProdOperario"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card mb-24">
+    <div class="card-header"><div class="card-title">📊 Balance de Linea — Eficiencia por Etapa</div></div>
+    <div class="chart-wrap-lg"><canvas id="chartBalance"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: FLUJO DE PROCESO
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-proceso">
+  <div class="section-title">🔄 Flujo de Proceso en Planta</div>
+  <div class="section-subtitle">Estado en tiempo real de cada area · Recepcion → Despacho</div>
+
+  <div class="card mb-24">
+    <div class="card-header">
+      <div class="card-title">🏭 Mapa de Proceso — Estado en Vivo</div>
+      <span class="live-tag"><span class="dot"></span> Tiempo real</span>
+    </div>
+    <div class="process-flow" style="justify-content:center;gap:8px">
+      <div class="process-step completed">
+        <div class="process-step-icon" style="width:64px;height:64px;font-size:28px">🚛</div>
+        <div class="process-step-label"><b>RECEPCION</b><br>29,762 kg ingresados<br><span class="status-pill status-active">Completado</span></div>
+      </div>
+      <div class="process-arrow" style="font-size:24px">→</div>
+      <div class="process-step completed">
+        <div class="process-step-icon" style="width:64px;height:64px;font-size:28px">🔪</div>
+        <div class="process-step-label"><b>ACONDICIONADO</b><br>14,090 kg procesados<br><span class="status-pill status-active">En curso</span></div>
+      </div>
+      <div class="process-arrow" style="font-size:24px">→</div>
+      <div class="process-step active">
+        <div class="process-step-icon" style="width:64px;height:64px;font-size:28px">❄️</div>
+        <div class="process-step-label"><b>TUNELES IQF</b><br>2,180 kg congelando<br><span class="status-pill status-info">~2 hrs ciclo</span></div>
+      </div>
+      <div class="process-arrow" style="font-size:24px">→</div>
+      <div class="process-step active">
+        <div class="process-step-icon" style="width:64px;height:64px;font-size:28px">📦</div>
+        <div class="process-step-label"><b>EMPAQUE</b><br>644 cajas<br><span class="status-pill status-active">Activo</span></div>
+      </div>
+      <div class="process-arrow" style="font-size:24px">→</div>
+      <div class="process-step">
+        <div class="process-step-icon" style="width:64px;height:64px;font-size:28px">🧊</div>
+        <div class="process-step-label"><b>CAMARA FRIO</b><br>29,915 kg stock<br><span class="status-pill status-purple">-18°C</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-3 mb-24">
+    <div class="card">
+      <div class="card-header"><div class="card-title">❄️ Tuneles de Congelado</div><span class="live-tag"><span class="dot"></span> Live</span></div>
+      <table class="data-table">
+        <thead><tr><th>Tunel</th><th>Temp</th><th>Estado</th><th>Kg</th></tr></thead>
+        <tbody>
+          <tr><td>IQF-1</td><td class="text-green">-30.2°C</td><td><span class="status-pill status-active">Operando</span></td><td class="num">850</td></tr>
+          <tr><td>IQF-2</td><td class="text-green">-29.8°C</td><td><span class="status-pill status-active">Operando</span></td><td class="num">720</td></tr>
+          <tr><td>IQF-3</td><td class="text-red">-24.5°C</td><td><span class="status-pill status-danger">Alerta</span></td><td class="num">610</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">📦 Empaque — Hoy</div></div>
+      <table class="data-table">
+        <thead><tr><th>Producto</th><th>Cajas</th><th>Kg</th></tr></thead>
+        <tbody>
+          <tr><td>Chunks Mango 10kg</td><td class="num">1,150</td><td class="num">11,500</td></tr>
+          <tr><td>B&P Mango 4x2.5kg</td><td class="num">130</td><td class="num">1,300</td></tr>
+          <tr><td>Chunks Mango 10kg</td><td class="num">129</td><td class="num">1,290</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🌡️ Temperaturas Criticas</div></div>
+      <table class="data-table">
+        <thead><tr><th>Area</th><th>Actual</th><th>Objetivo</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td>Sala Proceso</td><td class="num">12.5°C</td><td class="num">≤15°C</td><td><span class="status-pill status-active">OK</span></td></tr>
+          <tr><td>Camara MP</td><td class="num">4.2°C</td><td class="num">≤5°C</td><td><span class="status-pill status-active">OK</span></td></tr>
+          <tr><td>Camara PT</td><td class="num">-18.3°C</td><td class="num">≤-18°C</td><td><span class="status-pill status-active">OK</span></td></tr>
+          <tr><td>Empaque</td><td class="num">10.1°C</td><td class="num">≤12°C</td><td><span class="status-pill status-active">OK</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: TIEMPO MUERTO
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-tiempo-muerto">
+  <div class="section-title">⏱️ Control de Tiempo Muerto</div>
+  <div class="section-subtitle">Monitoreo y analisis de paradas no programadas · Reduccion de costos</div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:var(--danger)">
+      <div class="kpi-label">Tiempo Muerto Hoy</div>
+      <div class="kpi-value" style="color:var(--danger)">47 <span class="kpi-unit">min</span></div>
+      <div class="kpi-meta">Limite: 60 min/turno</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--amber)">
+      <div class="kpi-label">Kg Perdidos Hoy</div>
+      <div class="kpi-value">1,567 <span class="kpi-unit">kg</span></div>
+      <div class="kpi-meta">Estimado por velocidad linea</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--purple)">
+      <div class="kpi-label">Costo Impacto Hoy</div>
+      <div class="kpi-value">$596 <span class="kpi-unit">USD</span></div>
+      <div class="kpi-meta">Costo oportunidad</div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--verde)">
+      <div class="kpi-label">Disponibilidad</div>
+      <div class="kpi-value">93.5<span class="kpi-unit">%</span></div>
+      <div class="kpi-change up">▲ 1.2% vs S12</div>
+    </div>
+  </div>
+
+  <div class="grid-23 mb-24">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Tiempo Muerto por Tipo — Semana 13</div></div>
+      <div class="chart-wrap"><canvas id="chartTiempoMuerto"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🍩 Distribucion de Causas</div></div>
+      <div class="chart-wrap" style="height:240px"><canvas id="chartTMDonut"></canvas></div>
+      <div class="cost-stack" style="margin-top:8px">
+        <div class="cost-row"><div class="cost-color" style="background:#dc2626"></div><div class="cost-label">Mecanico</div><div class="cost-value">35%</div></div>
+        <div class="cost-row"><div class="cost-color" style="background:#f59e0b"></div><div class="cost-label">Falta MP</div><div class="cost-value">25%</div></div>
+        <div class="cost-row"><div class="cost-color" style="background:#2563eb"></div><div class="cost-label">Limpieza</div><div class="cost-value">20%</div></div>
+        <div class="cost-row"><div class="cost-color" style="background:#7c3aed"></div><div class="cost-label">Cambio Producto</div><div class="cost-value">12%</div></div>
+        <div class="cost-row"><div class="cost-color" style="background:#64748b"></div><div class="cost-label">Otros</div><div class="cost-value">8%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">📋 Registro de Paradas — Hoy</div></div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>Hora</th><th>Area</th><th>Tipo</th><th>Duracion</th><th>Causa</th><th>Kg Perdidos</th><th>Accion Correctiva</th></tr></thead>
+        <tbody>
+          <tr><td>08:45</td><td>Acondicionado</td><td><span class="status-pill status-danger">Mecanico</span></td><td class="num">22 min</td><td>Falla en cortadora de cubos</td><td class="num">733</td><td>Cambio de cuchilla</td></tr>
+          <tr><td>10:20</td><td>Tunel IQF-3</td><td><span class="status-pill status-warning">Electrico</span></td><td class="num">15 min</td><td>Caida de tension en compresor</td><td class="num">500</td><td>Reset de proteccion termica</td></tr>
+          <tr><td>14:15</td><td>Empaque</td><td><span class="status-pill status-info">Operativo</span></td><td class="num">10 min</td><td>Cambio de material de empaque</td><td class="num">334</td><td>Programar cambios en almuerzo</td></tr>
+        </tbody>
+        <tfoot><tr class="table-footer"><td colspan="3"><b>TOTAL</b></td><td class="num"><b>47 min</b></td><td></td><td class="num"><b>1,567 kg</b></td><td></td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: COMPARATIVO TURNOS
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-comparativo">
+  <div class="section-title">🔀 Comparativo de Turnos</div>
+  <div class="section-subtitle">Analisis comparativo Turno Dia vs Turno Noche</div>
+
+  <div class="grid-2 mb-24">
+    <div class="turno-card turno-dia">
+      <div class="turno-label">☀️ Turno Dia (07:00 - 19:00)</div>
+      <div class="kpi-grid" style="grid-template-columns:1fr 1fr;gap:12px">
+        <div><div class="kpi-label">TN Procesadas</div><div class="kpi-value" style="font-size:24px">22.4</div></div>
+        <div><div class="kpi-label">Rendimiento</div><div class="kpi-value text-green" style="font-size:24px">46.0%</div></div>
+        <div><div class="kpi-label">Operarios</div><div class="kpi-value" style="font-size:24px">65</div></div>
+        <div><div class="kpi-label">Kg/Hora</div><div class="kpi-value" style="font-size:24px">1,867</div></div>
+      </div>
+    </div>
+    <div class="turno-card turno-noche">
+      <div class="turno-label">🌙 Turno Noche (19:00 - 07:00)</div>
+      <div class="kpi-grid" style="grid-template-columns:1fr 1fr;gap:12px">
+        <div><div class="kpi-label">TN Procesadas</div><div class="kpi-value" style="font-size:24px">19.6</div></div>
+        <div><div class="kpi-label">Rendimiento</div><div class="kpi-value text-green" style="font-size:24px">44.0%</div></div>
+        <div><div class="kpi-label">Operarios</div><div class="kpi-value" style="font-size:24px">58</div></div>
+        <div><div class="kpi-label">Kg/Hora</div><div class="kpi-value" style="font-size:24px">1,633</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2 mb-24">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 TN Procesadas — Dia vs Noche</div></div>
+      <div class="chart-wrap"><canvas id="chartCompTN"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">⚡ Productividad KG/HR por Turno</div></div>
+      <div class="chart-wrap"><canvas id="chartCompKgHr"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: CONTENEDORES
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-contenedores">
+  <div class="section-title">🚢 Contenedores y Despachos</div>
+  <div class="section-subtitle">Estado de contenedores, programa de despacho y trazabilidad</div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-label">Despachados</div><div class="kpi-value">8</div><div class="kpi-meta">Campana 2026</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--azul)"><div class="kpi-label">En Proceso</div><div class="kpi-value">3</div><div class="kpi-meta">Cargando/Llenando</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--amber)"><div class="kpi-label">Pendientes</div><div class="kpi-value">5</div><div class="kpi-meta">Por producir</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--purple)"><div class="kpi-label">Cajas Totales</div><div class="kpi-value">14,020</div><div class="kpi-meta">Chunks Mango</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">📋 Programa de Contenedores</div></div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>N°</th><th>Cliente</th><th>Variedad</th><th>Tipo</th><th>PO</th><th>Cajas/FCL</th><th>Cajas Listas</th><th>Presentacion</th><th>Estado</th><th>Prioridad</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>GREENYARD</td><td>Mango</td><td>Conv.</td><td>4500808995</td><td class="num">2,400</td><td class="num">2,400</td><td>10 kg</td><td><span class="status-pill status-active">Despachado</span></td><td>1</td></tr>
+          <tr><td>2</td><td>VITACHEM</td><td>Mango</td><td>Conv.</td><td>10319-1</td><td class="num">2,400</td><td class="num">2,400</td><td>10 kg</td><td><span class="status-pill status-active">Despachado</span></td><td>2</td></tr>
+          <tr><td>3</td><td>VITACHEM</td><td>Mango</td><td>Conv.</td><td>10319-2</td><td class="num">2,400</td><td class="num">2,400</td><td>10 kg</td><td><span class="status-pill status-active">Completo</span></td><td>3</td></tr>
+          <tr><td>4</td><td>SAVEUR</td><td>Mango</td><td>Org.</td><td>PO-SAV-01</td><td class="num">2,400</td><td class="num">1,193</td><td>10 kg</td><td><span class="status-pill status-warning">En proceso</span></td><td>4</td></tr>
+          <tr><td>5</td><td>SANTE</td><td>Mango</td><td>Org.</td><td>PO-SAN-01</td><td class="num">2,400</td><td class="num">907</td><td>10 kg</td><td><span class="status-pill status-warning">En proceso</span></td><td>5</td></tr>
+          <tr><td>6</td><td>HG FOODS</td><td>Mango</td><td>Org.</td><td>EB2540172</td><td class="num">1,811</td><td class="num">1,811</td><td>10 kg</td><td><span class="status-pill status-active">Completo</span></td><td>6</td></tr>
+          <tr><td>7</td><td>HG FOODS</td><td>Mango</td><td>Conv.</td><td>PENDIENTE</td><td class="num">2,400</td><td class="num">837</td><td>4x2.5 kg</td><td><span class="status-pill status-info">Proceso</span></td><td>7</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: STOCK
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-stock">
+  <div class="section-title">📦 Stock General de Producto Terminado</div>
+  <div class="section-subtitle">Inventario de producto congelado en planta</div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:var(--naranja)"><div class="kpi-label">Stock Mango</div><div class="kpi-value">29,915 <span class="kpi-unit">kg</span></div></div>
+    <div class="kpi-card" style="--kpi-color:var(--purple)"><div class="kpi-label">Stock Arandano</div><div class="kpi-value">5,200 <span class="kpi-unit">kg</span></div></div>
+    <div class="kpi-card" style="--kpi-color:var(--danger)"><div class="kpi-label">Stock Granada</div><div class="kpi-value">40,756 <span class="kpi-unit">kg</span></div></div>
+  </div>
+
+  <div class="grid-2 mb-24">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Stock por Producto</div></div>
+      <div class="chart-wrap"><canvas id="chartStock"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">📋 Detalle por Cliente</div></div>
+      <table class="data-table">
+        <thead><tr><th>Variedad</th><th>Tipo</th><th>Cliente</th><th>Cajas</th><th>Kg</th></tr></thead>
+        <tbody>
+          <tr><td>Mango</td><td>Conv.</td><td>SAVEUR</td><td class="num">1,193</td><td class="num">11,930</td></tr>
+          <tr><td>Mango</td><td>Org.</td><td>SAVEUR</td><td class="num">907</td><td class="num">9,070</td></tr>
+          <tr><td>Mango</td><td>Org.</td><td>SANTE</td><td class="num">6,457</td><td class="num">64,570</td></tr>
+          <tr><td>Mango</td><td>Conv.</td><td>SIN CLIENTE</td><td class="num">1,758</td><td class="num">17,580</td></tr>
+          <tr><td>Mango</td><td>Conv.</td><td>HG FOODS</td><td class="num">351</td><td class="num">3,510</td></tr>
+        </tbody>
+        <tfoot><tr class="table-footer"><td colspan="3"><b>TOTAL</b></td><td class="num"><b>14,020</b></td><td class="num"><b>140,200</b></td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: PROGRAMA
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-programa">
+  <div class="section-title">📋 Programa de Produccion</div>
+  <div class="section-subtitle">Planificacion de produccion por cliente, PO y fecha compromiso</div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">📋 Programa de Produccion — Mango Congelado 2026</div></div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>Cliente</th><th>Maquila</th><th>Variedad</th><th>Presentacion</th><th>PO</th><th>Tipo</th><th>N° FCL</th><th>Cajas/FCL</th><th>Carga</th><th>Estado</th><th>Prioridad</th></tr></thead>
+        <tbody>
+          <tr><td>GREENYARD</td><td>FTP</td><td>Mango</td><td>Chunks</td><td>4500808995</td><td>Conv.</td><td class="num">1</td><td class="num">2,400</td><td>Granel</td><td><span class="status-pill status-active">Despachado</span></td><td>1</td></tr>
+          <tr><td>VITACHEM</td><td>FTP</td><td>Mango</td><td>Chunks</td><td>10319-1</td><td>Conv.</td><td class="num">2</td><td class="num">2,400</td><td>Granel</td><td><span class="status-pill status-active">Despachado</span></td><td>2</td></tr>
+          <tr><td>GREENYARD</td><td>FTP</td><td>Mango</td><td>Chunks</td><td>4500808996</td><td>Conv.</td><td class="num">2</td><td class="num">2,400</td><td>Granel</td><td><span class="status-pill status-active">Completo</span></td><td>4</td></tr>
+          <tr><td>HG FOODS</td><td>FTP</td><td>Mango</td><td>Chunks</td><td>EB2540172</td><td>Org.</td><td class="num">15</td><td class="num">1,811</td><td>Granel</td><td><span class="status-pill status-active">Completo</span></td><td>1</td></tr>
+          <tr><td>HG FOODS</td><td>FTP</td><td>Mango</td><td>B&P</td><td>PENDIENTE</td><td>Conv.</td><td class="num">1</td><td class="num">2,400</td><td>Granel</td><td><span class="status-pill status-warning">Proceso</span></td><td>1</td></tr>
+          <tr><td>SAVEUR</td><td>FTP</td><td>Mango</td><td>Chunks</td><td>PO-SAV-02</td><td>Org.</td><td class="num">3</td><td class="num">2,400</td><td>Granel</td><td><span class="status-pill status-info">Pendiente</span></td><td>6</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: PROYECCIONES
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-proyecciones">
+  <div class="section-title">🔮 Proyecciones vs Ejecutado</div>
+  <div class="section-subtitle">Cumplimiento de metas de produccion semanal y mensual</div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-label">Cumplimiento S13</div><div class="kpi-value" style="color:var(--verde)">88%</div><div class="kpi-meta">104.2 / 118 TN</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--azul)"><div class="kpi-label">Cumplimiento Campana</div><div class="kpi-value">75.4%</div><div class="kpi-meta">1,507 / 2,000 TN</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--amber)"><div class="kpi-label">Desviacion Acumulada</div><div class="kpi-value" style="color:var(--amber)">-493 <span class="kpi-unit">TN</span></div></div>
+    <div class="kpi-card" style="--kpi-color:var(--purple)"><div class="kpi-label">FCL Pendientes</div><div class="kpi-value">5</div><div class="kpi-meta">Para cerrar campana</div></div>
+  </div>
+
+  <div class="card mb-24">
+    <div class="card-header"><div class="card-title">📊 Proyectado vs Ejecutado por Semana</div></div>
+    <div class="chart-wrap-lg"><canvas id="chartProy"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: ALMUERZOS
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-almuerzos">
+  <div class="section-title">🍽️ Control de Almuerzos y Personal</div>
+  <div class="section-subtitle">Gestion de alimentacion del personal y control de asistencia</div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:var(--naranja)"><div class="kpi-label">Almuerzos Hoy</div><div class="kpi-value">142</div><div class="kpi-meta">Turno Dia + Noche</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-label">Promedio Semanal</div><div class="kpi-value">138</div><div class="kpi-meta">Por dia</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--azul)"><div class="kpi-label">Costo Semanal</div><div class="kpi-value">S/ 7,728</div><div class="kpi-meta">S/ 8.00 x almuerzo</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--purple)"><div class="kpi-label">Personal Total</div><div class="kpi-value">165</div><div class="kpi-meta">Ambos turnos</div></div>
+  </div>
+
+  <div class="grid-2 mb-24">
+    <div class="card">
+      <div class="card-header"><div class="card-title">🍽️ Almuerzos por Dia — Semana 13</div></div>
+      <div class="chart-wrap"><canvas id="chartAlmuerzos"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">👥 Personal por Area</div></div>
+      <div class="chart-wrap"><canvas id="chartPersonal"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">📋 Registro Diario de Almuerzos</div></div>
+    <table class="data-table">
+      <thead><tr><th>Fecha</th><th>T. Dia</th><th>T. Noche</th><th>Total</th><th>Costo Unit.</th><th>Costo Total</th></tr></thead>
+      <tbody>
+        <tr><td>25/03</td><td class="num">78</td><td class="num">64</td><td class="num"><b>142</b></td><td class="num">S/ 8.00</td><td class="num">S/ 1,136</td></tr>
+        <tr><td>24/03</td><td class="num">75</td><td class="num">62</td><td class="num"><b>137</b></td><td class="num">S/ 8.00</td><td class="num">S/ 1,096</td></tr>
+        <tr><td>23/03</td><td class="num">72</td><td class="num">60</td><td class="num"><b>132</b></td><td class="num">S/ 8.00</td><td class="num">S/ 1,056</td></tr>
+        <tr><td>22/03</td><td class="num">80</td><td class="num">65</td><td class="num"><b>145</b></td><td class="num">S/ 8.00</td><td class="num">S/ 1,160</td></tr>
+        <tr><td>21/03</td><td class="num">70</td><td class="num">58</td><td class="num"><b>128</b></td><td class="num">S/ 8.00</td><td class="num">S/ 1,024</td></tr>
+      </tbody>
+      <tfoot><tr class="table-footer"><td><b>TOTAL S13</b></td><td class="num">455</td><td class="num">371</td><td class="num"><b>966</b></td><td></td><td class="num"><b>S/ 7,728</b></td></tr></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: MATERIALES
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-materiales">
+  <div class="section-title">🧱 Consumo de Materiales</div>
+  <div class="section-subtitle">Control de insumos de empaque y consumibles</div>
+
+  <div class="card mb-24">
+    <div class="card-header"><div class="card-title">📋 Materiales Consumidos — Campana 2026</div></div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>Material</th><th>Codigo</th><th>Unidad</th><th>Consumo</th><th>Merma</th><th>% Merma</th><th>Stock Actual</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td>Caja Craft IQF 30LB</td><td>260000100032</td><td>UND</td><td class="num">14,500</td><td class="num">210</td><td class="num">1.4%</td><td class="num">3,200</td><td><span class="status-pill status-active">OK</span></td></tr>
+          <tr><td>Bolsa PEBD Azul 10KG</td><td>260000200067</td><td>MILL</td><td class="num">14,500</td><td class="num">195</td><td class="num">1.3%</td><td class="num">1,200</td><td><span class="status-pill status-warning">Bajo</span></td></tr>
+          <tr><td>Cinta Adhesiva Azul 2x110</td><td>260000200004</td><td>UND</td><td class="num">186</td><td class="num">5</td><td class="num">2.7%</td><td class="num">45</td><td><span class="status-pill status-active">OK</span></td></tr>
+          <tr><td>Etiqueta Poliole. Term.</td><td>260000200009</td><td>MILL</td><td class="num">14,500</td><td class="num">180</td><td class="num">1.2%</td><td class="num">2,800</td><td><span class="status-pill status-active">OK</span></td></tr>
+          <tr><td>Suncho Plastico 15mm</td><td>260000200015</td><td>MTS</td><td class="num">4,200</td><td class="num">120</td><td class="num">2.9%</td><td class="num">1,500</td><td><span class="status-pill status-active">OK</span></td></tr>
+          <tr><td>Pallet Madera</td><td>260000300001</td><td>UND</td><td class="num">85</td><td class="num">2</td><td class="num">2.4%</td><td class="num">30</td><td><span class="status-pill status-active">OK</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Consumo Semanal de Materiales</div></div>
+      <div class="chart-wrap"><canvas id="chartMateriales"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Consumo de Etileno</div></div>
+      <div class="chart-wrap"><canvas id="chartEtileno"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: AREA RECEPCION MP
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-area-recepcion" style="--area-color:#ea580c">
+  <div class="area-header-bar" style="--area-color:#ea580c">
+    <div class="area-header-icon">🚛</div>
+    <div class="area-header-info">
+      <div class="area-header-title">Recepcion de Materia Prima</div>
+      <div class="area-header-sub">Control de ingresos, lotes, calidad y trazabilidad de MP</div>
+    </div>
+    <div class="area-header-actions">
+      <span class="live-tag"><span class="dot"></span> En vivo</span>
+      <a class="btn-app-link" style="--area-color:#ea580c" href="app-recepcion.html" target="_blank">📱 Abrir App Completa</a>
+    </div>
+  </div>
+
+  <div class="filter-bar mb-20">
+    <div class="filter-chip active" data-filter="all">Todas las Frutas</div>
+    <div class="filter-chip" data-filter="mango">🥭 Mango</div>
+    <div class="filter-chip" data-filter="arandano">🫐 Arandano</div>
+    <div class="filter-chip" data-filter="granada">🍎 Granada</div>
+    <select class="filter-select"><option>Hoy 25/03</option><option>Ayer 24/03</option><option>Semana 13</option></select>
+    <select class="filter-select"><option>Todos los Proveedores</option><option>FTP (Campo Propio)</option><option>Oscar Carranza</option></select>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:#ea580c"><div class="kpi-icon" style="background:var(--naranja-bg);color:var(--naranja)">🚛</div><div class="kpi-label">TN Recepcionadas Hoy</div><div class="kpi-value" style="color:#ea580c">29.8 <span class="kpi-unit">TN</span></div><div class="kpi-change up">▲ 12% vs ayer</div><div class="kpi-meta">3 lotes ingresados</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">✅</div><div class="kpi-label">Calidad A / A+</div><div class="kpi-value" style="color:var(--verde)">85%</div><div class="kpi-meta">Lotes premium aprobados</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--azul)"><div class="kpi-icon" style="background:var(--azul-bg);color:var(--azul)">📦</div><div class="kpi-label">Lotes en Planta</div><div class="kpi-value">7</div><div class="kpi-meta">5 Mango · 1 Arandano · 1 Granada</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--amber)"><div class="kpi-icon" style="background:var(--amber-bg);color:var(--amber)">🍬</div><div class="kpi-label">Brix Promedio</div><div class="kpi-value">14.8°</div><div class="kpi-meta">Mango · Min: 13.5°</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--purple)"><div class="kpi-icon" style="background:var(--purple-bg);color:var(--purple)">👥</div><div class="kpi-label">Proveedores Activos</div><div class="kpi-value">4</div><div class="kpi-meta">Campana 2026</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--cyan)"><div class="kpi-icon" style="background:var(--cyan-bg);color:var(--cyan)">📊</div><div class="kpi-label">TN Campana</div><div class="kpi-value">1,892 <span class="kpi-unit">TN</span></div><div class="kpi-meta">Acumulado S1-S13</div></div>
+  </div>
+
+  <div class="grid-23 mb-24">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Recepcion por Semana — Campana 2026</div><span class="card-badge badge-green">Acumulado</span></div>
+      <div class="chart-wrap"><canvas id="chartRecSemanal"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🍩 Distribucion por Fruta</div></div>
+      <div class="chart-wrap" style="height:220px;position:relative">
+        <canvas id="chartRecFruta"></canvas>
+        <div class="donut-center"><div class="donut-center-value">1,892</div><div class="donut-center-label">TN Total</div></div>
+      </div>
+      <div style="margin-top:12px">
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-subtle)"><span style="font-size:13px;font-weight:600">🥭 Mango</span><span style="font-size:13px;font-weight:700;color:#ea580c">1,557 TN</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-subtle)"><span style="font-size:13px;font-weight:600">🫐 Arandano</span><span style="font-size:13px;font-weight:700;color:var(--purple)">225 TN</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="font-size:13px;font-weight:600">🍎 Granada</span><span style="font-size:13px;font-weight:700;color:var(--danger)">110 TN</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data entry form -->
+  <div class="form-section" style="--area-color:#ea580c">
+    <div class="form-section-header" onclick="toggleFormSection(this)">
+      <div class="form-section-title">📝 Registrar Ingreso de MP</div>
+      <div class="form-section-toggle">▼</div>
+    </div>
+    <div class="form-section-body">
+      <div class="form-grid-portal">
+        <div class="form-group-p"><label>N° Lote</label><input type="text" placeholder="Ej: CFT041K"></div>
+        <div class="form-group-p"><label>Proveedor</label><select><option>FTP (Campo Propio)</option><option>Oscar Carranza</option><option>Agro Huaral</option></select></div>
+        <div class="form-group-p"><label>Fruta</label><select><option>Mango</option><option>Arandano</option><option>Granada</option></select></div>
+        <div class="form-group-p"><label>Tipo</label><select><option>Convencional</option><option>Organico</option></select></div>
+        <div class="form-group-p"><label>Peso Neto (kg)</label><input type="number" placeholder="0" min="0"></div>
+        <div class="form-group-p"><label>N° Jabas</label><input type="number" placeholder="0" min="0"></div>
+        <div class="form-group-p"><label>Calidad</label><select><option>A+ Premium</option><option>A Buena</option><option>B Estandar</option><option>C Deficiente</option></select></div>
+        <div class="form-group-p"><label>Brix (°)</label><input type="number" placeholder="14.5" step="0.1"></div>
+        <div class="form-group-p"><label>Hora Ingreso</label><input type="time"></div>
+        <div class="form-group-p"><label>Placas Vehiculo</label><input type="text" placeholder="ABC-123"></div>
+        <div class="form-group-p"><label>Responsable</label><input type="text" placeholder="Nombre"></div>
+        <div class="form-group-p"><label>Observacion</label><input type="text" placeholder="(opcional)"></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-submit" style="--area-color:#ea580c" onclick="showPortalToast('Lote registrado exitosamente','#ea580c')">✅ Registrar Ingreso</button>
+        <button class="btn-clear">Limpiar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">📋 Lotes Recepcionados — Ultimos 7 Dias</div><span class="card-badge badge-green">Campana 2026</span></div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>Lote</th><th>Fecha</th><th>Proveedor</th><th>Fruta</th><th>Tipo</th><th>Peso (kg)</th><th>Jabas</th><th>Brix°</th><th>Calidad</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td><b>CFT040K</b></td><td>25/03</td><td>FTP</td><td>🥭 Mango</td><td>Conv.</td><td class="num">18,771</td><td class="num">624</td><td class="num">15.2°</td><td><span class="status-pill status-active">A+</span></td><td><span class="status-pill status-warning">Parcial</span></td></tr>
+          <tr><td><b>CFT039K</b></td><td>24/03</td><td>FTP</td><td>🥭 Mango</td><td>Conv.</td><td class="num">20,967</td><td class="num">699</td><td class="num">14.8°</td><td><span class="status-pill status-active">A</span></td><td><span class="status-pill status-active">Consumido</span></td></tr>
+          <tr><td><b>CFT038K</b></td><td>23/03</td><td>FTP</td><td>🥭 Mango</td><td>Conv.</td><td class="num">18,645</td><td class="num">622</td><td class="num">14.5°</td><td><span class="status-pill status-active">A</span></td><td><span class="status-pill status-active">Consumido</span></td></tr>
+          <tr><td><b>CFT007E</b></td><td>22/03</td><td>Oscar Carranza</td><td>🥭 Mango</td><td>Conv.</td><td class="num">15,034</td><td class="num">501</td><td class="num">13.9°</td><td><span class="status-pill status-info">B</span></td><td><span class="status-pill status-active">Consumido</span></td></tr>
+          <tr><td><b>CFTA012A</b></td><td>22/03</td><td>Agro Huaral</td><td>🫐 Arandano</td><td>Conv.</td><td class="num">8,496</td><td class="num">425</td><td class="num">12.1°</td><td><span class="status-pill status-active">A</span></td><td><span class="status-pill status-active">Consumido</span></td></tr>
+          <tr><td><b>CFTP004G</b></td><td>21/03</td><td>FTP</td><td>🍎 Granada</td><td>Conv.</td><td class="num">10,403</td><td class="num">520</td><td class="num">—</td><td><span class="status-pill status-active">A</span></td><td><span class="status-pill status-info">En Stock</span></td></tr>
+        </tbody>
+        <tfoot><tr class="table-footer"><td colspan="5"><b>TOTAL SEMANA</b></td><td class="num"><b>92,316 kg</b></td><td class="num"><b>3,391</b></td><td></td><td></td><td></td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: AREA ACONDICIONADO
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-area-acondicionado" style="--area-color:#16a34a">
+  <div class="area-header-bar" style="--area-color:#16a34a">
+    <div class="area-header-icon">🔪</div>
+    <div class="area-header-info">
+      <div class="area-header-title">Acondicionado</div>
+      <div class="area-header-sub">Pelado, corte, seleccion y preparacion de fruta · Hora a hora</div>
+    </div>
+    <div class="area-header-actions">
+      <span class="live-tag"><span class="dot"></span> En vivo</span>
+      <a class="btn-app-link" style="--area-color:#16a34a" href="app-acondicionado.html" target="_blank">📱 Abrir App Completa</a>
+    </div>
+  </div>
+
+  <div class="filter-bar mb-20">
+    <div class="filter-chip active">Turno Dia</div>
+    <div class="filter-chip">Turno Noche</div>
+    <div class="filter-chip">Ambos Turnos</div>
+    <select class="filter-select"><option>Hoy 25/03</option><option>Ayer 24/03</option><option>23/03</option></select>
+    <select class="filter-select"><option>Mango</option><option>Arandano</option><option>Granada</option></select>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">🏭</div><div class="kpi-label">Consumo MP Hoy</div><div class="kpi-value">14,090 <span class="kpi-unit">kg</span></div><div class="kpi-progress"><div class="kpi-progress-bar" style="width:88%;background:var(--verde)"></div></div><div class="kpi-meta">Meta: 16,000 kg · T1 activo</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--naranja)"><div class="kpi-icon" style="background:var(--naranja-bg);color:var(--naranja)">🧊</div><div class="kpi-label">Chunks IQF</div><div class="kpi-value">6,437 <span class="kpi-unit">kg</span></div><div class="kpi-meta">Producto terminado 1ra calidad</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--azul)"><div class="kpi-icon" style="background:var(--azul-bg);color:var(--azul)">🎯</div><div class="kpi-label">Rendimiento</div><div class="kpi-value">45.7<span class="kpi-unit">%</span></div><div class="kpi-change down">▼ 4.3% vs Obj 50%</div><div class="kpi-meta">Chunks / Consumo MP</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--purple)"><div class="kpi-icon" style="background:var(--purple-bg);color:var(--purple)">📦</div><div class="kpi-label">ByP (Bits & Pieces)</div><div class="kpi-value">563 <span class="kpi-unit">kg</span></div><div class="kpi-meta">4% del consumo</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--amber)"><div class="kpi-icon" style="background:var(--amber-bg);color:var(--amber)">👥</div><div class="kpi-label">Personal Activo</div><div class="kpi-value">42 <span class="kpi-unit">op.</span></div><div class="kpi-meta">Linea ACO-1</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--cyan)"><div class="kpi-icon" style="background:var(--cyan-bg);color:var(--cyan)">⚡</div><div class="kpi-label">Kg/Hr</div><div class="kpi-value">1,867</div><div class="kpi-change down">vs 2,000 proy.</div></div>
+  </div>
+
+  <div class="grid-2 mb-24">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Consumo vs Chunks por Hora — Hoy</div></div>
+      <div class="chart-wrap"><canvas id="chartAcoHora"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🎯 Rendimiento % por Hora</div></div>
+      <div class="chart-wrap"><canvas id="chartAcoRend"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Data entry form -->
+  <div class="form-section" style="--area-color:#16a34a">
+    <div class="form-section-header" onclick="toggleFormSection(this)">
+      <div class="form-section-title">📝 Registrar Produccion por Hora</div>
+      <div class="form-section-toggle">▼</div>
+    </div>
+    <div class="form-section-body">
+      <div class="form-grid-portal">
+        <div class="form-group-p"><label>Hora</label><select><option>07:00-08:00</option><option>08:00-09:00</option><option>09:00-10:00</option><option>10:00-11:00</option><option>11:00-12:00</option><option>12:00-13:00</option><option>14:00-15:00</option><option>15:00-16:00</option><option>16:00-17:00</option><option>17:00-18:00</option></select></div>
+        <div class="form-group-p"><label>Fruta / Variedad</label><select><option>Mango</option><option>Arandano</option><option>Granada</option></select></div>
+        <div class="form-group-p"><label>Turno</label><select><option>Dia (07:00-19:00)</option><option>Noche (19:00-07:00)</option></select></div>
+        <div class="form-group-p"><label>Consumo MP (kg)</label><input type="number" placeholder="0"></div>
+        <div class="form-group-p"><label>Chunks IQF (kg)</label><input type="number" placeholder="0"></div>
+        <div class="form-group-p"><label>ByP (kg)</label><input type="number" placeholder="0"></div>
+        <div class="form-group-p"><label>N° Operarios</label><input type="number" placeholder="0"></div>
+        <div class="form-group-p"><label>Linea</label><select><option>Linea 1</option><option>Linea 2</option><option>Linea 3</option></select></div>
+        <div class="form-group-p"><label>Observacion</label><input type="text" placeholder="(opcional)"></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-submit" style="--area-color:#16a34a" onclick="showPortalToast('Registro guardado exitosamente','#16a34a')">✅ Registrar Hora</button>
+        <button class="btn-clear">Limpiar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">📋 Produccion Hora a Hora — Hoy 25 Marzo</div><span class="live-tag"><span class="dot"></span> Live</span></div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>Hora</th><th>Fruta</th><th>Linea</th><th>Consumo (kg)</th><th>Chunks (kg)</th><th>ByP (kg)</th><th>Rend %</th><th>Personal</th><th>Kg/Hr</th></tr></thead>
+        <tbody>
+          <tr><td>07:00-08:00</td><td>Mango</td><td>L1</td><td class="num">1,800</td><td class="num">824</td><td class="num">72</td><td class="text-green">45.8%</td><td class="num">42</td><td class="num">1,800</td></tr>
+          <tr><td>08:00-09:00</td><td>Mango</td><td>L1</td><td class="num">2,100</td><td class="num">970</td><td class="num">84</td><td class="text-green">46.2%</td><td class="num">42</td><td class="num">2,100</td></tr>
+          <tr><td>09:00-10:00</td><td>Mango</td><td>L1</td><td class="num">2,000</td><td class="num">902</td><td class="num">80</td><td class="text-green">45.1%</td><td class="num">42</td><td class="num">2,000</td></tr>
+          <tr><td>10:00-11:00</td><td>Mango</td><td>L1</td><td class="num">2,050</td><td class="num">941</td><td class="num">82</td><td class="text-green">45.9%</td><td class="num">42</td><td class="num">2,050</td></tr>
+          <tr><td>11:00-12:00</td><td>Mango</td><td>L1</td><td class="num">2,200</td><td class="num">1,023</td><td class="num">88</td><td class="text-green">46.5%</td><td class="num">42</td><td class="num">2,200</td></tr>
+          <tr><td>12:00-13:00</td><td>Mango</td><td>L1</td><td class="num">1,980</td><td class="num">899</td><td class="num">79</td><td class="text-green">45.4%</td><td class="num">42</td><td class="num">1,980</td></tr>
+          <tr style="background:var(--amber-bg)"><td>13:00-14:00</td><td class="text-muted" colspan="8" style="text-align:center;font-style:italic;color:var(--amber)">⏸️ Almuerzo / Cambio de turno</td></tr>
+          <tr><td>14:00-15:00</td><td>Mango</td><td>L1</td><td class="num">1,960</td><td class="num">878</td><td class="num">78</td><td class="text-green">44.8%</td><td class="num">42</td><td class="num">1,960</td></tr>
+          <tr class="hora-actual"><td>15:00-16:00</td><td>Mango</td><td>L1</td><td class="text-muted">—</td><td class="text-muted">—</td><td class="text-muted">—</td><td class="text-muted">—</td><td class="text-muted">—</td><td><span class="live-tag"><span class="dot"></span> En proceso</span></td></tr>
+        </tbody>
+        <tfoot><tr class="table-footer"><td><b>TOTAL</b></td><td><b>7 hrs</b></td><td></td><td class="num"><b>14,090</b></td><td class="num"><b>6,437</b></td><td class="num"><b>563</b></td><td class="text-green"><b>45.7%</b></td><td class="num"><b>42</b></td><td class="num"><b>2,013</b></td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: AREA TUNELES IQF
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-area-tuneles" style="--area-color:#0891b2">
+  <div class="area-header-bar" style="--area-color:#0891b2">
+    <div class="area-header-icon">❄️</div>
+    <div class="area-header-info">
+      <div class="area-header-title">Tuneles IQF</div>
+      <div class="area-header-sub">Control de congelamiento rapido individual · 3 tuneles activos</div>
+    </div>
+    <div class="area-header-actions">
+      <span class="live-tag"><span class="dot"></span> En vivo</span>
+      <a class="btn-app-link" style="--area-color:#0891b2" href="app-tuneles.html" target="_blank">📱 Abrir App Completa</a>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:#0891b2"><div class="kpi-icon" style="background:var(--cyan-bg);color:var(--cyan)">🧊</div><div class="kpi-label">Coches en Proceso</div><div class="kpi-value">78 <span class="kpi-unit">coches</span></div><div class="kpi-meta">En los 3 tuneles</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">🔄</div><div class="kpi-label">Ciclos Hoy</div><div class="kpi-value">12</div><div class="kpi-meta">Completados · Objetivo: 15</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--azul)"><div class="kpi-icon" style="background:var(--azul-bg);color:var(--azul)">🌡️</div><div class="kpi-label">Temp. Promedio</div><div class="kpi-value">-30.1 <span class="kpi-unit">°C</span></div><div class="kpi-meta">Obj: -30°C a -35°C</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--amber)"><div class="kpi-icon" style="background:var(--amber-bg);color:var(--amber)">⏱️</div><div class="kpi-label">T. Ciclo Promedio</div><div class="kpi-value">1.6 <span class="kpi-unit">hr</span></div><div class="kpi-meta">Objetivo: 1.5 hr</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--naranja)"><div class="kpi-icon" style="background:var(--naranja-bg);color:var(--naranja)">📦</div><div class="kpi-label">Kg Congelados Hoy</div><div class="kpi-value">19,500 <span class="kpi-unit">kg</span></div><div class="kpi-meta">250 kg/coche × 78</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">✅</div><div class="kpi-label">Eficiencia</div><div class="kpi-value">85<span class="kpi-unit">%</span></div><div class="kpi-change up">▲ 3% vs S12</div></div>
+  </div>
+
+  <!-- Tunnel visual status -->
+  <div class="tunnel-grid-portal">
+    <div class="tunnel-visual t-activo">
+      <div class="t-name">🧊 TUNEL IQF-1</div>
+      <div class="t-badge t-badge-activo">Congelando</div>
+      <div class="t-coches" style="color:#0891b2">32</div>
+      <div class="t-metric">coches cargados</div>
+      <div class="t-temp" style="color:var(--azul)">-30.2°C</div>
+      <div class="t-metric">Temp. actual</div>
+      <div class="t-metric">Inicio: <b>10:30</b> · Ciclo est: <b>1.5 hr</b></div>
+    </div>
+    <div class="tunnel-visual t-activo">
+      <div class="t-name">🧊 TUNEL IQF-2</div>
+      <div class="t-badge t-badge-activo">Congelando</div>
+      <div class="t-coches" style="color:#0891b2">28</div>
+      <div class="t-metric">coches cargados</div>
+      <div class="t-temp" style="color:var(--azul)">-29.8°C</div>
+      <div class="t-metric">Temp. actual</div>
+      <div class="t-metric">Inicio: <b>11:00</b> · Ciclo est: <b>1.7 hr</b></div>
+    </div>
+    <div class="tunnel-visual t-alerta">
+      <div class="t-name">🧊 TUNEL IQF-3</div>
+      <div class="t-badge t-badge-alerta">⚠️ Alerta Temp</div>
+      <div class="t-coches" style="color:#dc2626">18</div>
+      <div class="t-metric">coches cargados</div>
+      <div class="t-temp" style="color:#dc2626">-24.5°C ⚠️</div>
+      <div class="t-metric">Fuera de rango (-30°C)</div>
+      <div class="t-metric">Inicio: <b>12:15</b> · Revision: <b>Pendiente</b></div>
+    </div>
+  </div>
+
+  <div class="grid-2 mb-24">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Ciclos Completados por Tunel</div></div>
+      <div class="chart-wrap"><canvas id="chartTunCiclos"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🌡️ Temperatura por Ciclo — Hoy</div></div>
+      <div class="chart-wrap"><canvas id="chartTunTemp"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Data entry form -->
+  <div class="form-section" style="--area-color:#0891b2">
+    <div class="form-section-header" onclick="toggleFormSection(this)">
+      <div class="form-section-title">📝 Registrar Ciclo de Tunel</div>
+      <div class="form-section-toggle">▼</div>
+    </div>
+    <div class="form-section-body">
+      <div class="form-grid-portal">
+        <div class="form-group-p"><label>Tunel</label><select><option>IQF-1</option><option>IQF-2</option><option>IQF-3</option></select></div>
+        <div class="form-group-p"><label>Fruta</label><select><option>Mango</option><option>Arandano</option><option>Granada</option></select></div>
+        <div class="form-group-p"><label>Lote</label><input type="text" placeholder="CFT040K"></div>
+        <div class="form-group-p"><label>N° Coches</label><input type="number" placeholder="0" min="1" max="45"></div>
+        <div class="form-group-p"><label>Hora Inicio</label><input type="time"></div>
+        <div class="form-group-p"><label>Hora Fin</label><input type="time"></div>
+        <div class="form-group-p"><label>Temperatura (°C)</label><input type="number" placeholder="-32" step="0.1"></div>
+        <div class="form-group-p"><label>Estado</label><select><option>Ciclo Completado</option><option>Cargando</option><option>Descargando</option></select></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-submit" style="--area-color:#0891b2" onclick="showPortalToast('Ciclo registrado exitosamente','#0891b2')">✅ Registrar Ciclo</button>
+        <button class="btn-clear">Limpiar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">📋 Registro de Ciclos — Hoy</div></div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>Tunel</th><th>Fruta</th><th>Lote</th><th>Coches</th><th>Inicio</th><th>Fin</th><th>Hrs Ciclo</th><th>Temp °C</th><th>Efic.</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td><b>IQF-1</b></td><td>Mango</td><td>CFT040K</td><td class="num">38</td><td>07:00</td><td>08:35</td><td class="num" style="color:var(--verde);font-weight:800">1.6 hr</td><td class="num" style="color:var(--azul)">-31.2°C</td><td class="text-green">OK</td><td><span class="status-pill status-active">✅ Completado</span></td></tr>
+          <tr><td><b>IQF-2</b></td><td>Mango</td><td>CFT040K</td><td class="num">35</td><td>07:15</td><td>08:50</td><td class="num" style="color:var(--verde);font-weight:800">1.6 hr</td><td class="num" style="color:var(--azul)">-30.5°C</td><td class="text-green">OK</td><td><span class="status-pill status-active">✅ Completado</span></td></tr>
+          <tr><td><b>IQF-3</b></td><td>Mango</td><td>CFT039K</td><td class="num">30</td><td>07:30</td><td>09:15</td><td class="num" style="color:var(--amber);font-weight:800">1.8 hr</td><td class="num" style="color:var(--amber)">-28.1°C</td><td class="text-orange">⚠️</td><td><span class="status-pill status-active">✅ Completado</span></td></tr>
+          <tr><td><b>IQF-1</b></td><td>Mango</td><td>CFT040K</td><td class="num">36</td><td>09:00</td><td>10:25</td><td class="num" style="color:var(--verde);font-weight:800">1.4 hr</td><td class="num" style="color:var(--azul)">-32.0°C</td><td class="text-green">OK</td><td><span class="status-pill status-active">✅ Completado</span></td></tr>
+          <tr><td><b>IQF-1</b></td><td>Mango</td><td>CFT040K</td><td class="num">32</td><td>10:30</td><td>—</td><td class="text-muted">—</td><td class="num" style="color:var(--azul)">-30.2°C</td><td class="text-muted">—</td><td><span class="status-pill status-info">🔄 En proceso</span></td></tr>
+          <tr><td><b>IQF-3</b></td><td>Mango</td><td>CFT040K</td><td class="num">18</td><td>12:15</td><td>—</td><td class="text-muted">—</td><td class="num" style="color:#dc2626;font-weight:800">-24.5°C ⚠️</td><td class="text-red">Alerta</td><td><span class="status-pill status-danger">⚠️ Alerta</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PANEL: AREA EMPAQUE
+     ═══════════════════════════════════════════════════ -->
+<div class="panel-container" id="panel-area-empaque" style="--area-color:#7c3aed">
+  <div class="area-header-bar" style="--area-color:#7c3aed">
+    <div class="area-header-icon">📦</div>
+    <div class="area-header-info">
+      <div class="area-header-title">Empaque</div>
+      <div class="area-header-sub">Control de cajas, productividad y eficiencia de empaque</div>
+    </div>
+    <div class="area-header-actions">
+      <span class="live-tag"><span class="dot"></span> En vivo</span>
+      <a class="btn-app-link" style="--area-color:#7c3aed" href="app-empaque.html" target="_blank">📱 Abrir App Completa</a>
+    </div>
+  </div>
+
+  <div class="filter-bar mb-20">
+    <div class="filter-chip active">Turno Dia</div>
+    <div class="filter-chip">Turno Noche</div>
+    <select class="filter-select"><option>Hoy 25/03</option><option>Ayer 24/03</option><option>Semana 13</option></select>
+    <select class="filter-select"><option>Mango</option><option>Arandano</option><option>Granada</option></select>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:#7c3aed"><div class="kpi-icon" style="background:var(--purple-bg);color:var(--purple)">📦</div><div class="kpi-label">Cajas Producidas Hoy</div><div class="kpi-value" style="color:#7c3aed">644 <span class="kpi-unit">cajas</span></div><div class="kpi-progress"><div class="kpi-progress-bar" style="width:40%;background:#7c3aed"></div></div><div class="kpi-meta">Meta: 1,600 cajas/dia</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">⚡</div><div class="kpi-label">Cajas/Hora</div><div class="kpi-value">92 <span class="kpi-unit">cj/hr</span></div><div class="kpi-change up">▲ vs proy. 91.6</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--azul)"><div class="kpi-icon" style="background:var(--azul-bg);color:var(--azul)">⏱️</div><div class="kpi-label">Hrs Efectivas</div><div class="kpi-value">7 <span class="kpi-unit">hr</span></div><div class="kpi-meta">Turno dia hasta 15:00</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--naranja)"><div class="kpi-icon" style="background:var(--naranja-bg);color:var(--naranja)">📊</div><div class="kpi-label">Kg Empacados</div><div class="kpi-value">6,440 <span class="kpi-unit">kg</span></div><div class="kpi-meta">644 cajas × 10 kg</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--amber)"><div class="kpi-icon" style="background:var(--amber-bg);color:var(--amber)">👥</div><div class="kpi-label">Operarios</div><div class="kpi-value">28 <span class="kpi-unit">op.</span></div><div class="kpi-meta">Area empaque T1</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">📈</div><div class="kpi-label">Cj/Hr por Operario</div><div class="kpi-value">3.3</div><div class="kpi-meta">92 cj/hr ÷ 28 op.</div></div>
+  </div>
+
+  <div class="grid-2 mb-24">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Cajas Ejecutadas vs Proyectadas por Hora</div></div>
+      <div class="chart-wrap"><canvas id="chartEmpCajas"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">⚡ Productividad Cj/Hr</div></div>
+      <div class="chart-wrap"><canvas id="chartEmpEfic"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Data entry form -->
+  <div class="form-section" style="--area-color:#7c3aed">
+    <div class="form-section-header" onclick="toggleFormSection(this)">
+      <div class="form-section-title">📝 Registrar Produccion de Empaque</div>
+      <div class="form-section-toggle">▼</div>
+    </div>
+    <div class="form-section-body">
+      <div class="form-grid-portal">
+        <div class="form-group-p"><label>Hora</label><select><option>07:00-08:00</option><option>08:00-09:00</option><option>09:00-10:00</option><option>10:00-11:00</option><option>11:00-12:00</option><option>12:00-13:00</option><option>14:00-15:00</option><option>15:00-16:00</option></select></div>
+        <div class="form-group-p"><label>Producto</label><select><option>Mango</option><option>Arandano</option><option>Granada</option></select></div>
+        <div class="form-group-p"><label>Tipo de Corte</label><select><option>Chunks</option><option>Slices</option><option>Diced</option></select></div>
+        <div class="form-group-p"><label>Cajas Ejecutadas</label><input type="number" placeholder="0"></div>
+        <div class="form-group-p"><label>Cajas Proyectadas</label><input type="number" placeholder="92"></div>
+        <div class="form-group-p"><label>N° Operarios</label><input type="number" placeholder="0"></div>
+        <div class="form-group-p"><label>Encargado</label><input type="text" placeholder="Nombre"></div>
+        <div class="form-group-p"><label>Estado Cajas</label><select><option>✅ OK</option><option>⚠️ Reproceso</option><option>❌ Rechazo</option></select></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-submit" style="--area-color:#7c3aed" onclick="showPortalToast('Registro guardado exitosamente','#7c3aed')">✅ Registrar Hora</button>
+        <button class="btn-clear">Limpiar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">📋 Produccion de Empaque Hora a Hora — Hoy</div><span class="live-tag"><span class="dot"></span> Live</span></div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>Hora</th><th>Producto</th><th>Corte</th><th>Cajas Ej.</th><th>Cajas Proy.</th><th>Cj/Hr</th><th>Cj/Hr*Op</th><th>Operarios</th><th>Encargado</th></tr></thead>
+        <tbody>
+          <tr><td>07:00-08:00</td><td>Mango</td><td>Chunks</td><td class="num" style="color:#7c3aed;font-weight:800">82</td><td class="num">92</td><td class="num">82</td><td class="num">2.9</td><td class="num">28</td><td>J. Ramirez</td></tr>
+          <tr><td>08:00-09:00</td><td>Mango</td><td>Chunks</td><td class="num" style="color:#7c3aed;font-weight:800">97</td><td class="num">92</td><td class="num" style="color:var(--verde)">97</td><td class="num">3.5</td><td class="num">28</td><td>J. Ramirez</td></tr>
+          <tr><td>09:00-10:00</td><td>Mango</td><td>Chunks</td><td class="num" style="color:#7c3aed;font-weight:800">90</td><td class="num">92</td><td class="num">90</td><td class="num">3.2</td><td class="num">28</td><td>J. Ramirez</td></tr>
+          <tr><td>10:00-11:00</td><td>Mango</td><td>Chunks</td><td class="num" style="color:#7c3aed;font-weight:800">94</td><td class="num">92</td><td class="num" style="color:var(--verde)">94</td><td class="num">3.4</td><td class="num">28</td><td>J. Ramirez</td></tr>
+          <tr><td>11:00-12:00</td><td>Mango</td><td>Chunks</td><td class="num" style="color:#7c3aed;font-weight:800">102</td><td class="num">92</td><td class="num" style="color:var(--verde)">102</td><td class="num">3.6</td><td class="num">28</td><td>J. Ramirez</td></tr>
+          <tr><td>12:00-13:00</td><td>Mango</td><td>Chunks</td><td class="num" style="color:#7c3aed;font-weight:800">90</td><td class="num">92</td><td class="num">90</td><td class="num">3.2</td><td class="num">28</td><td>J. Ramirez</td></tr>
+          <tr><td>14:00-15:00</td><td>Mango</td><td>Chunks</td><td class="num" style="color:#7c3aed;font-weight:800">89</td><td class="num">92</td><td class="num">89</td><td class="num">3.2</td><td class="num">28</td><td>M. Lopez</td></tr>
+          <tr class="hora-actual"><td>15:00-16:00</td><td>Mango</td><td>Chunks</td><td class="text-muted">—</td><td class="num">92</td><td class="text-muted">—</td><td class="text-muted">—</td><td class="text-muted">—</td><td><span class="live-tag"><span class="dot"></span> En proceso</span></td></tr>
+        </tbody>
+        <tfoot><tr class="table-footer"><td><b>TOTAL</b></td><td><b>7 hrs</b></td><td></td><td class="num"><b>644</b></td><td class="num"><b>644</b></td><td class="num"><b>92 avg</b></td><td class="num"><b>3.3</b></td><td class="num"><b>28</b></td><td></td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<div class="portal-toast" id="portalToast"></div>
+
+<!-- ═══════════════════════════════════════════════════
+     JAVASCRIPT
+     ═══════════════════════════════════════════════════ -->
+<script>
+// ── USERS ──
+const USERS = {
+  'rodrigo': { pass:'2026', name:'Rodrigo Garcia', role:'Systems Analyst & Developer', initials:'RG' },
+  'jefe': { pass:'2026', name:'Ing. Luis Mendoza', role:'Jefe de Produccion', initials:'LM' },
+  'gerencia': { pass:'2026', name:'Gerencia General', role:'Director de Operaciones', initials:'GG' },
+  'admin': { pass:'admin', name:'Administrador', role:'Administrador del Sistema', initials:'AD' }
+};
+
+// ── LOGIN ──
+function doLogin() {
+  const u = document.getElementById('loginUser').value.toLowerCase().trim();
+  const p = document.getElementById('loginPass').value;
+  if (USERS[u] && USERS[u].pass === p) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+    const user = USERS[u];
+    document.getElementById('userNameSidebar').textContent = user.name;
+    document.getElementById('userRoleSidebar').textContent = user.role;
+    document.getElementById('userAvatarSidebar').textContent = user.initials;
+    const tn = document.getElementById('topbarName'); if(tn) tn.textContent = user.name;
+    const tr = document.getElementById('topbarRole'); if(tr) tr.textContent = user.role;
+    const ta = document.getElementById('topbarAvatar'); if(ta) ta.textContent = user.initials;
+    initAllCharts();
+  } else {
+    document.getElementById('loginError').textContent = 'Usuario o contrasena incorrectos';
+  }
+}
+function doLogout() {
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginError').textContent = '';
+}
+
+// ── NAVIGATION ──
+document.querySelectorAll('.nav-item[data-panel]').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+    const panel = item.dataset.panel;
+    document.querySelectorAll('.panel-container').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById('panel-' + panel);
+    if (target) target.classList.add('active');
+    const titles = {
+      'resumen':'Resumen Ejecutivo','indicadores':'Indicadores de Produccion','produccion-dia':'Produccion del Dia',
+      'rendimientos':'Rendimientos','costos':'Costos de Produccion','productividad':'Productividad y Eficiencia',
+      'proceso':'Flujo de Proceso','tiempo-muerto':'Tiempo Muerto','comparativo':'Comparativo Turnos',
+      'contenedores':'Contenedores','stock':'Stock General','programa':'Programa Produccion',
+      'proyecciones':'Proyecciones','almuerzos':'Almuerzos / Personal','materiales':'Materiales',
+      'area-recepcion':'Recepcion de Materia Prima','area-acondicionado':'Acondicionado',
+      'area-tuneles':'Tuneles IQF','area-empaque':'Empaque'
+    };
+    document.getElementById('topbarTitle').textContent = titles[panel] || panel;
+    if (window.innerWidth <= 1024) toggleSidebar();
+  });
+});
+
+// ── THEME ──
+function toggleTheme() {
+  document.body.classList.toggle('dark-mode');
+  const btn = document.getElementById('themeBtn');
+  btn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+}
+
+// ── SIDEBAR MOBILE ──
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+
+// ── DATE ──
+function updateDate() {
+  const now = new Date();
+  const days = ['dom','lun','mar','mie','jue','vie','sab'];
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const d = days[now.getDay()];
+  const day = now.getDate();
+  const m = months[now.getMonth()];
+  const h = String(now.getHours()).padStart(2,'0');
+  const min = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('topbarDate').textContent = `📅 ${d}, ${day} de ${m} · ${h}:${min}`;
+}
+updateDate();
+setInterval(updateDate, 60000);
+
+// ── FILTER CHIPS ──
+// Chart instances for filter control
+const chartInstances = {};
+
+document.querySelectorAll('.filter-bar').forEach(bar => {
+  bar.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      bar.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      const fruta = chip.dataset.fruta;
+      if (fruta) applyFrutaFilter(fruta);
+    });
+  });
+});
+
+function applyFrutaFilter(fruta) {
+  // Filter chartTNSemana: datasets 0=Mango, 1=Arandano, 2=Granada
+  const tnChart = chartInstances['chartTNSemana'];
+  const rendChart = chartInstances['chartRendSemana'];
+  if (tnChart) {
+    tnChart.data.datasets.forEach((ds, i) => {
+      if (fruta === 'all') ds.hidden = false;
+      else if (fruta === 'mango') ds.hidden = (i !== 0);
+      else if (fruta === 'arandano') ds.hidden = (i !== 1);
+      else if (fruta === 'granada') ds.hidden = (i !== 2);
+    });
+    tnChart.update();
+  }
+  if (rendChart) {
+    rendChart.data.datasets.forEach((ds, i) => {
+      if (fruta === 'all') ds.hidden = false;
+      else if (fruta === 'mango') ds.hidden = (i !== 0 && i !== 2); // mango + objetivo
+      else if (fruta === 'arandano') ds.hidden = (i !== 1);
+      else if (fruta === 'granada') ds.hidden = true; // no granada weekly rend data
+    });
+    rendChart.update();
+  }
+}
+
+// ── CHART DEFAULTS ──
+Chart.defaults.font.family = "'Plus Jakarta Sans','Inter',system-ui,sans-serif";
+Chart.defaults.font.size = 12;
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.pointStyleWidth = 8;
+const COLORS = {
+  verde:'#16a34a', naranja:'#ea580c', azul:'#2563eb', purple:'#7c3aed',
+  cyan:'#0891b2', amber:'#d97706', rose:'#e11d48', gray:'#64748b',
+  verdeLight:'rgba(22,163,74,0.15)', naranjaLight:'rgba(234,88,12,0.15)',
+  azulLight:'rgba(37,99,235,0.15)', purpleLight:'rgba(124,58,237,0.15)'
+};
+
+function initAllCharts() {
+  // Resumen Semanal
+  new Chart(document.getElementById('chartResumenSemanal'), {
+    type:'bar',
+    data:{
+      labels:['Lun 17','Mar 18','Mie 19','Jue 20','Vie 21','Sab 22','Dom 23','Lun 24','Mar 25'],
+      datasets:[
+        {label:'Kg Procesados',data:[21000,18000,19600,22400,20900,17541,23742,42000,14090],backgroundColor:COLORS.verdeLight,borderColor:COLORS.verde,borderWidth:2,borderRadius:8},
+        {label:'Kg Chunks',data:[9660,8280,9016,10304,9196,11227,9950,18929,6437],backgroundColor:COLORS.naranjaLight,borderColor:COLORS.naranja,borderWidth:2,borderRadius:8}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'},datalabels:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.04)'}},x:{grid:{display:false}}}}
+  });
+
+  // Fruta Donut
+  new Chart(document.getElementById('chartFrutaDonut'), {
+    type:'doughnut',
+    data:{labels:['Mango','Arandano','Granada'],datasets:[{data:[38420,8950,6750],backgroundColor:[COLORS.naranja,COLORS.purple,COLORS.rose],borderWidth:0,hoverOffset:8}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false},datalabels:{display:false}}}
+  });
+
+  // Rendimiento por Fruta
+  new Chart(document.getElementById('chartRendFruta'), {
+    type:'bar',
+    data:{
+      labels:['Mango','Arandano','Granada'],
+      datasets:[
+        {label:'Real',data:[45.7,64.0,57.0],backgroundColor:[COLORS.naranja,COLORS.purple,COLORS.rose],borderRadius:8},
+        {label:'Objetivo',data:[50,65,60],backgroundColor:'rgba(0,0,0,0.06)',borderRadius:8}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:true,max:80,grid:{color:'rgba(0,0,0,0.04)'}},x:{grid:{display:false}}}}
+  });
+
+  // TN por Semana (Indicadores)
+  chartInstances['chartTNSemana'] = new Chart(document.getElementById('chartTNSemana'), {
+    type:'bar',
+    data:{
+      labels:['S8','S9','S10','S11','S12','S13'],
+      datasets:[
+        {label:'Mango',data:[85.2,92.1,88.5,96.3,92.2,86.6],backgroundColor:COLORS.naranjaLight,borderColor:COLORS.naranja,borderWidth:2,borderRadius:8},
+        {label:'Arandano',data:[12.3,15.1,14.8,16.2,15.5,17.5],backgroundColor:COLORS.purpleLight,borderColor:COLORS.purple,borderWidth:2,borderRadius:8},
+        {label:'Granada',data:[0,0,0,8.5,10.4,0],backgroundColor:'rgba(225,29,72,0.15)',borderColor:COLORS.rose,borderWidth:2,borderRadius:8}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{stacked:true,beginAtZero:true},x:{stacked:true,grid:{display:false}}}}
+  });
+
+  // Rendimiento Semanal
+  chartInstances['chartRendSemana'] = new Chart(document.getElementById('chartRendSemana'), {
+    type:'line',
+    data:{
+      labels:['S8','S9','S10','S11','S12','S13'],
+      datasets:[
+        {label:'Mango',data:[44.2,45.8,44.9,46.1,45.3,45.7],borderColor:COLORS.naranja,backgroundColor:COLORS.naranjaLight,fill:true,tension:0.4},
+        {label:'Arandano',data:[62.5,63.8,63.2,64.5,63.9,64.0],borderColor:COLORS.purple,backgroundColor:COLORS.purpleLight,fill:true,tension:0.4},
+        {label:'Objetivo Mango',data:[50,50,50,50,50,50],borderColor:'rgba(0,0,0,0.2)',borderDash:[5,5],pointRadius:0,fill:false}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{min:30,max:80,grid:{color:'rgba(0,0,0,0.04)'}},x:{grid:{display:false}}}}
+  });
+
+  // Produccion por Hora
+  const horas = ['07-08','08-09','09-10','10-11','11-12','12-13','14-15'];
+  new Chart(document.getElementById('chartHoraKg'), {
+    type:'bar',
+    data:{labels:horas,datasets:[
+      {label:'Consumo MP (kg)',data:[1800,2100,2000,2050,2200,1980,1960],backgroundColor:COLORS.azulLight,borderColor:COLORS.azul,borderWidth:2,borderRadius:6},
+      {label:'Chunks IQF (kg)',data:[824,970,902,941,1023,899,878],backgroundColor:COLORS.verdeLight,borderColor:COLORS.verde,borderWidth:2,borderRadius:6}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false},tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+ctx.raw.toLocaleString()+' kg';}}}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.04)'}},x:{grid:{display:false}}}}
+  });
+
+  new Chart(document.getElementById('chartHoraRend'), {
+    type:'line',
+    data:{labels:horas,datasets:[
+      {label:'Rendimiento %',data:[45.8,46.2,45.1,45.9,46.5,45.4,44.8],borderColor:COLORS.verde,backgroundColor:COLORS.verdeLight,fill:true,tension:0.4,pointRadius:6,pointBackgroundColor:COLORS.verde,pointBorderColor:'#fff',pointBorderWidth:2},
+      {label:'Objetivo (50%)',data:[50,50,50,50,50,50,50],borderColor:'rgba(220,38,38,0.4)',borderDash:[6,4],pointRadius:0,fill:false,tension:0}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{min:38,max:55,grid:{color:'rgba(0,0,0,0.04)'},ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}}
+  });
+
+  // Rendimiento Historico
+  new Chart(document.getElementById('chartRendHistorico'), {
+    type:'line',
+    data:{
+      labels:['S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13'],
+      datasets:[
+        {label:'Mango',data:[43.5,44.1,44.8,45.2,44.6,45.0,45.3,44.2,45.8,44.9,45.7,45.3,45.7],borderColor:COLORS.naranja,tension:0.4,pointRadius:3},
+        {label:'Arandano',data:[null,null,null,null,null,61.2,62.0,62.5,63.8,63.2,64.5,63.9,64.0],borderColor:COLORS.purple,tension:0.4,pointRadius:3},
+        {label:'Granada',data:[null,null,null,null,null,null,null,null,null,null,55.0,57.0,null],borderColor:COLORS.rose,tension:0.4,pointRadius:3}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{min:35,max:75},x:{grid:{display:false}}}}
+  });
+
+  // Rendimiento Turno
+  new Chart(document.getElementById('chartRendTurno'), {
+    type:'bar',
+    data:{
+      labels:['Mango','Arandano','Granada'],
+      datasets:[
+        {label:'Dia',data:[45.7,64.5,57.0],backgroundColor:'rgba(245,158,11,0.6)',borderRadius:8},
+        {label:'Noche',data:[44.0,63.5,56.0],backgroundColor:'rgba(99,102,241,0.6)',borderRadius:8}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{min:35,max:75},x:{grid:{display:false}}}}
+  });
+
+  // Costo Evolucion
+  new Chart(document.getElementById('chartCostoEvol'), {
+    type:'line',
+    data:{
+      labels:['S8','S9','S10','S11','S12','S13'],
+      datasets:[
+        {label:'Costo Total/Kg',data:[0.42,0.41,0.40,0.39,0.40,0.38],borderColor:COLORS.verde,backgroundColor:COLORS.verdeLight,fill:true,tension:0.4,pointRadius:5},
+        {label:'MOD/Kg',data:[0.17,0.16,0.16,0.15,0.16,0.15],borderColor:COLORS.azul,tension:0.4,pointRadius:3},
+        {label:'Objetivo',data:[0.40,0.40,0.40,0.40,0.40,0.40],borderColor:'rgba(0,0,0,0.15)',borderDash:[5,5],pointRadius:0}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{min:0.10,max:0.50},x:{grid:{display:false}}}}
+  });
+
+  // Costo Donut
+  new Chart(document.getElementById('chartCostoDonut'), {
+    type:'doughnut',
+    data:{labels:['MOD','Energia/Frio','Materiales'],datasets:[{data:[0.15,0.15,0.08],backgroundColor:[COLORS.verde,COLORS.azul,COLORS.naranja],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false},datalabels:{display:false}}}
+  });
+
+  // KG/HR
+  new Chart(document.getElementById('chartKgHr'), {
+    type:'line',
+    data:{
+      labels:['S8','S9','S10','S11','S12','S13'],
+      datasets:[
+        {label:'KG/HR Real',data:[1750,1820,1790,1850,1810,1867],borderColor:COLORS.azul,backgroundColor:COLORS.azulLight,fill:true,tension:0.4,pointRadius:5},
+        {label:'KG/HR Proyectado',data:[2000,2000,2000,2000,2000,2000],borderColor:COLORS.naranja,borderDash:[5,5],pointRadius:0}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{min:1500,max:2200},x:{grid:{display:false}}}}
+  });
+
+  // Productividad Operario
+  new Chart(document.getElementById('chartProdOperario'), {
+    type:'bar',
+    data:{
+      labels:['Acondicionado','Tuneles','Empaque','Recepcion'],
+      datasets:[
+        {label:'Kg/Operario/Hora',data:[28.7,45.2,22.1,35.8],backgroundColor:[COLORS.verde,COLORS.azul,COLORS.naranja,COLORS.purple],borderRadius:8}
+      ]
+    },
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false},legend:{display:false}},scales:{x:{beginAtZero:true},y:{grid:{display:false}}}}
+  });
+
+  // Balance de Linea
+  new Chart(document.getElementById('chartBalance'), {
+    type:'bar',
+    data:{
+      labels:['Lavado','Pelado','Cortado','Seleccion','Congelado','Empaque'],
+      datasets:[
+        {label:'Eficiencia %',data:[92,85,78,88,95,82],backgroundColor:function(ctx){const v=ctx.raw;return v>=90?COLORS.verde:v>=80?COLORS.amber:COLORS.rose;},borderRadius:8}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false},legend:{display:false}},scales:{y:{beginAtZero:true,max:100},x:{grid:{display:false}}}}
+  });
+
+  // Tiempo Muerto
+  new Chart(document.getElementById('chartTiempoMuerto'), {
+    type:'bar',
+    data:{
+      labels:['Lun','Mar','Mie','Jue','Vie','Sab'],
+      datasets:[
+        {label:'Mecanico',data:[25,15,30,10,22,18],backgroundColor:'#dc2626',borderRadius:4},
+        {label:'Falta MP',data:[10,20,0,15,8,12],backgroundColor:'#f59e0b',borderRadius:4},
+        {label:'Limpieza',data:[15,10,15,10,15,10],backgroundColor:'#2563eb',borderRadius:4},
+        {label:'Cambio Prod.',data:[5,8,10,0,5,8],backgroundColor:'#7c3aed',borderRadius:4},
+        {label:'Otros',data:[3,5,2,8,3,4],backgroundColor:'#64748b',borderRadius:4}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{stacked:true,beginAtZero:true},x:{stacked:true,grid:{display:false}}}}
+  });
+
+  // TM Donut
+  new Chart(document.getElementById('chartTMDonut'), {
+    type:'doughnut',
+    data:{labels:['Mecanico','Falta MP','Limpieza','Cambio Prod.','Otros'],datasets:[{data:[35,25,20,12,8],backgroundColor:['#dc2626','#f59e0b','#2563eb','#7c3aed','#64748b'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},datalabels:{display:false}}}
+  });
+
+  // Comparativo TN
+  const compDates = ['23/02','24/02','25/02','16/03','18/03','19/03','23/03','24/03'];
+  new Chart(document.getElementById('chartCompTN'), {
+    type:'bar',
+    data:{labels:compDates,datasets:[
+      {label:'Dia',data:[21000,19600,13958,22400,19600,20900,23742,22400],backgroundColor:'rgba(245,158,11,0.6)',borderRadius:6},
+      {label:'Noche',data:[18000,16362,12566,0,16856,0,20900,19600],backgroundColor:'rgba(99,102,241,0.6)',borderRadius:6}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}}
+  });
+
+  // Comp KG/HR
+  new Chart(document.getElementById('chartCompKgHr'), {
+    type:'line',
+    data:{labels:compDates,datasets:[
+      {label:'KG/HR Dia',data:[1750,1633,1163,1867,1633,1742,1978,1867],borderColor:'#f59e0b',tension:0.4,pointRadius:4},
+      {label:'KG/HR Noche',data:[1500,1363,1047,0,1404,0,1742,1633],borderColor:'#6366f1',tension:0.4,pointRadius:4},
+      {label:'KG/HR Proyectado',data:[2000,2000,2000,2000,2000,2000,2000,2000],borderColor:'rgba(0,0,0,0.15)',borderDash:[5,5],pointRadius:0}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{min:800,max:2200},x:{grid:{display:false}}}}
+  });
+
+  // Proyecciones
+  new Chart(document.getElementById('chartProy'), {
+    type:'bar',
+    data:{
+      labels:['S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13'],
+      datasets:[
+        {label:'Proyectado',data:[80,85,90,95,100,105,110,115,118,118,118,118,118],backgroundColor:'rgba(0,0,0,0.06)',borderRadius:8},
+        {label:'Ejecutado',data:[72,78,82,88,92,96,102,97.5,107.2,103.3,121,118.1,104.2],backgroundColor:function(ctx){const i=ctx.dataIndex;const p=[80,85,90,95,100,105,110,115,118,118,118,118,118];return ctx.raw>=p[i]*0.9?COLORS.verdeLight:COLORS.naranjaLight;},borderColor:function(ctx){const i=ctx.dataIndex;const p=[80,85,90,95,100,105,110,115,118,118,118,118,118];return ctx.raw>=p[i]*0.9?COLORS.verde:COLORS.naranja;},borderWidth:2,borderRadius:8}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:true,max:140},x:{grid:{display:false}}}}
+  });
+
+  // Almuerzos
+  new Chart(document.getElementById('chartAlmuerzos'), {
+    type:'bar',
+    data:{
+      labels:['Lun 17','Mar 18','Mie 19','Jue 20','Vie 21','Sab 22','Lun 24','Mar 25'],
+      datasets:[
+        {label:'T. Dia',data:[75,72,78,80,70,65,75,78],backgroundColor:'rgba(245,158,11,0.6)',borderRadius:6},
+        {label:'T. Noche',data:[62,60,65,65,58,55,62,64],backgroundColor:'rgba(99,102,241,0.6)',borderRadius:6}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{stacked:true,beginAtZero:true},x:{stacked:true,grid:{display:false}}}}
+  });
+
+  // Personal por area
+  new Chart(document.getElementById('chartPersonal'), {
+    type:'doughnut',
+    data:{labels:['Acondicionado','Tuneles','Empaque','Recepcion','Supervision'],datasets:[{data:[45,20,35,15,12],backgroundColor:[COLORS.verde,COLORS.azul,COLORS.naranja,COLORS.purple,COLORS.gray],borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{datalabels:{display:false}}}
+  });
+
+  // Stock
+  new Chart(document.getElementById('chartStock'), {
+    type:'bar',
+    data:{
+      labels:['Mango','Arandano','Granada'],
+      datasets:[{label:'Stock (Kg)',data:[29915,5200,40756],backgroundColor:[COLORS.naranja,COLORS.purple,COLORS.rose],borderRadius:8}]
+    },
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false},legend:{display:false}},scales:{x:{beginAtZero:true},y:{grid:{display:false}}}}
+  });
+
+  // Materiales
+  new Chart(document.getElementById('chartMateriales'), {
+    type:'bar',
+    data:{
+      labels:['S10','S11','S12','S13'],
+      datasets:[
+        {label:'Cajas',data:[2100,2350,2280,2150],backgroundColor:COLORS.verdeLight,borderColor:COLORS.verde,borderWidth:2,borderRadius:6},
+        {label:'Bolsas',data:[2100,2350,2280,2150],backgroundColor:COLORS.azulLight,borderColor:COLORS.azul,borderWidth:2,borderRadius:6}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}}
+  });
+
+  // Etileno
+  new Chart(document.getElementById('chartEtileno'), {
+    type:'line',
+    data:{
+      labels:['S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13'],
+      datasets:[
+        {label:'Stock (lts)',data:[6,5.25,3,7.05,3.45,4.65,5.04,3.02,4.2,2.8,5.1,3.5,4.0],borderColor:COLORS.cyan,backgroundColor:'rgba(8,145,178,0.1)',fill:true,tension:0.4,pointRadius:4},
+        {label:'Consumo Semanal',data:[0.75,0.75,1.2,1.8,1.8,1.01,1.01,1.5,1.2,1.4,1.6,1.6,1.5],borderColor:COLORS.naranja,tension:0.4,pointRadius:3}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}}
+  });
+
+  // ════════════════════════════════════════════════════════
+  // AREA DASHBOARDS — CHART INITIALIZATIONS
+  // ════════════════════════════════════════════════════════
+
+  // Recepcion Semanal (bar)
+  chartInstances['chartRecSemanal'] = new Chart(document.getElementById('chartRecSemanal'), {
+    type:'bar',
+    data:{
+      labels:['S8','S9','S10','S11','S12','S13'],
+      datasets:[
+        {label:'Mango',data:[150,170,160,178,168,154],backgroundColor:'rgba(234,88,12,0.2)',borderColor:'#ea580c',borderWidth:2,borderRadius:8},
+        {label:'Arandano',data:[15,18,16,19,17,18],backgroundColor:COLORS.purpleLight,borderColor:COLORS.purple,borderWidth:2,borderRadius:8},
+        {label:'Granada',data:[0,0,0,10,12,0],backgroundColor:'rgba(225,29,72,0.15)',borderColor:COLORS.rose,borderWidth:2,borderRadius:8}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{stacked:true,beginAtZero:true,title:{display:true,text:'TN'}},x:{stacked:true,grid:{display:false}}}}
+  });
+
+  // Recepcion por Fruta (doughnut)
+  new Chart(document.getElementById('chartRecFruta'), {
+    type:'doughnut',
+    data:{labels:['Mango','Arandano','Granada'],datasets:[{data:[1557,225,110],backgroundColor:['#ea580c',COLORS.purple,COLORS.rose],borderWidth:0,hoverOffset:8}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false},datalabels:{display:false}}}
+  });
+
+  // Acondicionado Hora (bar: Consumo vs Chunks)
+  const acoHoras = ['07-08','08-09','09-10','10-11','11-12','12-13','14-15'];
+  new Chart(document.getElementById('chartAcoHora'), {
+    type:'bar',
+    data:{labels:acoHoras,datasets:[
+      {label:'Consumo MP (kg)',data:[1800,2100,2000,2050,2200,1980,1960],backgroundColor:'rgba(22,163,74,0.15)',borderColor:COLORS.verde,borderWidth:2,borderRadius:6},
+      {label:'Chunks IQF (kg)',data:[824,970,902,941,1023,899,878],backgroundColor:COLORS.naranjaLight,borderColor:COLORS.naranja,borderWidth:2,borderRadius:6}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.04)'}},x:{grid:{display:false}}}}
+  });
+
+  // Acondicionado Rendimiento (line)
+  new Chart(document.getElementById('chartAcoRend'), {
+    type:'line',
+    data:{labels:acoHoras,datasets:[
+      {label:'Rendimiento %',data:[45.8,46.2,45.1,45.9,46.5,45.4,44.8],borderColor:COLORS.verde,backgroundColor:'rgba(22,163,74,0.1)',fill:true,tension:0.4,pointRadius:6,pointBackgroundColor:COLORS.verde,pointBorderColor:'#fff',pointBorderWidth:2},
+      {label:'Objetivo (50%)',data:[50,50,50,50,50,50,50],borderColor:'rgba(220,38,38,0.4)',borderDash:[6,4],pointRadius:0,fill:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{min:38,max:55,ticks:{callback:v=>v+'%'},grid:{color:'rgba(0,0,0,0.04)'}},x:{grid:{display:false}}}}
+  });
+
+  // Tuneles Ciclos por Tunel (bar)
+  new Chart(document.getElementById('chartTunCiclos'), {
+    type:'bar',
+    data:{
+      labels:['IQF-1','IQF-2','IQF-3'],
+      datasets:[
+        {label:'Completados',data:[5,4,3],backgroundColor:['rgba(8,145,178,0.7)','rgba(8,145,178,0.5)','rgba(8,145,178,0.3)'],borderColor:'#0891b2',borderWidth:2,borderRadius:8},
+        {label:'En Proceso',data:[1,1,1],backgroundColor:['rgba(217,119,6,0.5)','rgba(217,119,6,0.4)','rgba(217,119,6,0.3)'],borderColor:COLORS.amber,borderWidth:1,borderRadius:8}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{stacked:true,beginAtZero:true,ticks:{stepSize:1}},x:{stacked:true,grid:{display:false}}}}
+  });
+
+  // Tuneles Temperatura (line)
+  new Chart(document.getElementById('chartTunTemp'), {
+    type:'line',
+    data:{
+      labels:['C1 07:00','C2 08:35','C3 09:00','C4 10:25','C5 10:30','C6 11:00','C7 12:15'],
+      datasets:[
+        {label:'IQF-1',data:[-31.2,null,-32.0,-30.2,null,null,null],borderColor:'#0891b2',tension:0.2,pointRadius:6,pointBackgroundColor:'#0891b2',spanGaps:false},
+        {label:'IQF-2',data:[null,-30.5,null,null,null,-29.8,null],borderColor:COLORS.verde,tension:0.2,pointRadius:6,pointBackgroundColor:COLORS.verde,spanGaps:false},
+        {label:'IQF-3',data:[null,null,-28.1,null,null,null,-24.5],borderColor:COLORS.rose,tension:0.2,pointRadius:6,pointBackgroundColor:COLORS.rose,spanGaps:false},
+        {label:'Limite -30°C',data:[-30,-30,-30,-30,-30,-30,-30],borderColor:'rgba(220,38,38,0.3)',borderDash:[6,4],pointRadius:0,fill:false}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{reverse:true,min:-35,max:-20,title:{display:true,text:'°C'},grid:{color:'rgba(0,0,0,0.04)'}},x:{grid:{display:false}}}}
+  });
+
+  // Empaque Cajas por Hora (bar: ejecutadas vs proyectadas)
+  const empHoras = ['07-08','08-09','09-10','10-11','11-12','12-13','14-15'];
+  new Chart(document.getElementById('chartEmpCajas'), {
+    type:'bar',
+    data:{labels:empHoras,datasets:[
+      {label:'Cajas Ejecutadas',data:[82,97,90,94,102,90,89],backgroundColor:'rgba(124,58,237,0.25)',borderColor:'#7c3aed',borderWidth:2,borderRadius:6},
+      {label:'Cajas Proyectadas',data:[92,92,92,92,92,92,92],backgroundColor:'rgba(0,0,0,0.04)',borderColor:'rgba(0,0,0,0.15)',borderWidth:1,borderRadius:6,borderDash:[4,4]}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:true,max:130,grid:{color:'rgba(0,0,0,0.04)'}},x:{grid:{display:false}}}}
+  });
+
+  // Empaque Eficiencia Cj/Hr (line)
+  new Chart(document.getElementById('chartEmpEfic'), {
+    type:'line',
+    data:{labels:empHoras,datasets:[
+      {label:'Cj/Hr Real',data:[82,97,90,94,102,90,89],borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,0.1)',fill:true,tension:0.4,pointRadius:6,pointBackgroundColor:'#7c3aed',pointBorderColor:'#fff',pointBorderWidth:2},
+      {label:'Cj/Hr*Op',data:[2.9,3.5,3.2,3.4,3.6,3.2,3.2],borderColor:COLORS.amber,tension:0.4,pointRadius:4,yAxisID:'y1'},
+      {label:'Objetivo (92 cj/hr)',data:[92,92,92,92,92,92,92],borderColor:'rgba(0,0,0,0.15)',borderDash:[5,5],pointRadius:0,fill:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:false,min:70,max:120,title:{display:true,text:'Cj/Hr'},grid:{color:'rgba(0,0,0,0.04)'}},y1:{position:'right',min:0,max:5,title:{display:true,text:'Cj/Hr*Op'},grid:{display:false}},x:{grid:{display:false}}}}
+  });
+}
+
+// ── TOGGLE FORM SECTIONS ──
+function toggleFormSection(header) {
+  const body = header.nextElementSibling;
+  const toggle = header.querySelector('.form-section-toggle');
+  body.classList.toggle('open');
+  if (toggle) toggle.classList.toggle('open');
+}
+
+// ── PORTAL TOAST ──
+function showPortalToast(message, color) {
+  const toast = document.getElementById('portalToast');
+  if (!toast) return;
+  toast.textContent = message;
+  toast.style.background = color || '#16a34a';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
