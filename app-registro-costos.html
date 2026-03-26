@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -329,15 +330,15 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
   <div class="kpi-grid">
     <div class="kpi-card kpi-c1 animate-in" style="animation-delay:0.05s">
       <div class="kpi-icon">💵</div>
-      <div class="kpi-label">Tarifa Actual (S/)</div>
+      <div class="kpi-label">Tarifa Almuerzo (S/)</div>
       <div class="kpi-value" id="kpiTarifaSol">S/ 0.00</div>
-      <div class="kpi-sub">Tarifa en soles</div>
+      <div class="kpi-sub">Costo almuerzo por persona</div>
     </div>
     <div class="kpi-card kpi-c2 animate-in" style="animation-delay:0.1s">
       <div class="kpi-icon">💲</div>
-      <div class="kpi-label">Tarifa Actual ($)</div>
+      <div class="kpi-label">Tarifa Kg Congelado ($)</div>
       <div class="kpi-value" id="kpiTarifaUsd">$ 0.00</div>
-      <div class="kpi-sub">Tarifa en dolares</div>
+      <div class="kpi-sub" id="kpiTarifaUsdSub">Precio por kg congelado</div>
     </div>
     <div class="kpi-card kpi-c3 kpi-main animate-in" style="animation-delay:0.15s">
       <div class="kpi-icon">📦</div>
@@ -954,17 +955,16 @@ function readCrossAppData() {
   document.getElementById('caPersonal').textContent = crossData.personal || '0';
   document.getElementById('caHoras').textContent = crossData.horasRegistradas;
 
-  // Costo/Kg calculado
+  // Costo/Kg calculado (uses costo_kg_congelado, not tarifa almuerzo)
   const tarifaUsd = getCurrentTarifaUsd();
   const tarifaSol = getCurrentTarifaSol();
   const tc = getCurrentTC();
+  const costoKgCongCA = parseFloat(document.getElementById('fCostoKgManual').value) || 3.51;
 
   let costoKgCalc = 0;
-  if (tarifaUsd > 0 && crossData.personal > 0 && crossData.ptKg > 0) {
-    costoKgCalc = (tarifaUsd * crossData.personal) / crossData.ptKg;
-    const displayTarifa = monedaSoles ? tarifaSol : tarifaUsd;
-    const sym = monedaSoles ? 'S/' : '$';
-    document.getElementById('caCostoKgSub').textContent = `${sym}${displayTarifa.toFixed(2)} x ${crossData.personal} / ${crossData.ptKg.toLocaleString('es-PE')} kg`;
+  if (costoKgCongCA > 0 && crossData.personal > 0 && crossData.ptKg > 0) {
+    costoKgCalc = (costoKgCongCA * crossData.personal) / crossData.ptKg;
+    document.getElementById('caCostoKgSub').textContent = `$${costoKgCongCA.toFixed(2)} x ${crossData.personal} / ${crossData.ptKg.toLocaleString('es-PE')} kg`;
   } else {
     document.getElementById('caCostoKgSub').textContent = 'Esperando datos...';
   }
@@ -1153,7 +1153,10 @@ function renderKPIs() {
   const tarifaSol = tarifaSolForm;
   const tarifaUsd = tarifaSolForm / tcForm;
   document.getElementById('kpiTarifaSol').textContent = 'S/ ' + tarifaSol.toFixed(2);
-  document.getElementById('kpiTarifaUsd').textContent = '$ ' + tarifaUsd.toFixed(2);
+  const costoKgCongKpi2 = parseFloat(document.getElementById('fCostoKgManual').value) || 3.51;
+  const frutaActual = document.getElementById('fFruta').value || 'MANGO';
+  document.getElementById('kpiTarifaUsd').textContent = '$ ' + costoKgCongKpi2.toFixed(2);
+  document.getElementById('kpiTarifaUsdSub').textContent = 'Precio por kg congelado - ' + frutaActual;
 
   // Currency-aware labels
   const sym = monedaSoles ? 'S/' : '$';
