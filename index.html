@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="es"><script>if(localStorage.getItem('portal_theme')==='dark')document.documentElement.classList.add('pre-dark');if(sessionStorage.getItem('portal_logged_in'))document.documentElement.classList.add('pre-logged')</script>
+<html lang="es"><script>(function(){var d=localStorage.getItem('portal_theme')==='dark';if(d)document.documentElement.classList.add('pre-dark');if(sessionStorage.getItem('portal_logged_in'))document.documentElement.classList.add('pre-logged');window.__preDark=d})()</script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -11,8 +11,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
 /* Pre-render: theme + login flash prevention */
-html.pre-dark body { background:#0a0f14!important; }
-html.pre-dark #loginScreen { background:#0a0f14!important; }
+html.pre-dark body { background:#0a0f14!important; color:#e2e8f0!important; }
+html.pre-dark #loginScreen { background:#0a0f14!important; color:#e2e8f0!important; }
 html.pre-logged #loginScreen { display:none!important; }
 html.pre-logged #appScreen { display:block!important; }
 /* ================================================================
@@ -2333,12 +2333,6 @@ function doLogin() {
         try { const ch = Chart.getChart(c); if(ch) { ch.resize(); ch.update('none'); } } catch(e){}
       });
     }, 500);
-    // Apply saved theme
-    if (localStorage.getItem('portal_theme') === 'dark') {
-      document.body.classList.add('dark-mode');
-      const btn = document.getElementById('themeBtn');
-      if (btn) btn.textContent = '☀️';
-    }
     document.documentElement.classList.remove('pre-dark','pre-logged');
     sessionStorage.setItem('portal_logged_in', 'true');
     syncFromSupabase();
@@ -2350,6 +2344,12 @@ function doLogin() {
   } else {
     document.getElementById('loginError').textContent = 'Usuario o contrasena incorrectos';
   }
+}
+// Apply dark mode BEFORE auto-login to prevent flash
+if (localStorage.getItem('portal_theme') === 'dark' || window.__preDark) {
+  document.body.classList.add('dark-mode');
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.textContent = '☀️';
 }
 // Auto-login si la sesion sigue activa (esperar a que todo cargue)
 window.addEventListener('load', function(){
