@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Palitickets — Frutos Tropicales Peru Export S.A.C.</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --verde: #16a34a;
+    --verde-claro: #22c55e;
+    --amarillo: #f5c518;
+    --naranja: #e8720c;
+    --fondo: #0d1a0f;
+    --fondo2: #142018;
+    --fondo3: #1c2d20;
+    --texto: #e8f5e9;
+    --texto2: #a5c8aa;
+    --borde: #2a3d2d;
+    --rojo: #e53935;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--fondo);
+    color: var(--texto);
+    font-family: 'Plus Jakarta Sans','Inter',system-ui,sans-serif;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 10% 20%, rgba(26,107,47,0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 80%, rgba(245,197,24,0.08) 0%, transparent 50%);
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, var(--verde) 0%, #0d3d1a 100%);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--amarillo);
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+  .header-brand {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: var(--amarillo);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .brand-text h1 { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  .brand-text p { font-size: 11px; color: rgba(255,255,255,0.65); font-weight: 400; letter-spacing: 1px; text-transform: uppercase; }
+
+  .header-stats {
+    display: flex; gap: 20px;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--amarillo);
+  }
+
+  /* NAV TABS */
+  .nav-tabs {
+    display: flex;
+    background: var(--fondo2);
+    border-bottom: 1px solid var(--borde);
+    overflow-x: auto;
+  }
+  .nav-tab {
+    padding: 14px 24px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--texto2);
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-tab:hover { color: var(--texto); background: rgba(255,255,255,0.03); }
+  .nav-tab.active { color: var(--amarillo); border-bottom-color: var(--amarillo); }
+
+  /* MAIN CONTENT */
+  .main { padding: 24px; max-width: 1100px; margin: 0 auto; }
+
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* CARDS */
+  .card {
+    background: var(--fondo2);
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--amarillo);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 18px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* SCANNER */
+  #reader {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid var(--verde-claro);
+    background: #000;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  #reader * { border-radius: 0 !important; }
+
+  .scan-result {
+    background: var(--fondo3);
+    border: 2px solid var(--verde-claro);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    text-align: center;
+    display: none;
+  }
+  .scan-result.show { display: block; }
+  .scan-result .label { font-size: 10px; color: var(--texto2); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+  .scan-result .value { font-size: 20px; color: var(--amarillo); font-weight: 500; }
+
+  /* BUTTONS */
+  .btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Plus Jakarta Sans','Inter',system-ui,sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary { background: var(--verde-claro); color: #fff; }
+  .btn-primary:hover { background: var(--verde); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(45,153,72,0.4); }
+  .btn-secondary { background: var(--fondo3); color: var(--texto2); border: 1px solid var(--borde); }
+  .btn-secondary:hover { color: var(--texto); border-color: var(--verde-claro); }
+  .btn-danger { background: var(--rojo); color: #fff; }
+  .btn-danger:hover { background: #c62828; }
+  .btn-amarillo { background: var(--amarillo); color: #000; }
+  .btn-amarillo:hover { background: #e6b800; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,197,24,0.4); }
+  .btn-sm { padding: 8px 14px; font-size: 12px; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 11px; font-weight: 600; color: var(--texto2); text-transform: uppercase; letter-spacing: 1px; }
+  input, select, textarea {
+    background: var(--fondo3);
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--texto);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--verde-claro); }
+  input::placeholder { color: rgba(165,200,170,0.4); }
+  select option { background: var(--fondo2); }
+
+  /* PALITICKET PREVIEW */
+  .paliticket-preview {
+    background: #fff;
+    color: #000;
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 380px;
+    margin: 0 auto;
+    font-family: 'DM Mono', monospace;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  .pali-header {
+    text-align: center;
+    border-bottom: 2px dashed #ccc;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+  .pali-header h2 { font-size: 16px; font-weight: 800; font-family: 'Plus Jakarta Sans','Inter',system-ui,sans-serif; color: #16a34a; }
+  .pali-header p { font-size: 10px; color: #666; letter-spacing: 1px; }
+  .pali-number { font-size: 28px; font-weight: 800; text-align: center; color: #000; letter-spacing: 2px; margin: 8px 0; }
+  .pali-rows { display: flex; flex-direction: column; gap: 4px; font-size: 11px; }
+  .pali-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dotted #eee; }
+  .pali-row .pk { color: #666; text-transform: uppercase; font-size: 10px; }
+  .pali-row .pv { font-weight: 500; }
+  .pali-barcode { text-align: center; margin-top: 12px; }
+  .pali-footer { text-align: center; font-size: 9px; color: #aaa; margin-top: 8px; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--borde); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    background: var(--fondo3);
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--texto2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  td {
+    padding: 12px 14px;
+    border-top: 1px solid var(--borde);
+    color: var(--texto);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  tr:hover td { background: rgba(45,153,72,0.05); }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge-verde { background: rgba(45,153,72,0.2); color: #4caf50; border: 1px solid rgba(45,153,72,0.3); }
+  .badge-naranja { background: rgba(232,114,12,0.2); color: #ff9800; border: 1px solid rgba(232,114,12,0.3); }
+
+  /* SCAN MODE INDICATOR */
+  .scan-mode-bar {
+    background: linear-gradient(90deg, rgba(26,107,47,0.4), rgba(245,197,24,0.1));
+    border: 1px solid var(--verde-claro);
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px;
+  }
+  .pulse-dot {
+    width: 10px; height: 10px;
+    background: var(--verde-claro);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+    display: inline-block; margin-right: 8px;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(45,153,72,0.7); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(45,153,72,0); }
+  }
+
+  /* REGISTRO DETAIL */
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .detail-item { background: var(--fondo3); border-radius: 10px; padding: 14px; }
+  .detail-item .dk { font-size: 10px; color: var(--texto2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .detail-item .dv { font-family: 'DM Mono', monospace; font-size: 16px; color: var(--texto); font-weight: 500; }
+  .detail-item.highlight { border: 1px solid var(--verde-claro); }
+  .detail-item.highlight .dv { color: var(--amarillo); font-size: 20px; }
+
+  /* SEARCH BAR */
+  .search-bar {
+    display: flex; gap: 10px; margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .search-bar input {
+    flex: 1; min-width: 200px;
+  }
+
+  /* ALERTS */
+  .alert {
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .alert-success { background: rgba(45,153,72,0.15); border: 1px solid rgba(45,153,72,0.4); color: #81c784; }
+  .alert-error { background: rgba(229,57,53,0.15); border: 1px solid rgba(229,57,53,0.4); color: #ef9a9a; }
+  .alert-info { background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.3); color: var(--amarillo); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--fondo2);
+    border: 1px solid var(--borde);
+    border-radius: 20px;
+    padding: 28px;
+    max-width: 520px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .modal-title { font-size: 16px; font-weight: 800; }
+  .close-btn { background: none; border: none; color: var(--texto2); font-size: 22px; cursor: pointer; }
+  .close-btn:hover { color: var(--rojo); }
+
+  /* PRINT STYLES */
+  @media print {
+    @page { size: A4 landscape; margin: 6mm; }
+    body * { visibility: hidden; }
+    .paliticket-print-area, .paliticket-print-area * { visibility: visible; }
+    .paliticket-print-area {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100vh;
+      background: #fff;
+      padding: 4px;
+      display: flex !important;
+      gap: 10px;
+    }
+    .paliticket-print-area .pali-print-copy {
+      flex: 1;
+      height: 100%;
+      overflow: hidden;
+    }
+  }
+
+  .empty-state {
+    text-align: center; padding: 60px 20px; color: var(--texto2);
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  .flex-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+  /* DEV SIGNATURE */
+  .dev-signature {
+    display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 18px;border-radius:16px;
+    background:linear-gradient(145deg,rgba(10,18,32,0.85),rgba(20,30,48,0.9));
+    border:1px solid rgba(212,175,55,0.3);overflow:hidden;position:relative;
+    animation:sigGlow 4s ease infinite;
+  }
+  .dev-signature::before {
+    content:'';position:absolute;top:0;left:-100%;width:50%;height:100%;
+    background:linear-gradient(90deg,transparent,rgba(212,175,55,0.08),transparent);
+    animation:sigShine 5s ease-in-out infinite;pointer-events:none;
+  }
+  .sig-label { font-size:7px;color:rgba(212,175,55,0.7);text-transform:uppercase;letter-spacing:2px;font-weight:800; }
+  .sig-name {
+    font-size:13px;font-weight:900;
+    background:linear-gradient(135deg,#d4af37,#f5e6a3,#c0c0c0,#f5e6a3,#d4af37);
+    background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    background-clip:text;animation:sigShimmer 4s ease infinite;
+  }
+  .sig-role { font-size:8px;font-weight:700;color:#22c55e;letter-spacing:0.5px; }
+  @keyframes sigGlow { 0%,100%{border-color:rgba(212,175,55,0.2)}50%{border-color:rgba(212,175,55,0.45)} }
+  @keyframes sigShine { 0%{left:-100%}50%,100%{left:200%} }
+  @keyframes sigShimmer { 0%{background-position:100% 0}50%{background-position:0% 0}100%{background-position:-100% 0} }
+
+  .header-right { display:flex; align-items:center; gap:14px; }
+
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .detail-grid { grid-template-columns: 1fr; }
+    .header-stats { display: none; }
+    .dev-signature { display: none; }
+    .main { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-brand">
+    <img src="LOGO.png" alt="FTP" style="width:44px;height:44px;border-radius:10px">
+    <div class="brand-text">
+      <h1>FRUTOS TROPICALES PERU EXPORT S.A.C.</h1>
+      <p>Sistema de Palitickets — Control de Despacho</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="header-stats">
+      <div class="stat-pill" id="stat-total">Total: 0 registros</div>
+      <div class="stat-pill" id="stat-hoy">Hoy: 0</div>
+    </div>
+    <a href="index.html" style="background:rgba(22,163,74,0.2);color:#22c55e;padding:8px 16px;border-radius:10px;text-decoration:none;font-size:12px;font-weight:700;border:1px solid rgba(22,163,74,0.3)">← Portal</a>
+    <div class="dev-signature">
+      <div class="sig-label">DESARROLLADO POR:</div>
+      <div class="sig-name">Rodrigo Garcia</div>
+      <div class="sig-role">Systems Analyst & Developer-QA</div>
+    </div>
+  </div>
+</header>
+
+<!-- NAV TABS -->
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="switchTab('scan')" id="tab-scan">📷 Escanear</div>
+  <div class="nav-tab" onclick="switchTab('new')" id="tab-new">➕ Nuevo Registro</div>
+  <div class="nav-tab" onclick="switchTab('registros')" id="tab-registros">📋 Registros</div>
+  <div class="nav-tab" onclick="switchTab('print')" id="tab-print">🖨️ Imprimir Ticket</div>
+</div>
+
+<div class="main">
+
+  <!-- ============ PANEL: ESCANEAR ============ -->
+  <div class="panel active" id="panel-scan">
+    <div class="card">
+      <div class="card-title">📷 Lector de QR / Código de Barras</div>
+
+      <div class="scan-mode-bar">
+        <div><span class="pulse-dot"></span><strong>Cámara lista</strong> — Apunta al código QR o de barras</div>
+        <div class="flex-row">
+          <button class="btn btn-primary btn-sm" onclick="startScanner()">▶ Iniciar Cámara</button>
+          <button class="btn btn-secondary btn-sm" onclick="stopScanner()">⏹ Detener</button>
+        </div>
+      </div>
+
+      <div id="reader"></div>
+
+      <div class="scan-result" id="scan-result-box">
+        <div class="label">Código detectado</div>
+        <div class="value" id="scan-value">—</div>
+      </div>
+
+      <div id="scan-action-area" style="display:none; margin-top:16px;">
+        <div id="scan-found-info"></div>
+        <div class="flex-row" style="margin-top:12px;">
+          <button class="btn btn-primary" onclick="verRegistroEscaneado()">📋 Ver Registro</button>
+          <button class="btn btn-amarillo" onclick="nuevoDesdeEscaneo()">➕ Nuevo Registro con este código</button>
+        </div>
+      </div>
+
+      <!-- MANUAL INPUT -->
+      <div style="margin-top:20px; border-top:1px solid var(--borde); padding-top:18px;">
+        <div class="card-title" style="font-size:12px;">⌨️ O ingresa el código manualmente</div>
+        <div class="flex-row">
+          <input type="text" id="manual-code" placeholder="Ej: PAL-20240001 o número de barras..." style="flex:1; min-width:200px;">
+          <button class="btn btn-secondary" onclick="buscarManual()">🔍 Buscar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PANEL: NUEVO REGISTRO ============ -->
+  <div class="panel" id="panel-new">
+    <div class="card">
+      <div class="card-title">📝 Nuevo Registro de Materia Prima</div>
+      <div id="alert-new"></div>
+
+      <div id="pali-generado-info" style="display:none;" class="alert alert-success">
+        🎫 Palíticket generado: <strong id="pali-num-display">—</strong>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>🎫 Número de Palíticket</label>
+          <div class="flex-row">
+            <input type="text" id="f-paliticket" placeholder="Se genera automático..." readonly style="flex:1; background:#0a1a0c; cursor:default;">
+            <button class="btn btn-amarillo btn-sm" onclick="generarPaliticket()">Generar</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>📅 Fecha de Ingreso</label>
+          <input type="datetime-local" id="f-fecha">
+        </div>
+        <div class="form-group">
+          <label>🚚 Número de Carro / Placa</label>
+          <input type="text" id="f-carro" placeholder="Ej: ABC-123">
+        </div>
+        <div class="form-group">
+          <label>🍎 Fruta</label>
+          <select id="f-fruta">
+            <option value="">— Seleccionar —</option>
+            <option>Mango</option>
+            <option>Palta / Aguacate</option>
+            <option>Maracuyá</option>
+            <option>Piña</option>
+            <option>Papaya</option>
+            <option>Plátano</option>
+            <option>Uva</option>
+            <option>Arándano</option>
+            <option>Granadilla</option>
+            <option>Lúcuma</option>
+            <option>Chirimoya</option>
+            <option>Camu Camu</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="form-group" id="fruta-otro-group" style="display:none;">
+          <label>🍏 Especificar Fruta</label>
+          <input type="text" id="f-fruta-otro" placeholder="Nombre de la fruta...">
+        </div>
+        <div class="form-group">
+          <label>🌿 Variedad</label>
+          <input type="text" id="f-variedad" placeholder="Ej: Kent, Hass, Tommy...">
+        </div>
+        <div class="form-group">
+          <label>⚖️ Kg Bruto</label>
+          <input type="number" id="f-kg-bruto" placeholder="0.00" step="0.01" min="0">
+        </div>
+        <div class="form-group">
+          <label>⚖️ Kg Neto</label>
+          <input type="number" id="f-kg-neto" placeholder="0.00" step="0.01" min="0">
+        </div>
+        <div class="form-group">
+          <label>📦 N° de Jabas / Cajas</label>
+          <input type="number" id="f-jabas" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label>🏭 Proveedor / Productor</label>
+          <input type="text" id="f-proveedor" placeholder="Nombre del proveedor...">
+        </div>
+        <div class="form-group">
+          <label>🌡️ Estado / Calidad</label>
+          <select id="f-estado">
+            <option value="">— Seleccionar —</option>
+            <option>Primera</option>
+            <option>Segunda</option>
+            <option>Exportación</option>
+            <option>Proceso</option>
+            <option>Rechazo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>👤 Responsable de Recepción</label>
+          <input type="text" id="f-responsable" placeholder="Nombre del responsable...">
+        </div>
+        <div class="form-group full">
+          <label>📝 Observaciones</label>
+          <textarea id="f-obs" rows="2" placeholder="Notas adicionales..." style="resize:vertical;"></textarea>
+        </div>
+      </div>
+
+      <div class="flex-row" style="margin-top:20px;">
+        <button class="btn btn-primary" onclick="guardarRegistro()">💾 Guardar Registro</button>
+        <button class="btn btn-secondary" onclick="limpiarFormulario()">🗑️ Limpiar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PANEL: REGISTROS ============ -->
+  <div class="panel" id="panel-registros">
+    <div class="card">
+      <div class="card-title">📋 Registros de Materia Prima</div>
+
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="🔍 Buscar por palíticket, fruta, proveedor, placa..." oninput="filtrarRegistros()">
+        <select id="filter-fruta" onchange="filtrarRegistros()" style="min-width:130px;">
+          <option value="">Todas las frutas</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" onclick="exportarCSV()">📤 Exportar CSV</button>
+      </div>
+
+      <div id="tabla-registros"></div>
+    </div>
+  </div>
+
+  <!-- ============ PANEL: IMPRIMIR ============ -->
+  <div class="panel" id="panel-print">
+    <div class="card">
+      <div class="card-title">🖨️ Imprimir Palíticket</div>
+      <div class="flex-row" style="margin-bottom:16px;">
+        <input type="text" id="print-search" placeholder="Buscar palíticket por número..." style="flex:1;">
+        <button class="btn btn-primary btn-sm" onclick="buscarParaImprimir()">🔍 Buscar</button>
+      </div>
+      <div id="print-result"></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- MODAL: VER REGISTRO COMPLETO -->
+<div class="modal-overlay" id="modal-detalle">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📋 Detalle del Registro</div>
+      <button class="close-btn" onclick="cerrarModal()">✕</button>
+    </div>
+    <div id="modal-content"></div>
+    <div class="flex-row" style="margin-top:20px;">
+      <button class="btn btn-amarillo" onclick="imprimirDesdeModal()">🖨️ Imprimir Ticket</button>
+      <button class="btn btn-secondary" onclick="cerrarModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- PALITICKET PRINT AREA (oculta) -->
+<div id="paliticket-print-area" class="paliticket-print-area" style="display:none;"></div>
+
+<script>
+// ================== STORAGE ==================
+function getDB() {
+  try { return JSON.parse(localStorage.getItem('ftp_registros') || '[]'); }
+  catch(e) { return []; }
+}
+function saveDB(db) {
+  localStorage.setItem('ftp_registros', JSON.stringify(db));
+}
+function getCounter() {
+  return parseInt(localStorage.getItem('ftp_counter') || '0');
+}
+function incCounter() {
+  const n = getCounter() + 1;
+  localStorage.setItem('ftp_counter', n);
+  return n;
+}
+
+// ================== SCANNER ==================
+let html5QrCode = null;
+let lastScannedCode = null;
+
+function startScanner() {
+  if (html5QrCode && html5QrCode._isScanning) return;
+  html5QrCode = new Html5Qrcode("reader");
+  const config = { fps: 10, qrbox: { width: 260, height: 180 }, aspectRatio: 1.6 };
+  html5QrCode.start(
+    { facingMode: "environment" },
+    config,
+    onScanSuccess,
+    null
+  ).catch(err => {
+    // Try front camera fallback
+    html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, null)
+      .catch(() => showAlert('alert-new', '❌ No se pudo acceder a la cámara. Usa el ingreso manual.', 'error'));
+  });
+}
+
+function stopScanner() {
+  if (html5QrCode && html5QrCode._isScanning) {
+    html5QrCode.stop().catch(() => {});
+  }
+}
+
+function onScanSuccess(decodedText) {
+  lastScannedCode = decodedText.trim();
+  document.getElementById('scan-value').textContent = lastScannedCode;
+  document.getElementById('scan-result-box').classList.add('show');
+
+  // Check if code exists in DB
+  const db = getDB();
+  const found = db.find(r => r.paliticket === lastScannedCode || r.codigoBarras === lastScannedCode);
+  const area = document.getElementById('scan-action-area');
+  const info = document.getElementById('scan-found-info');
+
+  area.style.display = 'block';
+  if (found) {
+    info.innerHTML = `<div class="alert alert-success">✅ Registro encontrado: <strong>${found.paliticket}</strong> — ${found.fruta} | ${found.proveedor}</div>`;
+  } else {
+    info.innerHTML = `<div class="alert alert-info">ℹ️ Código no registrado. Puedes crear un nuevo registro.</div>`;
+  }
+
+  // Beep (visual feedback)
+  document.getElementById('scan-result-box').style.borderColor = '#4caf50';
+  setTimeout(() => { document.getElementById('scan-result-box').style.borderColor = 'var(--verde-claro)'; }, 500);
+}
+
+function verRegistroEscaneado() {
+  if (!lastScannedCode) return;
+  const db = getDB();
+  const found = db.find(r => r.paliticket === lastScannedCode || r.codigoBarras === lastScannedCode);
+  if (found) abrirModal(found);
+  else alert('No se encontró registro con este código.');
+}
+
+function nuevoDesdeEscaneo() {
+  if (!lastScannedCode) return;
+  switchTab('new');
+  document.getElementById('f-paliticket').value = lastScannedCode;
+  document.getElementById('pali-num-display').textContent = lastScannedCode;
+  document.getElementById('pali-generado-info').style.display = 'block';
+}
+
+function buscarManual() {
+  const code = document.getElementById('manual-code').value.trim();
+  if (!code) return;
+  lastScannedCode = code;
+  onScanSuccess(code);
+}
+
+// ================== PALITICKET ==================
+function generarPaliticket() {
+  const n = incCounter();
+  const fecha = new Date();
+  const y = fecha.getFullYear();
+  const m = String(fecha.getMonth()+1).padStart(2,'0');
+  const d = String(fecha.getDate()).padStart(2,'0');
+  const num = String(n).padStart(4,'0');
+  const pali = `PAL-${y}${m}${d}-${num}`;
+  document.getElementById('f-paliticket').value = pali;
+  document.getElementById('pali-num-display').textContent = pali;
+  document.getElementById('pali-generado-info').style.display = 'block';
+  // Set current datetime
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  document.getElementById('f-fecha').value = now.toISOString().slice(0,16);
+}
+
+// ================== FORM ==================
+document.getElementById('f-fruta').addEventListener('change', function() {
+  document.getElementById('fruta-otro-group').style.display = this.value === 'otro' ? 'block' : 'none';
+});
+
+function guardarRegistro() {
+  const pali = document.getElementById('f-paliticket').value.trim();
+  if (!pali) { showAlert('alert-new', '⚠️ Genera primero el número de palíticket.', 'error'); return; }
+
+  const frutaBase = document.getElementById('f-fruta').value;
+  const fruta = frutaBase === 'otro' ? document.getElementById('f-fruta-otro').value : frutaBase;
+  if (!fruta) { showAlert('alert-new', '⚠️ Selecciona o ingresa el tipo de fruta.', 'error'); return; }
+
+  const kgNeto = parseFloat(document.getElementById('f-kg-neto').value);
+  if (!kgNeto || kgNeto <= 0) { showAlert('alert-new', '⚠️ Ingresa los kg neto.', 'error'); return; }
+
+  const db = getDB();
+  const existe = db.find(r => r.paliticket === pali);
+  if (existe) { showAlert('alert-new', '⚠️ Este palíticket ya está registrado.', 'error'); return; }
+
+  const registro = {
+    paliticket: pali,
+    codigoBarras: pali,
+    fecha: document.getElementById('f-fecha').value,
+    carro: document.getElementById('f-carro').value.trim().toUpperCase(),
+    fruta,
+    variedad: document.getElementById('f-variedad').value.trim(),
+    kgBruto: parseFloat(document.getElementById('f-kg-bruto').value) || 0,
+    kgNeto,
+    jabas: parseInt(document.getElementById('f-jabas').value) || 0,
+    proveedor: document.getElementById('f-proveedor').value.trim(),
+    estado: document.getElementById('f-estado').value,
+    responsable: document.getElementById('f-responsable').value.trim(),
+    observaciones: document.getElementById('f-obs').value.trim(),
+    registradoEn: new Date().toISOString()
+  };
+
+  db.push(registro);
+  saveDB(db);
+  actualizarStats();
+  actualizarFiltroFrutas();
+
+  showAlert('alert-new', `✅ Registro <strong>${pali}</strong> guardado correctamente.`, 'success');
+  
+  // Offer to print
+  setTimeout(() => {
+    if (confirm('¿Deseas imprimir el palíticket ahora?')) {
+      imprimirTicket(registro);
+    }
+  }, 300);
+}
+
+function limpiarFormulario() {
+  ['f-paliticket','f-fecha','f-carro','f-variedad','f-kg-bruto','f-kg-neto','f-jabas','f-proveedor','f-responsable','f-obs','f-fruta-otro'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f-fruta').value = '';
+  document.getElementById('f-estado').value = '';
+  document.getElementById('pali-generado-info').style.display = 'none';
+  document.getElementById('fruta-otro-group').style.display = 'none';
+  document.getElementById('alert-new').innerHTML = '';
+}
+
+// ================== TABLA ==================
+function renderTabla(data) {
+  const el = document.getElementById('tabla-registros');
+  if (!data.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">📦</div><p>No hay registros aún.<br>Crea el primero desde "Nuevo Registro".</p></div>`;
+    return;
+  }
+  let html = `<div class="table-wrap"><table>
+    <thead><tr>
+      <th>Palíticket</th><th>Fecha</th><th>Carro</th><th>Fruta</th><th>Variedad</th>
+      <th>Kg Neto</th><th>Jabas</th><th>Proveedor</th><th>Estado</th><th>Acciones</th>
+    </tr></thead><tbody>`;
+  data.forEach(r => {
+    const fecha = r.fecha ? new Date(r.fecha).toLocaleString('es-PE', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+    const badgeClass = r.estado === 'Exportación' ? 'badge-verde' : 'badge-naranja';
+    html += `<tr>
+      <td><span style="font-weight:700;color:var(--amarillo);">${r.paliticket}</span></td>
+      <td>${fecha}</td>
+      <td>${r.carro || '—'}</td>
+      <td>${r.fruta}</td>
+      <td>${r.variedad || '—'}</td>
+      <td><strong>${r.kgNeto?.toFixed(2) || '—'}</strong> kg</td>
+      <td>${r.jabas || '—'}</td>
+      <td>${r.proveedor || '—'}</td>
+      <td>${r.estado ? `<span class="badge ${badgeClass}">${r.estado}</span>` : '—'}</td>
+      <td>
+        <button class="btn btn-secondary btn-sm" onclick='abrirModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>👁️</button>
+        <button class="btn btn-amarillo btn-sm" onclick='imprimirTicket(${JSON.stringify(r).replace(/'/g,"&#39;")})'>🖨️</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarRegistro('${r.paliticket}')">🗑️</button>
+      </td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>`;
+  el.innerHTML = html;
+}
+
+function filtrarRegistros() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const fFruta = document.getElementById('filter-fruta').value;
+  const db = getDB();
+  const filtrados = db.filter(r => {
+    const matchQ = !q || [r.paliticket, r.fruta, r.variedad, r.proveedor, r.carro, r.responsable].some(v => v?.toLowerCase().includes(q));
+    const matchF = !fFruta || r.fruta === fFruta;
+    return matchQ && matchF;
+  }).reverse();
+  renderTabla(filtrados);
+}
+
+function eliminarRegistro(pali) {
+  if (!confirm(`¿Eliminar el registro ${pali}?`)) return;
+  const db = getDB().filter(r => r.paliticket !== pali);
+  saveDB(db);
+  filtrarRegistros();
+  actualizarStats();
+}
+
+function actualizarFiltroFrutas() {
+  const db = getDB();
+  const frutas = [...new Set(db.map(r => r.fruta))].sort();
+  const sel = document.getElementById('filter-fruta');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Todas las frutas</option>' + frutas.map(f => `<option value="${f}">${f}</option>`).join('');
+  sel.value = current;
+}
+
+function exportarCSV() {
+  const db = getDB();
+  if (!db.length) { alert('No hay registros para exportar.'); return; }
+  const headers = ['Paliticket','Fecha','Carro','Fruta','Variedad','Kg Bruto','Kg Neto','Jabas','Proveedor','Estado','Responsable','Observaciones'];
+  const rows = db.map(r => [r.paliticket, r.fecha, r.carro, r.fruta, r.variedad, r.kgBruto, r.kgNeto, r.jabas, r.proveedor, r.estado, r.responsable, r.observaciones]);
+  const csv = [headers, ...rows].map(row => row.map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `FTP_Registros_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ================== MODAL ==================
+let currentRecord = null;
+function abrirModal(r) {
+  currentRecord = r;
+  const fecha = r.fecha ? new Date(r.fecha).toLocaleString('es-PE', {weekday:'long',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+  document.getElementById('modal-content').innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-item highlight" style="grid-column:1/-1;">
+        <div class="dk">🎫 Número de Palíticket</div>
+        <div class="dv">${r.paliticket}</div>
+      </div>
+      <div class="detail-item"><div class="dk">📅 Fecha</div><div class="dv" style="font-size:13px;">${fecha}</div></div>
+      <div class="detail-item"><div class="dk">🚚 Carro / Placa</div><div class="dv">${r.carro || '—'}</div></div>
+      <div class="detail-item"><div class="dk">🍎 Fruta</div><div class="dv">${r.fruta}</div></div>
+      <div class="detail-item"><div class="dk">🌿 Variedad</div><div class="dv">${r.variedad || '—'}</div></div>
+      <div class="detail-item"><div class="dk">⚖️ Kg Bruto</div><div class="dv">${r.kgBruto?.toFixed(2) || '—'} kg</div></div>
+      <div class="detail-item"><div class="dk">⚖️ Kg Neto</div><div class="dv">${r.kgNeto?.toFixed(2) || '—'} kg</div></div>
+      <div class="detail-item"><div class="dk">📦 Jabas / Cajas</div><div class="dv">${r.jabas || '—'}</div></div>
+      <div class="detail-item"><div class="dk">🏭 Proveedor</div><div class="dv">${r.proveedor || '—'}</div></div>
+      <div class="detail-item"><div class="dk">🌡️ Estado/Calidad</div><div class="dv">${r.estado || '—'}</div></div>
+      <div class="detail-item" style="grid-column:1/-1;"><div class="dk">👤 Responsable</div><div class="dv">${r.responsable || '—'}</div></div>
+      ${r.observaciones ? `<div class="detail-item" style="grid-column:1/-1;"><div class="dk">📝 Observaciones</div><div class="dv" style="font-size:13px;">${r.observaciones}</div></div>` : ''}
+    </div>`;
+  document.getElementById('modal-detalle').classList.add('open');
+}
+function cerrarModal() { document.getElementById('modal-detalle').classList.remove('open'); }
+function imprimirDesdeModal() { if (currentRecord) imprimirTicket(currentRecord); }
+
+// ================== IMPRIMIR ==================
+function imprimirTicket(r) {
+  const fecha = r.fecha ? new Date(r.fecha).toLocaleString('es-PE', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+  const printArea = document.getElementById('paliticket-print-area');
+  printArea.style.display = 'flex';
+
+  function buildTicketHTML(copyId) {
+    const copyLabel = copyId === 1 ? 'COPIA ALMACEN' : 'COPIA TRANSPORTISTA';
+    return `<div class="pali-print-copy" style="flex:1;border:2px solid #16a34a;border-radius:10px;padding:18px 22px;display:flex;flex-direction:column;justify-content:space-between;min-height:0">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;border-bottom:3px solid #16a34a;padding-bottom:10px;margin-bottom:10px">
+          <img src="LOGO.png" style="width:42px;height:42px;border-radius:8px" onerror="this.style.display='none'">
+          <div style="flex:1;text-align:center">
+            <div style="font-size:16px;font-weight:900;color:#16a34a;letter-spacing:0.5px">FRUTOS TROPICALES PERU EXPORT S.A.C.</div>
+            <div style="font-size:11px;color:#64748b;letter-spacing:1.5px;margin-top:2px">PALITICKET DE INGRESO — MATERIA PRIMA</div>
+          </div>
+          <div style="background:#16a34a;color:#fff;font-size:8px;font-weight:800;padding:4px 10px;border-radius:6px;letter-spacing:1px">${copyLabel}</div>
+        </div>
+        <div style="text-align:center;font-family:'DM Mono',monospace;font-size:24px;font-weight:900;color:#0f172a;margin:8px 0;letter-spacing:2px;border:2px dashed #16a34a;padding:6px;border-radius:8px">${r.paliticket}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;color:#0f172a;margin-top:10px">
+          <div class="pali-row"><span class="pk" style="font-size:12px;font-weight:700">FECHA:</span><span class="pv" style="font-size:13px">${fecha}</span></div>
+          <div class="pali-row"><span class="pk" style="font-size:12px;font-weight:700">CARRO/PLACA:</span><span class="pv" style="font-size:13px">${r.carro || '—'}</span></div>
+          <div class="pali-row"><span class="pk" style="font-size:12px;font-weight:700">FRUTA:</span><span class="pv" style="font-size:14px;font-weight:800;color:#16a34a">${r.fruta}</span></div>
+          <div class="pali-row"><span class="pk" style="font-size:12px;font-weight:700">VARIEDAD:</span><span class="pv" style="font-size:13px">${r.variedad || '—'}</span></div>
+          <div class="pali-row"><span class="pk" style="font-size:12px;font-weight:700">KG BRUTO:</span><span class="pv" style="font-size:14px;font-weight:700">${r.kgBruto?.toFixed(2) || '—'} kg</span></div>
+          <div class="pali-row"><span class="pk" style="font-size:12px;font-weight:700;color:#dc2626">KG NETO:</span><span class="pv" style="font-size:16px;font-weight:900;color:#dc2626">${r.kgNeto?.toFixed(2) || '—'} kg</span></div>
+          <div class="pali-row"><span class="pk" style="font-size:12px;font-weight:700">JABAS/CAJAS:</span><span class="pv" style="font-size:13px">${r.jabas || '—'}</span></div>
+          <div class="pali-row"><span class="pk" style="font-size:12px;font-weight:700">PROVEEDOR:</span><span class="pv" style="font-size:13px;font-weight:700">${r.proveedor || '—'}</span></div>
+          <div class="pali-row"><span class="pk" style="font-size:12px;font-weight:700">ESTADO:</span><span class="pv" style="font-size:13px">${r.estado || '—'}</span></div>
+          <div class="pali-row"><span class="pk" style="font-size:12px;font-weight:700">RESPONSABLE:</span><span class="pv" style="font-size:13px">${r.responsable || '—'}</span></div>
+          ${r.observaciones ? `<div class="pali-row" style="grid-column:1/-1"><span class="pk" style="font-size:12px;font-weight:700">OBS:</span><span class="pv" style="font-size:12px">${r.observaciones}</span></div>` : ''}
+        </div>
+      </div>
+      <div style="margin-top:10px;border-top:1px solid #e2e8f0;padding-top:8px">
+        <div style="text-align:center;margin-bottom:4px" id="qr-print-${copyId}"></div>
+        <div style="text-align:center"><svg id="barcode-svg-${copyId}"></svg></div>
+        <div style="text-align:center;font-size:8px;color:#94a3b8;margin-top:4px">Frutos Tropicales Peru Export S.A.C. — Sistema de Trazabilidad | ${new Date().toLocaleDateString('es-PE')}</div>
+      </div>
+    </div>`;
+  }
+
+  printArea.innerHTML = buildTicketHTML(1) + buildTicketHTML(2);
+
+  // Generate barcodes and QR for both copies
+  [1, 2].forEach(i => {
+    try {
+      JsBarcode('#barcode-svg-' + i, r.paliticket, {
+        format: 'CODE128', width: 1.5, height: 40,
+        displayValue: true, fontSize: 10, margin: 2
+      });
+    } catch(e) {}
+    try {
+      const qrEl = document.getElementById('qr-print-' + i);
+      if (qrEl) {
+        qrEl.innerHTML = '';
+        new QRCode(qrEl, {
+          text: r.paliticket + '|' + (r.fruta||'') + '|' + (r.kgNeto||0) + 'kg|' + (r.proveedor||''),
+          width: 60, height: 60,
+          colorDark: '#000000', colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      }
+    } catch(e) {}
+  });
+
+  setTimeout(() => { window.print(); }, 300);
+  setTimeout(() => { printArea.style.display = 'none'; }, 1500);
+}
+
+function buscarParaImprimir() {
+  const q = document.getElementById('print-search').value.trim();
+  const db = getDB();
+  const found = db.find(r => r.paliticket === q || r.paliticket.includes(q));
+  const el = document.getElementById('print-result');
+  if (!found) {
+    el.innerHTML = `<div class="alert alert-error">❌ No se encontró el palíticket "${q}"</div>`;
+    return;
+  }
+  const fecha = found.fecha ? new Date(found.fecha).toLocaleString('es-PE', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+  el.innerHTML = `
+    <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+      <div class="paliticket-preview" style="flex:1; min-width:280px;">
+        <div class="pali-header">
+          <h2>🍍 FRUTOS TROPICALES PERÚ EXPORT SAC</h2>
+          <p>PALÍTICKET DE INGRESO — MATERIA PRIMA</p>
+        </div>
+        <div class="pali-number">${found.paliticket}</div>
+        <div class="pali-rows">
+          <div class="pali-row"><span class="pk">Fecha:</span><span class="pv">${fecha}</span></div>
+          <div class="pali-row"><span class="pk">Carro/Placa:</span><span class="pv">${found.carro || '—'}</span></div>
+          <div class="pali-row"><span class="pk">Fruta:</span><span class="pv">${found.fruta}</span></div>
+          <div class="pali-row"><span class="pk">Variedad:</span><span class="pv">${found.variedad || '—'}</span></div>
+          <div class="pali-row"><span class="pk">Kg Bruto:</span><span class="pv">${found.kgBruto?.toFixed(2) || '—'} kg</span></div>
+          <div class="pali-row"><span class="pk">Kg Neto:</span><span class="pv"><strong>${found.kgNeto?.toFixed(2) || '—'} kg</strong></span></div>
+          <div class="pali-row"><span class="pk">Jabas:</span><span class="pv">${found.jabas || '—'}</span></div>
+          <div class="pali-row"><span class="pk">Proveedor:</span><span class="pv">${found.proveedor || '—'}</span></div>
+          <div class="pali-row"><span class="pk">Estado:</span><span class="pv">${found.estado || '—'}</span></div>
+          <div class="pali-row"><span class="pk">Responsable:</span><span class="pv">${found.responsable || '—'}</span></div>
+        </div>
+        <div class="pali-codes" style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:12px">
+          <div class="pali-barcode" style="flex:1;text-align:center"><svg id="barcode-preview"></svg></div>
+          <div id="qr-preview" style="flex:0 0 auto"></div>
+        </div>
+        <div class="pali-footer">Frutos Tropicales Peru Export S.A.C. — ${new Date().toLocaleDateString('es-PE')}</div>
+      </div>
+    </div>
+    <div class="flex-row" style="margin-top:16px;">
+      <button class="btn btn-amarillo" onclick='imprimirTicket(${JSON.stringify(found).replace(/'/g,"&#39;")})'>🖨️ Imprimir este Ticket</button>
+      <button class="btn btn-primary" onclick='abrirModal(${JSON.stringify(found).replace(/'/g,"&#39;")})'>👁️ Ver Detalle Completo</button>
+    </div>`;
+  try {
+    JsBarcode("#barcode-preview", found.paliticket, {
+      format: "CODE128", width: 2, height: 45,
+      displayValue: true, fontSize: 11, margin: 4
+    });
+  } catch(e) {}
+  // QR for preview
+  try {
+    const qrPrev = document.getElementById('qr-preview');
+    if (qrPrev) {
+      qrPrev.innerHTML = '';
+      new QRCode(qrPrev, {
+        text: found.paliticket + '|' + (found.fruta||'') + '|' + (found.kgNeto||0) + 'kg|' + (found.proveedor||''),
+        width: 70, height: 70,
+        colorDark: '#000000', colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+  } catch(e) {}
+}
+
+// ================== STATS ==================
+function actualizarStats() {
+  const db = getDB();
+  document.getElementById('stat-total').textContent = `Total: ${db.length} registro${db.length !== 1 ? 's' : ''}`;
+  const hoy = new Date().toDateString();
+  const hoyCount = db.filter(r => r.registradoEn && new Date(r.registradoEn).toDateString() === hoy).length;
+  document.getElementById('stat-hoy').textContent = `Hoy: ${hoyCount}`;
+}
+
+// ================== UTILS ==================
+function showAlert(containerId, msg, type) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  setTimeout(() => { el.innerHTML = ''; }, 5000);
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`panel-${tab}`).classList.add('active');
+  document.getElementById(`tab-${tab}`).classList.add('active');
+
+  if (tab === 'registros') { filtrarRegistros(); actualizarFiltroFrutas(); }
+  if (tab !== 'scan') stopScanner();
+}
+
+// ================== INIT ==================
+actualizarStats();
+actualizarFiltroFrutas();
+
+// Set today's date on form load
+window.addEventListener('load', () => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  document.getElementById('f-fecha').value = now.toISOString().slice(0,16);
+});
+</script>
+</body>
+</html>
