@@ -2284,6 +2284,38 @@ function renderActiveCycles() {
     return;
   }
 
+  // Preserve user input values before re-render
+  const savedInputs = {};
+  activeCycles.forEach(r => {
+    const idx = records.indexOf(r);
+    const hfEl = document.getElementById('horaFin_' + idx);
+    const tfEl = document.getElementById('tempFinal_' + idx);
+    if (hfEl) savedInputs['horaFin_' + idx] = hfEl.value;
+    if (tfEl && tfEl.value) savedInputs['tempFinal_' + idx] = tfEl.value;
+  });
+
+  // Only do full rebuild if cycle count changed
+  const existingItems = container.querySelectorAll('.active-cycle-item').length;
+  const needsRebuild = existingItems !== activeCycles.length;
+
+  if (!needsRebuild) {
+    // Just update timers, don't touch inputs
+    activeCycles.forEach(r => {
+      const idx = records.indexOf(r);
+      const elapsed = getElapsedStr(r.hora_inicio);
+      const remaining = getRemainingStr(r.hora_inicio, r.fruta);
+      const exceeded = isTimeExceeded(r.hora_inicio, r.fruta);
+      const elapsedEl = document.getElementById('elapsed_' + idx);
+      const remainEl = document.getElementById('remain_' + idx);
+      if (elapsedEl) elapsedEl.textContent = elapsed;
+      if (remainEl) {
+        remainEl.textContent = remaining;
+        remainEl.style.color = exceeded ? 'var(--rojo)' : '';
+      }
+    });
+    return;
+  }
+
   let html = '';
   activeCycles.forEach(r => {
     const idx = records.indexOf(r);
@@ -2316,21 +2348,21 @@ function renderActiveCycles() {
         </div>
         <div class="active-cycle-stat">
           <div class="stat-label">Tiempo Transcurrido</div>
-          <div class="stat-value timer">${elapsed}</div>
+          <div class="stat-value timer" id="elapsed_${idx}">${elapsed}</div>
         </div>
         <div class="active-cycle-stat">
           <div class="stat-label">Tiempo Restante</div>
-          <div class="stat-value ${exceeded ? 'timer' : 'timer'}" style="${exceeded ? 'color:var(--rojo)' : ''}">${remaining}</div>
+          <div class="stat-value timer" id="remain_${idx}" style="${exceeded ? 'color:var(--rojo)' : ''}">${remaining}</div>
         </div>
       </div>
       <div class="active-cycle-actions">
         <div class="form-group" style="margin:0;gap:3px">
           <label style="font-size:9px">Hora Final</label>
-          <input type="time" id="horaFin_${idx}" value="${currentTime}" step="60">
+          <input type="time" id="horaFin_${idx}" value="${savedInputs['horaFin_'+idx] || currentTime}" step="60">
         </div>
         <div class="form-group" style="margin:0;gap:3px">
           <label style="font-size:9px">Temp. Final &deg;C</label>
-          <input type="number" id="tempFinal_${idx}" placeholder="-30" step="0.1">
+          <input type="number" id="tempFinal_${idx}" placeholder="-22" step="0.1" value="${savedInputs['tempFinal_'+idx] || ''}">
         </div>
         <button class="btn btn-success" onclick="finalizarCiclo(${idx})" style="padding:10px 18px;font-size:13px">\u2705 Finalizar Ciclo</button>
       </div>
