@@ -713,9 +713,15 @@ body.dark-mode .topbar-dev-signature .signature-name {
 .tunnel-visual::before {
   content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,var(--t-glow,rgba(8,145,178,0.06)),transparent 60%);pointer-events:none;
 }
-.tunnel-visual.t-activo { border-color:#0891b2;--t-glow:rgba(8,145,178,0.1); }
+.tunnel-visual.t-activo { border-color:#0891b2;--t-glow:rgba(8,145,178,0.1);animation:tunPulseCyan 2s ease-in-out infinite; }
 .tunnel-visual.t-libre { border-color:#22c55e;--t-glow:rgba(34,197,94,0.08); }
+.tunnel-visual.t-ok { border-color:#22c55e;--t-glow:rgba(34,197,94,0.08); }
 .tunnel-visual.t-alerta { border-color:#dc2626;--t-glow:rgba(220,38,38,0.08); }
+@keyframes tunPulseCyan { 0%,100%{border-color:#0891b2;box-shadow:0 0 8px rgba(8,145,178,0.15)}50%{border-color:#22d3ee;box-shadow:0 0 20px rgba(8,145,178,0.35)} }
+.t-badge-ok { background:rgba(34,197,94,0.1);color:#16a34a; }
+.t-elapsed { display:flex;gap:8px;justify-content:center;margin-top:8px; }
+.t-elapsed-box { background:var(--surface2);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700; }
+.t-elapsed-box span { display:block;font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase; }
 .t-name { font-size:15px;font-weight:800;margin-bottom:8px; }
 .t-badge {
   display:inline-block;padding:4px 14px;border-radius:20px;font-size:11px;font-weight:800;
@@ -918,7 +924,7 @@ body.dark-mode .topbar-dev-signature .signature-name {
       <span class="nav-icon">🔪</span> Acondicionado
     </div>
     <div class="nav-item" data-panel="area-tuneles">
-      <span class="nav-icon">❄️</span> Tuneles IQF
+      <span class="nav-icon">❄️</span> Tuneles Estaticos
       <span class="nav-badge">3</span>
     </div>
     <div class="nav-item" data-panel="area-empaque">
@@ -2073,52 +2079,56 @@ body.dark-mode .topbar-dev-signature .signature-name {
   <div class="area-header-bar" style="--area-color:#0891b2">
     <div class="area-header-icon">❄️</div>
     <div class="area-header-info">
-      <div class="area-header-title">Tuneles IQF</div>
-      <div class="area-header-sub">Control de congelamiento rapido individual · 3 tuneles activos</div>
+      <div class="area-header-title">Tuneles Estaticos</div>
+      <div class="area-header-sub">Control de congelamiento estatico · 3 tuneles</div>
     </div>
     <div class="area-header-actions">
       <span class="live-tag"><span class="dot"></span> En vivo</span>
+      <a class="btn-app-link" style="--area-color:#0891b2" href="app-registro-tuneles.html" target="_blank">❄️ Registro Tuneles</a>
       <a class="btn-app-link" style="--area-color:#0891b2" href="app-tuneles.html" target="_blank">📱 Abrir App Completa</a>
     </div>
   </div>
 
   <div class="kpi-grid">
-    <div class="kpi-card" style="--kpi-color:#0891b2"><div class="kpi-icon" style="background:var(--cyan-bg);color:var(--cyan)">🧊</div><div class="kpi-label">Coches en Proceso</div><div class="kpi-value">78 <span class="kpi-unit">coches</span></div><div class="kpi-meta">En los 3 tuneles</div></div>
-    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">🔄</div><div class="kpi-label">Ciclos Hoy</div><div class="kpi-value">12</div><div class="kpi-meta">Completados · Objetivo: 15</div></div>
-    <div class="kpi-card" style="--kpi-color:var(--azul)"><div class="kpi-icon" style="background:var(--azul-bg);color:var(--azul)">🌡️</div><div class="kpi-label">Temp. Promedio</div><div class="kpi-value">-30.1 <span class="kpi-unit">°C</span></div><div class="kpi-meta">Obj: -30°C a -35°C</div></div>
-    <div class="kpi-card" style="--kpi-color:var(--amber)"><div class="kpi-icon" style="background:var(--amber-bg);color:var(--amber)">⏱️</div><div class="kpi-label">T. Ciclo Promedio</div><div class="kpi-value">1.6 <span class="kpi-unit">hr</span></div><div class="kpi-meta">Objetivo: 1.5 hr</div></div>
-    <div class="kpi-card" style="--kpi-color:var(--naranja)"><div class="kpi-icon" style="background:var(--naranja-bg);color:var(--naranja)">📦</div><div class="kpi-label">Kg Congelados Hoy</div><div class="kpi-value">19,500 <span class="kpi-unit">kg</span></div><div class="kpi-meta">250 kg/coche × 78</div></div>
-    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">✅</div><div class="kpi-label">Eficiencia</div><div class="kpi-value">85<span class="kpi-unit">%</span></div><div class="kpi-change up">▲ 3% vs S12</div></div>
+    <div class="kpi-card" style="--kpi-color:#0891b2"><div class="kpi-icon" style="background:var(--cyan-bg);color:var(--cyan)">🧊</div><div class="kpi-label">Coches en Proceso</div><div class="kpi-value" id="tunKpiCoches">78 <span class="kpi-unit">coches</span></div><div class="kpi-meta" id="tunKpiCochesMeta">En los 3 tuneles</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">🔄</div><div class="kpi-label">Ciclos Hoy</div><div class="kpi-value" id="tunKpiCiclos">12</div><div class="kpi-meta" id="tunKpiCiclosMeta">Completados · Objetivo: 15</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--azul)"><div class="kpi-icon" style="background:var(--azul-bg);color:var(--azul)">🌡️</div><div class="kpi-label">Temp. Promedio</div><div class="kpi-value" id="tunKpiTemp">-30.1 <span class="kpi-unit">°C</span></div><div class="kpi-meta" id="tunKpiTempMeta">Obj: -30°C a -35°C</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--amber)"><div class="kpi-icon" style="background:var(--amber-bg);color:var(--amber)">⏱️</div><div class="kpi-label">T. Ciclo Promedio</div><div class="kpi-value" id="tunKpiTCiclo">1.6 <span class="kpi-unit">hr</span></div><div class="kpi-meta" id="tunKpiTCicloMeta">Objetivo: 1.5 hr</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--naranja)"><div class="kpi-icon" style="background:var(--naranja-bg);color:var(--naranja)">📦</div><div class="kpi-label">Kg Congelados Hoy</div><div class="kpi-value" id="tunKpiKg">19,500 <span class="kpi-unit">kg</span></div><div class="kpi-meta" id="tunKpiKgMeta">250 kg/coche × 78</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">✅</div><div class="kpi-label">Eficiencia</div><div class="kpi-value" id="tunKpiEfic">85<span class="kpi-unit">%</span></div><div class="kpi-change up" id="tunKpiEficDiff">▲ 3% vs S12</div></div>
   </div>
 
   <!-- Tunnel visual status -->
-  <div class="tunnel-grid-portal">
-    <div class="tunnel-visual t-activo">
-      <div class="t-name">🧊 TUNEL IQF-1</div>
-      <div class="t-badge t-badge-activo">Congelando</div>
-      <div class="t-coches" style="color:#0891b2">32</div>
+  <div class="tunnel-grid-portal" id="tunVisualGrid">
+    <div class="tunnel-visual t-ok" id="tunVisual1">
+      <div class="t-name">🧊 TUNEL ESTATICO 1</div>
+      <div class="t-badge t-badge-ok">DISPONIBLE</div>
+      <div class="t-coches" style="color:var(--verde)">0</div>
       <div class="t-metric">coches cargados</div>
-      <div class="t-temp" style="color:var(--azul)">-30.2°C</div>
-      <div class="t-metric">Temp. actual</div>
-      <div class="t-metric">Inicio: <b>10:30</b> · Ciclo est: <b>1.5 hr</b></div>
+      <div class="t-temp" style="color:var(--muted)">—</div>
+      <div class="t-metric">Temp. final</div>
+      <div class="t-metric">Ultimo inicio: <b>—</b></div>
+      <div class="t-elapsed" id="tunElapsed1"></div>
     </div>
-    <div class="tunnel-visual t-activo">
-      <div class="t-name">🧊 TUNEL IQF-2</div>
-      <div class="t-badge t-badge-activo">Congelando</div>
-      <div class="t-coches" style="color:#0891b2">28</div>
+    <div class="tunnel-visual t-ok" id="tunVisual2">
+      <div class="t-name">🧊 TUNEL ESTATICO 2</div>
+      <div class="t-badge t-badge-ok">DISPONIBLE</div>
+      <div class="t-coches" style="color:var(--verde)">0</div>
       <div class="t-metric">coches cargados</div>
-      <div class="t-temp" style="color:var(--azul)">-29.8°C</div>
-      <div class="t-metric">Temp. actual</div>
-      <div class="t-metric">Inicio: <b>11:00</b> · Ciclo est: <b>1.7 hr</b></div>
+      <div class="t-temp" style="color:var(--muted)">—</div>
+      <div class="t-metric">Temp. final</div>
+      <div class="t-metric">Ultimo inicio: <b>—</b></div>
+      <div class="t-elapsed" id="tunElapsed2"></div>
     </div>
-    <div class="tunnel-visual t-alerta">
-      <div class="t-name">🧊 TUNEL IQF-3</div>
-      <div class="t-badge t-badge-alerta">⚠️ Alerta Temp</div>
-      <div class="t-coches" style="color:#dc2626">18</div>
+    <div class="tunnel-visual t-ok" id="tunVisual3">
+      <div class="t-name">🧊 TUNEL ESTATICO 3</div>
+      <div class="t-badge t-badge-ok">DISPONIBLE</div>
+      <div class="t-coches" style="color:var(--verde)">0</div>
       <div class="t-metric">coches cargados</div>
-      <div class="t-temp" style="color:#dc2626">-24.5°C ⚠️</div>
-      <div class="t-metric">Fuera de rango (-30°C)</div>
-      <div class="t-metric">Inicio: <b>12:15</b> · Revision: <b>Pendiente</b></div>
+      <div class="t-temp" style="color:var(--muted)">—</div>
+      <div class="t-metric">Temp. final</div>
+      <div class="t-metric">Ultimo inicio: <b>—</b></div>
+      <div class="t-elapsed" id="tunElapsed3"></div>
     </div>
   </div>
 
@@ -2141,14 +2151,14 @@ body.dark-mode .topbar-dev-signature .signature-name {
     </div>
     <div class="form-section-body">
       <div class="form-grid-portal">
-        <div class="form-group-p"><label>Tunel</label><select><option>IQF-1</option><option>IQF-2</option><option>IQF-3</option></select></div>
-        <div class="form-group-p"><label>Fruta</label><select><option>Mango</option><option>Arandano</option><option>Granada</option></select></div>
-        <div class="form-group-p"><label>Lote</label><input type="text" placeholder="CFT040K"></div>
+        <div class="form-group-p"><label>Tunel</label><select><option>TUNEL ESTATICO 1</option><option>TUNEL ESTATICO 2</option><option>TUNEL ESTATICO 3</option></select></div>
+        <div class="form-group-p"><label>Fruta</label><select><option>Mango</option><option>Arandano</option><option>Granada</option><option>Fresa</option><option>Palta</option><option>Pina</option></select></div>
         <div class="form-group-p"><label>N° Coches</label><input type="number" placeholder="0" min="1" max="45"></div>
+        <div class="form-group-p"><label>Kg Aprox.</label><input type="number" placeholder="0"></div>
         <div class="form-group-p"><label>Hora Inicio</label><input type="time"></div>
         <div class="form-group-p"><label>Hora Fin</label><input type="time"></div>
-        <div class="form-group-p"><label>Temperatura (°C)</label><input type="number" placeholder="-32" step="0.1"></div>
-        <div class="form-group-p"><label>Estado</label><select><option>Ciclo Completado</option><option>Cargando</option><option>Descargando</option></select></div>
+        <div class="form-group-p"><label>Temp. Ingreso (°C)</label><input type="number" placeholder="5" step="0.1"></div>
+        <div class="form-group-p"><label>Temp. Final (°C)</label><input type="number" placeholder="-32" step="0.1"></div>
       </div>
       <div class="form-actions">
         <button class="btn-submit" style="--area-color:#0891b2" onclick="showPortalToast('Ciclo registrado exitosamente','#0891b2')">✅ Registrar Ciclo</button>
@@ -2161,14 +2171,9 @@ body.dark-mode .topbar-dev-signature .signature-name {
     <div class="card-header"><div class="card-title">📋 Registro de Ciclos — Hoy</div></div>
     <div style="overflow-x:auto">
       <table class="data-table">
-        <thead><tr><th>Tunel</th><th>Fruta</th><th>Lote</th><th>Coches</th><th>Inicio</th><th>Fin</th><th>Hrs Ciclo</th><th>Temp °C</th><th>Efic.</th><th>Estado</th></tr></thead>
-        <tbody>
-          <tr><td><b>IQF-1</b></td><td>Mango</td><td>CFT040K</td><td class="num">38</td><td>07:00</td><td>08:35</td><td class="num" style="color:var(--verde);font-weight:800">1.6 hr</td><td class="num" style="color:var(--azul)">-31.2°C</td><td class="text-green">OK</td><td><span class="status-pill status-active">✅ Completado</span></td></tr>
-          <tr><td><b>IQF-2</b></td><td>Mango</td><td>CFT040K</td><td class="num">35</td><td>07:15</td><td>08:50</td><td class="num" style="color:var(--verde);font-weight:800">1.6 hr</td><td class="num" style="color:var(--azul)">-30.5°C</td><td class="text-green">OK</td><td><span class="status-pill status-active">✅ Completado</span></td></tr>
-          <tr><td><b>IQF-3</b></td><td>Mango</td><td>CFT039K</td><td class="num">30</td><td>07:30</td><td>09:15</td><td class="num" style="color:var(--amber);font-weight:800">1.8 hr</td><td class="num" style="color:var(--amber)">-28.1°C</td><td class="text-orange">⚠️</td><td><span class="status-pill status-active">✅ Completado</span></td></tr>
-          <tr><td><b>IQF-1</b></td><td>Mango</td><td>CFT040K</td><td class="num">36</td><td>09:00</td><td>10:25</td><td class="num" style="color:var(--verde);font-weight:800">1.4 hr</td><td class="num" style="color:var(--azul)">-32.0°C</td><td class="text-green">OK</td><td><span class="status-pill status-active">✅ Completado</span></td></tr>
-          <tr><td><b>IQF-1</b></td><td>Mango</td><td>CFT040K</td><td class="num">32</td><td>10:30</td><td>—</td><td class="text-muted">—</td><td class="num" style="color:var(--azul)">-30.2°C</td><td class="text-muted">—</td><td><span class="status-pill status-info">🔄 En proceso</span></td></tr>
-          <tr><td><b>IQF-3</b></td><td>Mango</td><td>CFT040K</td><td class="num">18</td><td>12:15</td><td>—</td><td class="text-muted">—</td><td class="num" style="color:#dc2626;font-weight:800">-24.5°C ⚠️</td><td class="text-red">Alerta</td><td><span class="status-pill status-danger">⚠️ Alerta</span></td></tr>
+        <thead><tr><th>Tunel</th><th>Fruta</th><th>Coches</th><th>Kg</th><th>Inicio</th><th>Fin</th><th>Hrs Ciclo</th><th>Temp Ing.</th><th>Temp Fin.</th><th>Efic. %</th><th>Estado</th></tr></thead>
+        <tbody id="tunLiveBody">
+          <tr><td colspan="11" class="text-muted" style="text-align:center;padding:24px">Sin registros hoy — use la app de Registro Tuneles para agregar ciclos</td></tr>
         </tbody>
       </table>
     </div>
@@ -2370,7 +2375,7 @@ document.querySelectorAll('.nav-item[data-panel]').forEach(item => {
       'contenedores':'Contenedores','stock':'Stock General','programa':'Programa Produccion',
       'proyecciones':'Proyecciones','almuerzos':'Almuerzos / Personal','materiales':'Materiales',
       'area-recepcion':'Recepcion de Materia Prima','area-acondicionado':'Acondicionado',
-      'area-tuneles':'Tuneles IQF','area-empaque':'Empaque'
+      'area-tuneles':'Tuneles Estaticos','area-empaque':'Empaque'
     };
     document.getElementById('topbarTitle').textContent = titles[panel] || panel;
     // Scroll to top immediately on panel change
@@ -2802,10 +2807,10 @@ function initAllCharts() {
   new Chart(document.getElementById('chartTunCiclos'), {
     type:'bar',
     data:{
-      labels:['IQF-1','IQF-2','IQF-3'],
+      labels:['T1','T2','T3'],
       datasets:[
-        {label:'Completados',data:[5,4,3],backgroundColor:['rgba(8,145,178,0.7)','rgba(8,145,178,0.5)','rgba(8,145,178,0.3)'],borderColor:'#0891b2',borderWidth:2,borderRadius:8},
-        {label:'En Proceso',data:[1,1,1],backgroundColor:['rgba(217,119,6,0.5)','rgba(217,119,6,0.4)','rgba(217,119,6,0.3)'],borderColor:COLORS.amber,borderWidth:1,borderRadius:8}
+        {label:'Completados',data:[0,0,0],backgroundColor:['rgba(8,145,178,0.7)','rgba(8,145,178,0.5)','rgba(8,145,178,0.3)'],borderColor:'#0891b2',borderWidth:2,borderRadius:8},
+        {label:'En Proceso',data:[0,0,0],backgroundColor:['rgba(217,119,6,0.5)','rgba(217,119,6,0.4)','rgba(217,119,6,0.3)'],borderColor:COLORS.amber,borderWidth:1,borderRadius:8}
       ]
     },
     options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{stacked:true,beginAtZero:true,ticks:{stepSize:1}},x:{stacked:true,grid:{display:false}}}}
@@ -2815,12 +2820,12 @@ function initAllCharts() {
   new Chart(document.getElementById('chartTunTemp'), {
     type:'line',
     data:{
-      labels:['C1 07:00','C2 08:35','C3 09:00','C4 10:25','C5 10:30','C6 11:00','C7 12:15'],
+      labels:[],
       datasets:[
-        {label:'IQF-1',data:[-31.2,null,-32.0,-30.2,null,null,null],borderColor:'#0891b2',tension:0.2,pointRadius:6,pointBackgroundColor:'#0891b2',spanGaps:false},
-        {label:'IQF-2',data:[null,-30.5,null,null,null,-29.8,null],borderColor:COLORS.verde,tension:0.2,pointRadius:6,pointBackgroundColor:COLORS.verde,spanGaps:false},
-        {label:'IQF-3',data:[null,null,-28.1,null,null,null,-24.5],borderColor:COLORS.rose,tension:0.2,pointRadius:6,pointBackgroundColor:COLORS.rose,spanGaps:false},
-        {label:'Limite -30°C',data:[-30,-30,-30,-30,-30,-30,-30],borderColor:'rgba(220,38,38,0.3)',borderDash:[6,4],pointRadius:0,fill:false}
+        {label:'TUNEL EST. 1',data:[],borderColor:'#0891b2',tension:0.2,pointRadius:6,pointBackgroundColor:'#0891b2',spanGaps:false},
+        {label:'TUNEL EST. 2',data:[],borderColor:COLORS.verde,tension:0.2,pointRadius:6,pointBackgroundColor:COLORS.verde,spanGaps:false},
+        {label:'TUNEL EST. 3',data:[],borderColor:COLORS.rose,tension:0.2,pointRadius:6,pointBackgroundColor:COLORS.rose,spanGaps:false},
+        {label:'Limite -30°C',data:[],borderColor:'rgba(220,38,38,0.3)',borderDash:[6,4],pointRadius:0,fill:false}
       ]
     },
     options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{reverse:true,min:-35,max:-20,title:{display:true,text:'°C'},grid:{color:'rgba(0,0,0,0.08)'}},x:{grid:{display:false}}}}
@@ -2869,9 +2874,17 @@ function toggleCostoColumn() {
   document.querySelectorAll('.costo-col').forEach(el => el.style.display = costoVisible ? '' : 'none');
 }
 
+function getPeruDate() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' }));
+}
+function getProductionDate() {
+  const peru = getPeruDate();
+  const hour = peru.getHours();
+  if (hour >= 0 && hour < 6) peru.setDate(peru.getDate() - 1);
+  return peru.getFullYear()+'-'+String(peru.getMonth()+1).padStart(2,'0')+'-'+String(peru.getDate()).padStart(2,'0');
+}
 function getToday() {
-  const d = new Date();
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  return getProductionDate();
 }
 
 function loadAcoLiveData() {
@@ -3023,14 +3036,233 @@ function updateAcoCharts(prodRegs) {
   }
 }
 
+// ── TUNELES IQF LIVE DATA ──
+const TUN_STD_HRS = { MANGO:1.5, ARANDANO:2.0, GRANADA:1.8, FRESA:1.5, PALTA:2.0, PINA:1.5, 'PIÑA':1.5 };
+const TUN_NAMES = ['TUNEL ESTATICO 1','TUNEL ESTATICO 2','TUNEL ESTATICO 3'];
+let tunChartCiclosBuilt = false;
+let tunChartTempBuilt = false;
+
+function loadTunelesLiveData() {
+  const today = getToday();
+  const regs = JSON.parse(localStorage.getItem('tuneles_registros') || '[]').filter(r => r.fecha === today);
+
+  const el = (id,v) => { const e=document.getElementById(id); if(e) e.innerHTML=v; };
+  const peruNow = getPeruDate();
+
+  // ── Update visual status cards ──
+  TUN_NAMES.forEach((tName, idx) => {
+    const card = document.getElementById('tunVisual'+(idx+1));
+    const elapsedDiv = document.getElementById('tunElapsed'+(idx+1));
+    if (!card) return;
+    const tRegs = regs.filter(r => (r.tunel||'') === tName).sort((a,b) => (a.hora_inicio||'').localeCompare(b.hora_inicio||''));
+    const last = tRegs.length > 0 ? tRegs[tRegs.length-1] : null;
+
+    let status = 'DISPONIBLE', badgeClass = 't-badge-ok', cardClass = 't-ok', badgeText = 'DISPONIBLE';
+    let coches = 0, tempDisplay = '—', inicio = '—', fruta = '';
+
+    if (last) {
+      coches = parseInt(last.coches) || 0;
+      inicio = last.hora_inicio ? last.hora_inicio.substring(0,5) : '—';
+      fruta = (last.fruta || '').toUpperCase();
+
+      if (last.hora_inicio && !last.hora_fin) {
+        status = 'CONGELANDO';
+        badgeClass = 't-badge-activo';
+        cardClass = 't-activo';
+        badgeText = 'CONGELANDO';
+        tempDisplay = last.temp_ingreso != null ? parseFloat(last.temp_ingreso).toFixed(1)+'°C ing.' : 'En proceso';
+      } else if (last.hora_fin) {
+        status = 'DISPONIBLE';
+        badgeClass = 't-badge-ok';
+        cardClass = 't-ok';
+        badgeText = 'DISPONIBLE';
+        tempDisplay = last.temp_final != null ? parseFloat(last.temp_final).toFixed(1)+'°C' : '—';
+      }
+    }
+
+    // Standard hours for fruit
+    const stdHrs = TUN_STD_HRS[fruta] || 1.5;
+
+    // Time elapsed / remaining
+    let elapsedHtml = '';
+    if (status === 'CONGELANDO' && last && last.hora_inicio) {
+      const hiParts = last.hora_inicio.split(':').map(Number);
+      const startMin = hiParts[0]*60 + (hiParts[1]||0);
+      const nowMin = peruNow.getHours()*60 + peruNow.getMinutes();
+      const elapsedMin = Math.max(0, nowMin - startMin);
+      const remainMin = Math.max(0, Math.round(stdHrs * 60) - elapsedMin);
+      const elH = Math.floor(elapsedMin/60); const elM = elapsedMin % 60;
+      const remH = Math.floor(remainMin/60); const remM = remainMin % 60;
+      elapsedHtml = '<div class="t-elapsed-box" style="color:#0891b2"><span>Transcurrido</span>'+elH+'h '+String(elM).padStart(2,'0')+'m</div>'
+        +'<div class="t-elapsed-box" style="color:'+(remainMin<=0?'#dc2626':'var(--verde)')+'"><span>Restante</span>'+(remainMin<=0?'LISTO':remH+'h '+String(remM).padStart(2,'0')+'m')+'</div>';
+    }
+
+    card.className = 'tunnel-visual '+cardClass;
+    card.innerHTML = '<div class="t-name">🧊 '+tName+'</div>'
+      +'<div class="t-badge '+badgeClass+'">'+badgeText+'</div>'
+      +'<div class="t-coches" style="color:'+(status==='CONGELANDO'?'#0891b2':'var(--verde)')+'">'+coches+'</div>'
+      +'<div class="t-metric">coches cargados</div>'
+      +'<div class="t-temp" style="color:'+(status==='CONGELANDO'?'var(--azul)':'var(--muted)')+'">'+tempDisplay+'</div>'
+      +'<div class="t-metric">'+(status==='CONGELANDO'?'Temp. ingreso':'Temp. final')+'</div>'
+      +'<div class="t-metric">Ultimo inicio: <b>'+inicio+'</b> · Std: <b>'+stdHrs+' hr</b></div>'
+      +'<div class="t-elapsed">'+elapsedHtml+'</div>';
+  });
+
+  // ── Update KPIs ──
+  const allActive = regs.filter(r => r.hora_inicio && !r.hora_fin);
+  const cochesEnProceso = allActive.reduce((s,r) => s + (parseInt(r.coches)||0), 0);
+  const completados = regs.filter(r => r.hora_inicio && r.hora_fin);
+  const totalCiclos = completados.length;
+
+  // Temp promedio (use temp_final for completed cycles)
+  const temps = completados.filter(r => r.temp_final != null).map(r => parseFloat(r.temp_final));
+  const tempProm = temps.length > 0 ? (temps.reduce((s,t)=>s+t,0)/temps.length) : 0;
+
+  // Avg cycle time from hrs_congelamiento or calculated
+  let totalHrs = 0, nCiclos = 0;
+  completados.forEach(r => {
+    if (r.hrs_congelamiento != null && parseFloat(r.hrs_congelamiento) > 0) {
+      totalHrs += parseFloat(r.hrs_congelamiento); nCiclos++;
+    } else if (r.hora_inicio && r.hora_fin) {
+      const hi = r.hora_inicio.split(':').map(Number);
+      const hf = r.hora_fin.split(':').map(Number);
+      const diff = (hf[0]*60+(hf[1]||0)) - (hi[0]*60+(hi[1]||0));
+      if (diff > 0) { totalHrs += diff/60; nCiclos++; }
+    }
+  });
+  const tCicloProm = nCiclos > 0 ? (totalHrs/nCiclos) : 0;
+
+  const totalCochesComp = completados.reduce((s,r) => s + (parseInt(r.coches)||0), 0);
+  const totalKg = regs.reduce((s,r) => s + (parseInt(r.kg)||0), 0);
+
+  // Eficiencia promedio from completed cycles
+  const eficValues = completados.filter(r => r.eficiencia != null).map(r => parseFloat(r.eficiencia));
+  const eficProm = eficValues.length > 0 ? Math.round(eficValues.reduce((s,v)=>s+v,0)/eficValues.length) : 0;
+
+  el('tunKpiCoches', cochesEnProceso+' <span class="kpi-unit">coches</span>');
+  el('tunKpiCochesMeta', allActive.length+' tunel'+(allActive.length!==1?'es':'')+' activo'+(allActive.length!==1?'s':''));
+  el('tunKpiCiclos', totalCiclos.toString());
+  el('tunKpiCiclosMeta', 'Completados hoy');
+  el('tunKpiTemp', (tempProm !== 0 ? tempProm.toFixed(1) : '—')+' <span class="kpi-unit">°C</span>');
+  el('tunKpiTempMeta', 'Temp. final promedio');
+  el('tunKpiTCiclo', (tCicloProm > 0 ? tCicloProm.toFixed(1) : '—')+' <span class="kpi-unit">hr</span>');
+  el('tunKpiTCicloMeta', 'Promedio ciclo completado');
+  el('tunKpiKg', (totalKg > 0 ? totalKg.toLocaleString('es-PE') : '0')+' <span class="kpi-unit">kg</span>');
+  el('tunKpiKgMeta', totalCochesComp+' coches completados + '+cochesEnProceso+' en proceso');
+  el('tunKpiEfic', eficProm+'<span class="kpi-unit">%</span>');
+  el('tunKpiEficDiff', eficValues.length > 0 ? ((eficProm >= 80 ? '▲ ' : '▼ ')+eficProm+'% promedio') : '');
+
+  // ── Update cycle table ──
+  const tbody = document.getElementById('tunLiveBody');
+  if (tbody) {
+    if (regs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="11" class="text-muted" style="text-align:center;padding:24px">Sin registros hoy — use la app de Registro Tuneles para agregar ciclos</td></tr>';
+    } else {
+      const sorted = [...regs].sort((a,b) => (a.hora_inicio||'').localeCompare(b.hora_inicio||''));
+      let rows = '';
+      sorted.forEach(r => {
+        const rCoches = parseInt(r.coches)||0;
+        const rKg = parseInt(r.kg)||0;
+        const horaIni = r.hora_inicio ? r.hora_inicio.substring(0,5) : '—';
+        const horaFin = r.hora_fin ? r.hora_fin.substring(0,5) : '—';
+
+        // Hrs ciclo
+        let hrsCiclo = '—', hrsColor = 'var(--muted)', hrsWeight = '400';
+        if (r.hrs_congelamiento != null && parseFloat(r.hrs_congelamiento) > 0) {
+          hrsCiclo = parseFloat(r.hrs_congelamiento).toFixed(1)+' hr';
+          const stdFruit = TUN_STD_HRS[(r.fruta||'').toUpperCase()] || 1.5;
+          hrsColor = parseFloat(r.hrs_congelamiento) <= stdFruit*1.1 ? 'var(--verde)' : 'var(--amber)';
+          hrsWeight = '800';
+        } else if (r.hora_inicio && r.hora_fin) {
+          const hi = r.hora_inicio.split(':').map(Number);
+          const hf = r.hora_fin.split(':').map(Number);
+          const diff = (hf[0]*60+(hf[1]||0)) - (hi[0]*60+(hi[1]||0));
+          if (diff > 0) {
+            hrsCiclo = (diff/60).toFixed(1)+' hr';
+            const stdFruit = TUN_STD_HRS[(r.fruta||'').toUpperCase()] || 1.5;
+            hrsColor = (diff/60) <= stdFruit*1.1 ? 'var(--verde)' : 'var(--amber)';
+            hrsWeight = '800';
+          }
+        }
+
+        // Temps
+        const tempIng = r.temp_ingreso != null ? parseFloat(r.temp_ingreso).toFixed(1)+'°C' : '—';
+        const tempFin = r.temp_final != null ? parseFloat(r.temp_final).toFixed(1)+'°C' : '—';
+        const tempFinColor = r.temp_final != null ? (parseFloat(r.temp_final) <= -30 ? 'var(--azul)' : parseFloat(r.temp_final) <= -25 ? 'var(--amber)' : '#dc2626') : 'var(--muted)';
+
+        // Eficiencia
+        let eficLabel = '—', eficClass = 'text-muted';
+        if (r.eficiencia != null) {
+          const efVal = parseFloat(r.eficiencia);
+          eficLabel = efVal.toFixed(0)+'%';
+          eficClass = efVal >= 80 ? 'text-green' : efVal >= 60 ? 'text-orange' : 'text-red';
+        }
+
+        // Estado
+        let estado = '', estadoClass = '';
+        if (r.hora_inicio && !r.hora_fin) {
+          estado = '🔄 Congelando'; estadoClass = 'status-info';
+        } else if (r.hora_fin) {
+          estado = '✅ Completado'; estadoClass = 'status-active';
+        }
+
+        rows += '<tr><td><b>'+(r.tunel||'—')+'</b></td><td>'+(r.fruta||'—')+'</td>'
+          +'<td class="num">'+rCoches+'</td><td class="num">'+rKg+'</td>'
+          +'<td>'+horaIni+'</td><td>'+horaFin+'</td>'
+          +'<td class="num" style="color:'+hrsColor+';font-weight:'+hrsWeight+'">'+hrsCiclo+'</td>'
+          +'<td class="num">'+tempIng+'</td>'
+          +'<td class="num" style="color:'+tempFinColor+'">'+tempFin+'</td>'
+          +'<td class="'+eficClass+'">'+eficLabel+'</td>'
+          +'<td><span class="status-pill '+estadoClass+'">'+estado+'</span></td></tr>';
+      });
+      tbody.innerHTML = rows;
+    }
+  }
+
+  // ── Update charts ──
+  updateTunelesCharts(regs);
+}
+
+function updateTunelesCharts(regs) {
+  // Chart: Ciclos por Tunel
+  const ch1 = Chart.getChart('chartTunCiclos');
+  if (ch1) {
+    const compData = TUN_NAMES.map(t => regs.filter(r => r.tunel===t && r.hora_fin).length);
+    const procData = TUN_NAMES.map(t => regs.filter(r => r.tunel===t && r.hora_inicio && !r.hora_fin).length);
+    ch1.data.labels = TUN_NAMES.map(t => t.replace('TUNEL ESTATICO ','T'));
+    ch1.data.datasets[0].data = compData;
+    ch1.data.datasets[1].data = procData;
+    ch1.update('none');
+  }
+
+  // Chart: Temperatura por Ciclo
+  const ch2 = Chart.getChart('chartTunTemp');
+  if (ch2) {
+    const sorted = [...regs].filter(r => r.temp_final != null || r.temp_ingreso != null).sort((a,b) => (a.hora_inicio||'').localeCompare(b.hora_inicio||''));
+    const labels = sorted.map((r,i) => 'C'+(i+1)+' '+(r.hora_inicio||'').substring(0,5));
+    const t1Data = sorted.map(r => r.tunel===TUN_NAMES[0] ? parseFloat(r.temp_final != null ? r.temp_final : r.temp_ingreso) : null);
+    const t2Data = sorted.map(r => r.tunel===TUN_NAMES[1] ? parseFloat(r.temp_final != null ? r.temp_final : r.temp_ingreso) : null);
+    const t3Data = sorted.map(r => r.tunel===TUN_NAMES[2] ? parseFloat(r.temp_final != null ? r.temp_final : r.temp_ingreso) : null);
+    const limData = sorted.map(() => -30);
+
+    ch2.data.labels = labels;
+    ch2.data.datasets[0].data = t1Data;
+    ch2.data.datasets[1].data = t2Data;
+    ch2.data.datasets[2].data = t3Data;
+    if (ch2.data.datasets[3]) ch2.data.datasets[3].data = limData;
+    ch2.update('none');
+  }
+}
+
 // ── SUPABASE SYNC ──
 async function syncFromSupabase() {
   try {
     const today = getToday();
-    const [prodRes, persRes, costRes] = await Promise.all([
+    const [prodRes, persRes, costRes, tunRes] = await Promise.all([
       supabaseClient.from('registro_produccion').select('*').eq('fecha', today).order('hora'),
       supabaseClient.from('registro_personal').select('*').eq('fecha', today).order('hora'),
-      supabaseClient.from('config_costos').select('*').eq('fecha', today).limit(1)
+      supabaseClient.from('config_costos').select('*').eq('fecha', today).limit(1),
+      supabaseClient.from('registro_tuneles').select('*').eq('fecha', today).order('hora_inicio')
     ]);
 
     if (prodRes.data && prodRes.data.length > 0) {
@@ -3046,8 +3278,14 @@ async function syncFromSupabase() {
     if (costRes.data && costRes.data.length > 0) {
       localStorage.setItem('costos_config', JSON.stringify(costRes.data[0]));
     }
+    if (tunRes.data && tunRes.data.length > 0) {
+      const existing = JSON.parse(localStorage.getItem('tuneles_registros') || '[]');
+      const otherDays = existing.filter(r => r.fecha !== today);
+      localStorage.setItem('tuneles_registros', JSON.stringify([...otherDays, ...tunRes.data]));
+    }
 
     loadAcoLiveData(); // Re-render with fresh data
+    loadTunelesLiveData(); // Re-render tunnel data
   } catch(e) {
     console.log('Supabase offline, usando localStorage');
   }
@@ -3061,6 +3299,7 @@ function subscribeRealtime() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'registro_produccion' }, () => syncFromSupabase())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'registro_personal' }, () => syncFromSupabase())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'config_costos' }, () => syncFromSupabase())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'registro_tuneles' }, () => syncFromSupabase())
       .subscribe();
     console.log('✅ Realtime subscribed');
   } catch(e) { console.log('Realtime not available'); }
@@ -3068,9 +3307,11 @@ function subscribeRealtime() {
 
 // Listen for storage changes (from other tabs / apps)
 window.addEventListener('storage', loadAcoLiveData);
+window.addEventListener('storage', loadTunelesLiveData);
 // Also poll every 5 seconds for same-tab updates
 setInterval(() => {
   loadAcoLiveData();
+  loadTunelesLiveData();
 }, 5000);
 
 // Supabase sync every 15 seconds
@@ -3086,6 +3327,7 @@ if (dateEl) {
 
 // Initial load
 setTimeout(loadAcoLiveData, 500);
+setTimeout(loadTunelesLiveData, 600);
 
 // ── PRODUCCION DEL DIA LIVE DATA ──
 let pdCostoVisible = false;
