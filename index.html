@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es"><script>if(localStorage.getItem('portal_theme')==='dark')document.documentElement.classList.add('pre-dark');if(sessionStorage.getItem('portal_logged_in'))document.documentElement.classList.add('pre-logged')</script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,6 +10,11 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
+/* Pre-render: theme + login flash prevention */
+html.pre-dark body { background:#0a0f14!important; }
+html.pre-dark #loginScreen { background:#0a0f14!important; }
+html.pre-logged #loginScreen { display:none!important; }
+html.pre-logged #appScreen { display:block!important; }
 /* ================================================================
    FRUTOS TROPICALES — PORTAL PRODUCCION v1.0 ENTERPRISE
    Premium Production Intelligence Dashboard
@@ -716,7 +721,7 @@ body.dark-mode .topbar-dev-signature .signature-name {
 }
 .tunnel-visual.t-activo { border-color:#0891b2;--t-glow:rgba(8,145,178,0.1);animation:tunPulseCyan 2s ease-in-out infinite; }
 .tunnel-visual.t-libre { border-color:#22c55e;--t-glow:rgba(34,197,94,0.08); }
-.tunnel-visual.t-ok { border-color:#22c55e;--t-glow:rgba(34,197,94,0.08); }
+.tunnel-visual.t-ok, .tunnel-visual.t-disponible { border-color:#22c55e;--t-glow:rgba(34,197,94,0.08); }
 .tunnel-visual.t-alerta { border-color:#dc2626;--t-glow:rgba(220,38,38,0.08); }
 @keyframes tunPulseCyan { 0%,100%{border-color:#0891b2;box-shadow:0 0 8px rgba(8,145,178,0.15)}50%{border-color:#22d3ee;box-shadow:0 0 20px rgba(8,145,178,0.35)} }
 .t-badge-ok { background:rgba(34,197,94,0.1);color:#16a34a; }
@@ -2101,7 +2106,7 @@ body.dark-mode .topbar-dev-signature .signature-name {
 
   <!-- Tunnel visual status -->
   <div class="tunnel-grid-portal" id="tunVisualGrid">
-    <div class="tunnel-visual t-ok" id="tunVisual1">
+    <div class="tunnel-visual t-disponible" id="tunVisual1">
       <div class="t-name">🧊 TUNEL ESTATICO 1</div>
       <div class="t-badge t-badge-ok">DISPONIBLE</div>
       <div class="t-coches" style="color:var(--verde)">0</div>
@@ -2111,7 +2116,7 @@ body.dark-mode .topbar-dev-signature .signature-name {
       <div class="t-metric">Ultimo inicio: <b>—</b></div>
       <div class="t-elapsed" id="tunElapsed1"></div>
     </div>
-    <div class="tunnel-visual t-ok" id="tunVisual2">
+    <div class="tunnel-visual t-disponible" id="tunVisual2">
       <div class="t-name">🧊 TUNEL ESTATICO 2</div>
       <div class="t-badge t-badge-ok">DISPONIBLE</div>
       <div class="t-coches" style="color:var(--verde)">0</div>
@@ -2121,7 +2126,7 @@ body.dark-mode .topbar-dev-signature .signature-name {
       <div class="t-metric">Ultimo inicio: <b>—</b></div>
       <div class="t-elapsed" id="tunElapsed2"></div>
     </div>
-    <div class="tunnel-visual t-ok" id="tunVisual3">
+    <div class="tunnel-visual t-disponible" id="tunVisual3">
       <div class="t-name">🧊 TUNEL ESTATICO 3</div>
       <div class="t-badge t-badge-ok">DISPONIBLE</div>
       <div class="t-coches" style="color:var(--verde)">0</div>
@@ -2328,6 +2333,14 @@ function doLogin() {
         try { const ch = Chart.getChart(c); if(ch) { ch.resize(); ch.update('none'); } } catch(e){}
       });
     }, 500);
+    // Apply saved theme
+    if (localStorage.getItem('portal_theme') === 'dark') {
+      document.body.classList.add('dark-mode');
+      const btn = document.getElementById('themeBtn');
+      if (btn) btn.textContent = '☀️';
+    }
+    document.documentElement.classList.remove('pre-dark','pre-logged');
+    sessionStorage.setItem('portal_logged_in', 'true');
     syncFromSupabase();
     subscribeRealtime();
     // Sesion activa por 5 minutos
@@ -2352,6 +2365,7 @@ window.addEventListener('load', function(){
 function doLogout() {
   _loggedIn = false;
   localStorage.removeItem('portal_session');
+  sessionStorage.removeItem('portal_logged_in');
   if (window._sessionTimer) clearTimeout(window._sessionTimer);
   document.getElementById('appScreen').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
@@ -2397,8 +2411,10 @@ document.querySelectorAll('.nav-item[data-panel]').forEach(item => {
 // ── THEME ──
 function toggleTheme() {
   document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
   const btn = document.getElementById('themeBtn');
-  btn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+  btn.textContent = isDark ? '☀️' : '🌙';
+  localStorage.setItem('portal_theme', isDark ? 'dark' : 'light');
 }
 
 // ── SIDEBAR MOBILE ──
@@ -3058,7 +3074,7 @@ function loadTunelesLiveData() {
     const tRegs = regs.filter(r => (r.tunel||'') === tName).sort((a,b) => (a.hora_inicio||'').localeCompare(b.hora_inicio||''));
     const last = tRegs.length > 0 ? tRegs[tRegs.length-1] : null;
 
-    let status = 'DISPONIBLE', badgeClass = 't-badge-ok', cardClass = 't-ok', badgeText = 'DISPONIBLE';
+    let status = 'DISPONIBLE', badgeClass = 't-badge-ok', cardClass = 't-disponible', badgeText = 'DISPONIBLE';
     let coches = 0, tempDisplay = '—', inicio = '—', fruta = '';
 
     if (last) {
@@ -3075,7 +3091,7 @@ function loadTunelesLiveData() {
       } else if (last.hora_fin) {
         status = 'DISPONIBLE';
         badgeClass = 't-badge-ok';
-        cardClass = 't-ok';
+        cardClass = 't-disponible';
         badgeText = 'DISPONIBLE';
         tempDisplay = last.temp_final != null ? parseFloat(last.temp_final).toFixed(1)+'°C' : '—';
       }
