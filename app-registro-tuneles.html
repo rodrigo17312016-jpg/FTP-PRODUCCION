@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es"><script>if(localStorage.getItem('tunel_theme')==='light')document.documentElement.setAttribute('data-theme','light')</script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2191,6 +2191,15 @@ function getCurrentTimeStr() {
 
 /* ═══════════════ RENDER ALL ═══════════════ */
 function renderAll() {
+  // Deduplicate records by fecha|tunel|hora_inicio (keep latest version)
+  const dedupMap = new Map();
+  records.forEach(r => {
+    const key = (r.fecha||'') + '|' + (r.tunel||'') + '|' + (r.hora_inicio||'');
+    dedupMap.set(key, r);
+  });
+  records = Array.from(dedupMap.values());
+  records.sort((a,b) => (a.hora_inicio || '').localeCompare(b.hora_inicio || ''));
+
   // Apply chip filters + date filter
   let filtered = records;
 
