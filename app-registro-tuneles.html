@@ -1818,18 +1818,23 @@ async function loadData() {
     }
   } catch(e) {}
 
-  // Merge: Supabase takes priority, add local-only records
-  if (supaRecords.length > 0) {
-    const supaKeys = new Set(supaRecords.map(r => r.fecha + '|' + r.tunel + '|' + r.hora_inicio));
-    const merged = [...supaRecords];
-    localRecords.forEach(lr => {
-      const key = lr.fecha + '|' + lr.tunel + '|' + lr.hora_inicio;
-      if (!supaKeys.has(key)) merged.push(lr);
-    });
-    records = merged;
-  } else {
-    records = localRecords;
-  }
+  // Normalize hora_inicio / hora_fin: strip seconds so "07:00:00" becomes "07:00"
+  const normalizeTime = (r) => {
+    if (r.hora_inicio && r.hora_inicio.length > 5) r.hora_inicio = r.hora_inicio.substring(0, 5);
+    if (r.hora_fin && r.hora_fin.length > 5) r.hora_fin = r.hora_fin.substring(0, 5);
+    return r;
+  };
+  supaRecords.forEach(normalizeTime);
+  localRecords.forEach(normalizeTime);
+
+  // Merge: Supabase takes priority, deduplicate by fecha|tunel|hora_inicio
+  const dedup = new Map();
+  const makeKey = r => r.fecha + '|' + r.tunel + '|' + r.hora_inicio;
+  // Supabase records first (higher priority)
+  supaRecords.forEach(r => dedup.set(makeKey(r), r));
+  // Local records only if not already present
+  localRecords.forEach(r => { const k = makeKey(r); if (!dedup.has(k)) dedup.set(k, r); });
+  records = Array.from(dedup.values());
 
   records.sort((a,b) => (a.hora_inicio || '').localeCompare(b.hora_inicio || ''));
   renderAll();
@@ -2211,7 +2216,7 @@ function renderAll() {
 /* ═══════════════ TUNNEL STATUS CARDS ═══════════════ */
 function renderTunnelCards() {
   [1,2,3].forEach(n => {
-    const tunel = 'TUNEL ' + n;
+    const tunel = 'TUNEL ESTATICO ' + n;
     const card = document.getElementById('tunnel' + n + 'Card');
     const badge = document.getElementById('tunnel' + n + 'Badge');
     const cochesEl = document.getElementById('tunnel' + n + 'Coches');
@@ -2225,7 +2230,7 @@ function renderTunnelCards() {
     const lastRec = tunelRecs.length > 0 ? tunelRecs[tunelRecs.length - 1] : null;
 
     if (lastRec) {
-      const isActive = !lastRec.hora_fin;
+      const isActive = lastRec.hora_fin === null || lastRec.hora_fin === '' || lastRec.hora_fin === '--' || !lastRec.hora_fin;
 
       // Manage fog element
       let fog = card.querySelector('.tunnel-fog');
