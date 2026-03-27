@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -2825,7 +2826,7 @@ function initAllCharts() {
         {label:'TUNEL EST. 1',data:[],borderColor:'#0891b2',tension:0.2,pointRadius:6,pointBackgroundColor:'#0891b2',spanGaps:false},
         {label:'TUNEL EST. 2',data:[],borderColor:COLORS.verde,tension:0.2,pointRadius:6,pointBackgroundColor:COLORS.verde,spanGaps:false},
         {label:'TUNEL EST. 3',data:[],borderColor:COLORS.rose,tension:0.2,pointRadius:6,pointBackgroundColor:COLORS.rose,spanGaps:false},
-        {label:'Limite -30°C',data:[],borderColor:'rgba(220,38,38,0.3)',borderDash:[6,4],pointRadius:0,fill:false}
+        {label:'Temp. Minima -22°C',data:[],borderColor:'rgba(220,38,38,0.3)',borderDash:[6,4],pointRadius:0,fill:false}
       ]
     },
     options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{reverse:true,min:-35,max:-20,title:{display:true,text:'°C'},grid:{color:'rgba(0,0,0,0.08)'}},x:{grid:{display:false}}}}
@@ -3188,7 +3189,7 @@ function loadTunelesLiveData() {
         // Temps
         const tempIng = r.temp_ingreso != null ? parseFloat(r.temp_ingreso).toFixed(1)+'°C' : '—';
         const tempFin = r.temp_final != null ? parseFloat(r.temp_final).toFixed(1)+'°C' : '—';
-        const tempFinColor = r.temp_final != null ? (parseFloat(r.temp_final) <= -30 ? 'var(--azul)' : parseFloat(r.temp_final) <= -25 ? 'var(--amber)' : '#dc2626') : 'var(--muted)';
+        const tempFinColor = r.temp_final != null ? (parseFloat(r.temp_final) <= -22 ? 'var(--azul)' : parseFloat(r.temp_final) <= -18 ? 'var(--amber)' : '#dc2626') : 'var(--muted)';
 
         // Eficiencia
         let eficLabel = '—', eficClass = 'text-muted';
@@ -3243,7 +3244,7 @@ function updateTunelesCharts(regs) {
     const t1Data = sorted.map(r => r.tunel===TUN_NAMES[0] ? parseFloat(r.temp_final != null ? r.temp_final : r.temp_ingreso) : null);
     const t2Data = sorted.map(r => r.tunel===TUN_NAMES[1] ? parseFloat(r.temp_final != null ? r.temp_final : r.temp_ingreso) : null);
     const t3Data = sorted.map(r => r.tunel===TUN_NAMES[2] ? parseFloat(r.temp_final != null ? r.temp_final : r.temp_ingreso) : null);
-    const limData = sorted.map(() => -30);
+    const limData = sorted.map(() => -22);
 
     ch2.data.labels = labels;
     ch2.data.datasets[0].data = t1Data;
