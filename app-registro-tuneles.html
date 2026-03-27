@@ -2529,7 +2529,7 @@ function renderCharts(data, forceRebuild) {
   // 3. Temperatura por Ciclo - only completed (FIXED: label changed)
   const tempIn = completedData.map(r => r.temp_ingreso);
   const tempOut = completedData.map(r => r.temp_final);
-  const limit30 = completedData.map(() => -30);
+  const limit30 = completedData.map(() => -22);
 
   chartInstances.temperatura = new Chart(document.getElementById('chartTemperatura'), {
     type: 'line',
@@ -2538,7 +2538,7 @@ function renderCharts(data, forceRebuild) {
       datasets: [
         { label: 'Temp Ingreso', data: tempIn, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', fill: false, tension: 0.3, pointRadius: 4 },
         { label: 'Temp Final', data: tempOut, borderColor: '#0891b2', backgroundColor: 'rgba(8,145,178,0.1)', fill: false, tension: 0.3, pointRadius: 4 },
-        { label: 'Temp. Minima -30\u00B0C', data: limit30, borderColor: '#ef4444', borderDash: [6,4], pointRadius: 0, borderWidth: 2 }
+        { label: 'Temp. Minima -22\u00B0C', data: limit30, borderColor: '#ef4444', borderDash: [6,4], pointRadius: 0, borderWidth: 2 }
       ]
     },
     options: {
