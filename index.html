@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es"><script>(function(){var d=localStorage.getItem('portal_theme')==='dark';if(d)document.documentElement.classList.add('pre-dark');if(sessionStorage.getItem('portal_logged_in'))document.documentElement.classList.add('pre-logged');window.__preDark=d})()</script>
 <head>
@@ -2358,9 +2357,19 @@ window.addEventListener('load', function(){
     if (s && s.user && s.expires > Date.now() && USERS[s.user]) {
       document.getElementById('loginUser').value = s.user;
       document.getElementById('loginPass').value = USERS[s.user].pass;
-      doLogin();
+      // Small delay to ensure fonts/resources are fully loaded
+      setTimeout(function(){ doLogin(); }, 100);
+    } else {
+      // No valid session - remove pre-logged class
+      document.documentElement.classList.remove('pre-logged','pre-dark');
+      if (!document.body.classList.contains('dark-mode')) {
+        document.getElementById('loginScreen').style.display = 'flex';
+      }
     }
-  } catch(e){ console.log('Auto-login error:', e); }
+  } catch(e){
+    console.log('Auto-login error:', e);
+    document.documentElement.classList.remove('pre-logged','pre-dark');
+  }
 });
 function doLogout() {
   _loggedIn = false;
@@ -2415,6 +2424,25 @@ function toggleTheme() {
   const btn = document.getElementById('themeBtn');
   btn.textContent = isDark ? '☀️' : '🌙';
   localStorage.setItem('portal_theme', isDark ? 'dark' : 'light');
+  // Update chart colors for theme
+  const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+  const tickColor = isDark ? '#94a3b8' : '#64748b';
+  document.querySelectorAll('canvas').forEach(c => {
+    try {
+      const ch = Chart.getChart(c);
+      if (!ch) return;
+      ['x','y','y1','r'].forEach(axis => {
+        if (ch.options.scales && ch.options.scales[axis]) {
+          if (ch.options.scales[axis].grid) ch.options.scales[axis].grid.color = gridColor;
+          if (ch.options.scales[axis].ticks) ch.options.scales[axis].ticks.color = tickColor;
+        }
+      });
+      if (ch.options.plugins && ch.options.plugins.legend && ch.options.plugins.legend.labels) {
+        ch.options.plugins.legend.labels.color = tickColor;
+      }
+      ch.update('none');
+    } catch(e){}
+  });
 }
 
 // ── SIDEBAR MOBILE ──
