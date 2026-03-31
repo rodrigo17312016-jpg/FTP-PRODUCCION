@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -740,7 +739,6 @@ body {
         <div class="form-group">
           <label>Linea</label>
           <select id="fLinea">
-            <option value="General">General</option>
             <option value="Linea 1">Linea 1</option>
             <option value="Linea 2">Linea 2</option>
           </select>
@@ -788,36 +786,38 @@ body {
   <!-- HORARIO DEL TURNO - SECCION INDEPENDIENTE -->
   <div class="card" id="horarioCard">
     <div class="card-title" onclick="toggleSection('horarioBody','horarioChevron')">
-      🕐 Horario del Turno
+      🕐 <span id="horarioTitleTurno">Horario Turno DIA</span>
       <span class="chevron" id="horarioChevron">▼</span>
     </div>
     <div class="card-body" id="horarioBody">
-      <div id="horarioStatus" style="margin-bottom:12px;padding:10px 16px;border-radius:10px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);font-size:13px;color:#f59e0b;display:none">
-        <span id="horarioStatusText"></span>
-        <button onclick="editarHorario()" style="margin-left:12px;background:none;border:1px solid #f59e0b;color:#f59e0b;padding:4px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">✏️ Editar</button>
+      <div id="horarioStatus" style="margin-bottom:12px;padding:10px 16px;border-radius:10px;background:rgba(22,163,74,0.1);border:1px solid rgba(22,163,74,0.3);font-size:13px;display:none">
+        <span id="horarioStatusText" style="color:#16a34a"></span>
       </div>
       <div id="horarioForm">
-        <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="form-grid" style="grid-template-columns:1fr auto 1fr auto;">
           <div class="form-group">
             <label>Hora Inicio Turno</label>
             <input type="time" id="fHoraInicio" value="07:00">
           </div>
+          <div class="form-group" style="align-self:end">
+            <button class="btn btn-primary" onclick="registrarInicio()" style="background:linear-gradient(135deg,#2563eb,#3b82f6);white-space:nowrap">✅ Registrar Inicio</button>
+          </div>
           <div class="form-group">
             <label>Hora Fin Turno</label>
-            <input type="time" id="fHoraFin" value="19:00">
+            <input type="time" id="fHoraFin" value="17:00">
           </div>
-        </div>
-        <div class="btn-row" style="margin-top:10px">
-          <button class="btn btn-primary" onclick="registrarHorario()" style="background:linear-gradient(135deg,#2563eb,#3b82f6)">✅ Registrar Horario</button>
+          <div class="form-group" style="align-self:end">
+            <button class="btn btn-primary" onclick="registrarFin()" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6);white-space:nowrap">✅ Registrar Final</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ALMUERZO - SECCION INDEPENDIENTE -->
+  <!-- ALMUERZO / CENA - SECCION INDEPENDIENTE -->
   <div class="card" id="almuerzoCard">
     <div class="card-title" onclick="toggleSection('almuerzoBody','almuerzoChevron')">
-      🍽️ Datos de Almuerzo
+      🍽️ Datos de Almuerzo / Cena
       <span class="chevron" id="almuerzoChevron">▼</span>
     </div>
     <div class="card-body" id="almuerzoBody">
@@ -842,12 +842,18 @@ body {
             </div>
           </div>
         </div>
-        <div style="margin-top:6px;font-size:11px;color:var(--text-muted,#94a3b8);font-style:italic;">
-          Completar cuando se confirme la hora de almuerzo (usualmente despues de las 10am)
-        </div>
         <div class="btn-row" style="margin-top:10px">
-          <button class="btn btn-primary" onclick="registrarAlmuerzo()" style="background:linear-gradient(135deg,#ea580c,#f97316)">✅ Registrar Almuerzo</button>
+          <button class="btn btn-primary" onclick="registrarAlmuerzo()" style="background:linear-gradient(135deg,#ea580c,#f97316)">🍽️ Registrar Almuerzo</button>
+          <button class="btn btn-primary" onclick="registrarCena()" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)">🌙 Registrar Cena</button>
         </div>
+      </div>
+      <!-- Cena section -->
+      <div id="cenaStatus" style="margin-top:12px;padding:10px 16px;border-radius:10px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);font-size:13px;color:#8b5cf6;display:none">
+        <span id="cenaStatusText"></span>
+        <button onclick="editarCena()" style="margin-left:12px;background:none;border:1px solid #8b5cf6;color:#8b5cf6;padding:4px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">✏️ Editar</button>
+      </div>
+      <div style="margin-top:6px;font-size:11px;color:var(--text-muted,#94a3b8);font-style:italic;">
+        Completar cuando se confirme la hora de almuerzo/cena
       </div>
     </div>
   </div>
@@ -913,6 +919,13 @@ body {
   <!-- HISTORY TABLE -->
   <div class="card">
     <div class="card-title">📋 Historial de Registros — Hoy</div>
+    <!-- Resumen turno arriba -->
+    <div id="turnoResumenBar" style="display:none;margin-bottom:12px;padding:10px 16px;border-radius:10px;background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.15);font-size:13px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+      <span style="font-weight:700;color:var(--azul,#2563eb)">🕐 Turno:</span>
+      <span id="turnoResumenInicio">Inicio: —</span>
+      <span id="turnoResumenFin">Fin: —</span>
+      <span id="turnoResumenAlmuerzo">Almuerzo: —</span>
+    </div>
     <div class="table-controls">
       <label style="font-size:12px;font-weight:700;color:var(--muted)">Filtrar por fecha:</label>
       <input type="date" id="filterDate" onchange="refreshAll()">
@@ -922,11 +935,13 @@ body {
         <thead>
           <tr>
             <th>Hora</th>
+            <th>Turno</th>
             <th>Fruta</th>
             <th>Linea</th>
             <th style="text-align:right">Consumo (kg)</th>
             <th style="text-align:right">P. Terminado (kg)</th>
             <th style="text-align:right">Rend %</th>
+            <th>Supervisor</th>
             <th>Observacion</th>
             <th style="text-align:center">Acciones</th>
           </tr>
@@ -944,6 +959,29 @@ body {
     </div>
   </div>
 
+</div>
+
+<!-- EDIT MODAL -->
+<div id="editModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:1000;justify-content:center;align-items:center;padding:20px">
+  <div style="background:var(--surface-solid);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:modalIn 0.3s cubic-bezier(0.16,1,0.3,1)">
+    <style>@keyframes modalIn{from{transform:scale(0.9) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}</style>
+    <div style="font-size:18px;font-weight:900;margin-bottom:20px;display:flex;align-items:center;gap:8px">🔧 Editar Registro de Produccion</div>
+    <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="form-group"><label>Fecha</label><input type="date" id="mFecha"></div>
+      <div class="form-group"><label>Turno</label><select id="mTurno"><option value="DIA">TURNO DIA</option><option value="NOCHE">TURNO NOCHE</option></select></div>
+      <div class="form-group"><label>Hora</label><select id="mHora"><option value="05:00-06:00">05:00 - 06:00</option><option value="06:00-07:00">06:00 - 07:00</option><option value="07:00-08:00">07:00 - 08:00</option><option value="08:00-09:00">08:00 - 09:00</option><option value="09:00-10:00">09:00 - 10:00</option><option value="10:00-11:00">10:00 - 11:00</option><option value="11:00-12:00">11:00 - 12:00</option><option value="12:00-13:00">12:00 - 13:00</option><option value="13:00-14:00">13:00 - 14:00</option><option value="14:00-15:00">14:00 - 15:00</option><option value="15:00-16:00">15:00 - 16:00</option><option value="16:00-17:00">16:00 - 17:00</option><option value="17:00-18:00">17:00 - 18:00</option><option value="18:00-19:00">18:00 - 19:00</option><option value="19:00-20:00">19:00 - 20:00</option><option value="20:00-21:00">20:00 - 21:00</option><option value="21:00-22:00">21:00 - 22:00</option><option value="22:00-23:00">22:00 - 23:00</option><option value="23:00-00:00">23:00 - 00:00</option></select></div>
+      <div class="form-group"><label>Fruta</label><select id="mFruta"><option value="MANGO">MANGO</option><option value="FRESA">FRESA</option><option value="PALTA">PALTA</option><option value="ARANDANO">ARANDANO</option><option value="PIÑA">PIÑA</option><option value="GRANADA">GRANADA</option></select></div>
+      <div class="form-group"><label>Linea</label><select id="mLinea"><option value="Linea 1">Linea 1</option><option value="Linea 2">Linea 2</option></select></div>
+      <div class="form-group"><label>Consumo MP (kg)</label><input type="number" id="mConsumo" min="0" step="0.1"></div>
+      <div class="form-group"><label>P. Terminado (kg)</label><input type="number" id="mPT" min="0" step="0.1"></div>
+      <div class="form-group"><label>Supervisor</label><input type="text" id="mSupervisor"></div>
+      <div class="form-group" style="grid-column:1/-1"><label>Observacion</label><input type="text" id="mObs"></div>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:20px;justify-content:flex-end;flex-wrap:wrap">
+      <button onclick="closeEditModal()" style="padding:12px 28px;border:2px solid var(--border);border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;background:transparent;color:var(--muted)">Cancelar</button>
+      <button onclick="guardarEdicion()" style="padding:12px 28px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff;box-shadow:0 4px 14px rgba(6,182,212,0.3);display:inline-flex;align-items:center;gap:6px">💾 Guardar Cambios</button>
+    </div>
+  </div>
 </div>
 
 <!-- TOAST -->
@@ -997,11 +1035,13 @@ function onTurnoChange() {
   const turno = document.getElementById('fTurno').value;
   if (turno === 'DIA') {
     document.getElementById('fHoraInicio').value = '07:00';
-    document.getElementById('fHoraFin').value = '19:00';
+    document.getElementById('fHoraFin').value = '17:00';
   } else {
     document.getElementById('fHoraInicio').value = '19:00';
     document.getElementById('fHoraFin').value = '07:00';
   }
+  actualizarTituloHorario();
+  cargarHorarioGuardado();
 }
 
 // ═══════════════ CALC PREVIEW ═══════════════
@@ -1158,50 +1198,86 @@ function avanzarHora() {
   }
 }
 
-// ═══════════════ REGISTRAR HORARIO DEL TURNO ═══════════════
-function registrarHorario() {
-  var inicio = document.getElementById('fHoraInicio').value;
-  var fin = document.getElementById('fHoraFin').value;
-  if (!inicio || !fin) { showToast('Completa hora inicio y fin del turno'); return; }
+// ═══════════════ REGISTRAR HORARIO DEL TURNO (INICIO Y FIN SEPARADOS) ═══════════════
+function actualizarTituloHorario() {
+  var turno = document.getElementById('fTurno').value;
+  var el = document.getElementById('horarioTitleTurno');
+  if (el) el.textContent = 'Horario Turno ' + (turno === 'NOCHE' ? 'NOCHE' : 'DIA');
+}
 
-  // Guardar en localStorage
+function registrarInicio() {
+  var inicio = document.getElementById('fHoraInicio').value;
+  if (!inicio) { showToast('Selecciona la hora de inicio'); return; }
   var fecha = document.getElementById('fFecha').value;
   var key = 'horario_' + fecha;
-  localStorage.setItem(key, JSON.stringify({ inicio: inicio, fin: fin }));
+  var saved = JSON.parse(localStorage.getItem(key) || '{}');
+  saved.inicio = inicio;
+  localStorage.setItem(key, JSON.stringify(saved));
+  actualizarHorarioStatus();
+  showToast('Hora de INICIO registrada: ' + inicio);
+}
 
-  // Mostrar estado registrado
-  document.getElementById('horarioForm').style.display = 'none';
-  document.getElementById('horarioStatus').style.display = 'block';
-  document.getElementById('horarioStatus').style.background = 'rgba(22,163,74,0.1)';
-  document.getElementById('horarioStatus').style.borderColor = 'rgba(22,163,74,0.3)';
-  document.getElementById('horarioStatusText').innerHTML = '✅ <b>Horario registrado:</b> ' + inicio + ' - ' + fin;
-  document.getElementById('horarioStatusText').style.color = '#16a34a';
+function registrarFin() {
+  var fin = document.getElementById('fHoraFin').value;
+  if (!fin) { showToast('Selecciona la hora de fin'); return; }
+  var fecha = document.getElementById('fFecha').value;
+  var key = 'horario_' + fecha;
+  var saved = JSON.parse(localStorage.getItem(key) || '{}');
+  saved.fin = fin;
+  localStorage.setItem(key, JSON.stringify(saved));
+  actualizarHorarioStatus();
+  showToast('Hora de FIN registrada: ' + fin);
+}
 
-  showToast('Horario del turno registrado: ' + inicio + ' - ' + fin);
+function actualizarHorarioStatus() {
+  var fecha = document.getElementById('fFecha').value;
+  var key = 'horario_' + fecha;
+  var saved = JSON.parse(localStorage.getItem(key) || '{}');
+  var statusEl = document.getElementById('horarioStatus');
+  var textEl = document.getElementById('horarioStatusText');
+  var parts = [];
+  if (saved.inicio) parts.push('✅ Inicio: <b>' + saved.inicio + '</b>');
+  if (saved.fin) parts.push('✅ Fin: <b>' + saved.fin + '</b>');
+  if (parts.length > 0) {
+    statusEl.style.display = 'block';
+    textEl.innerHTML = parts.join('  |  ') + '  <button onclick="editarHorario()" style="margin-left:12px;background:none;border:1px solid #16a34a;color:#16a34a;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">✏️ Editar</button>';
+  } else {
+    statusEl.style.display = 'none';
+  }
+  // Actualizar resumen arriba del historial
+  actualizarTurnoResumen();
 }
 
 function editarHorario() {
-  document.getElementById('horarioForm').style.display = 'block';
   document.getElementById('horarioStatus').style.display = 'none';
 }
 
 function cargarHorarioGuardado() {
   var fecha = document.getElementById('fFecha').value;
   var key = 'horario_' + fecha;
-  var saved = localStorage.getItem(key);
-  if (saved) {
-    var data = JSON.parse(saved);
-    document.getElementById('fHoraInicio').value = data.inicio;
-    document.getElementById('fHoraFin').value = data.fin;
-    document.getElementById('horarioForm').style.display = 'none';
-    document.getElementById('horarioStatus').style.display = 'block';
-    document.getElementById('horarioStatus').style.background = 'rgba(22,163,74,0.1)';
-    document.getElementById('horarioStatus').style.borderColor = 'rgba(22,163,74,0.3)';
-    document.getElementById('horarioStatusText').innerHTML = '✅ <b>Horario registrado:</b> ' + data.inicio + ' - ' + data.fin;
-    document.getElementById('horarioStatusText').style.color = '#16a34a';
+  var saved = JSON.parse(localStorage.getItem(key) || '{}');
+  if (saved.inicio) document.getElementById('fHoraInicio').value = saved.inicio;
+  if (saved.fin) document.getElementById('fHoraFin').value = saved.fin;
+  actualizarHorarioStatus();
+  actualizarTituloHorario();
+}
+
+function actualizarTurnoResumen() {
+  var fecha = document.getElementById('fFecha').value;
+  var horario = JSON.parse(localStorage.getItem('horario_' + fecha) || '{}');
+  var almuerzo = JSON.parse(localStorage.getItem('almuerzo_' + fecha) || '{}');
+  var bar = document.getElementById('turnoResumenBar');
+  if (horario.inicio || horario.fin || almuerzo.inicio) {
+    bar.style.display = 'flex';
+    document.getElementById('turnoResumenInicio').innerHTML = '🟢 Inicio: <b>' + (horario.inicio || '—') + '</b>';
+    document.getElementById('turnoResumenFin').innerHTML = '🔴 Fin: <b>' + (horario.fin || '—') + '</b>';
+    if (almuerzo.sinAlmuerzo) {
+      document.getElementById('turnoResumenAlmuerzo').innerHTML = '🍽️ <b>Sin almuerzo / Corrido</b>';
+    } else {
+      document.getElementById('turnoResumenAlmuerzo').innerHTML = '🍽️ Almuerzo: <b>' + (almuerzo.inicio || '—') + ' - ' + (almuerzo.fin || '—') + '</b>';
+    }
   } else {
-    document.getElementById('horarioForm').style.display = 'block';
-    document.getElementById('horarioStatus').style.display = 'none';
+    bar.style.display = 'none';
   }
 }
 
@@ -1223,14 +1299,16 @@ function registrarAlmuerzo() {
   document.getElementById('almuerzoStatus').style.background = 'rgba(22,163,74,0.1)';
   document.getElementById('almuerzoStatus').style.borderColor = 'rgba(22,163,74,0.3)';
 
+  var editBtn = '  <button onclick="editarAlmuerzo()" style="margin-left:12px;background:none;border:1px solid #16a34a;color:#16a34a;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">✏️ Editar</button>';
   if (sinAlm) {
-    document.getElementById('almuerzoStatusText').innerHTML = '✅ <b>Sin almuerzo / Corrido</b>';
+    document.getElementById('almuerzoStatusText').innerHTML = '✅ <b>Sin almuerzo / Corrido</b>' + editBtn;
   } else {
-    document.getElementById('almuerzoStatusText').innerHTML = '✅ <b>Almuerzo registrado:</b> ' + inicio + ' - ' + fin;
+    document.getElementById('almuerzoStatusText').innerHTML = '✅ <b>Almuerzo registrado:</b> ' + inicio + ' - ' + fin + editBtn;
   }
   document.getElementById('almuerzoStatusText').style.color = '#16a34a';
 
   showToast(sinAlm ? 'Registrado: Sin almuerzo / Corrido' : 'Almuerzo registrado: ' + inicio + ' - ' + fin);
+  actualizarTurnoResumen();
 }
 
 function editarAlmuerzo() {
@@ -1267,40 +1345,111 @@ function cargarAlmuerzoGuardado() {
   }
 }
 
-// ═══════════════ DELETE RECORD ═══════════════
-function editRecord(id) {
+// ═══════════════ EDIT MODAL ═══════════════
+let editingProdId = null;
+
+function openEditModal(id) {
   const records = getRecords();
   const r = records.find(rec => rec.id === id);
   if (!r) return;
-  // Populate form with record data
-  document.getElementById('fFecha').value = r.fecha || '';
-  const turnoSel = document.getElementById('fTurno');
-  if (turnoSel) { for(let o of turnoSel.options){ if(o.value===r.turno) o.selected=true; } }
-  const frutaSel = document.getElementById('fFruta');
-  if (frutaSel) { for(let o of frutaSel.options){ if(o.value===r.fruta) o.selected=true; } }
-  const horaSel = document.getElementById('fHora');
-  if (horaSel) { for(let o of horaSel.options){ if(o.value===r.hora) o.selected=true; } }
-  const lineaSel = document.getElementById('fLinea');
-  if (lineaSel) { for(let o of lineaSel.options){ if(o.value===r.linea) o.selected=true; } }
-  document.getElementById('fConsumo').value = r.consumo_kg || '';
-  document.getElementById('fPT').value = r.pt_aprox_kg || '';
-  const proy = document.getElementById('fProyectado');
-  if (proy) proy.value = r.proyectado_tn || '16';
-  const obs = document.getElementById('fObs');
-  if (obs) obs.value = r.observacion || '';
-  const sup = document.getElementById('fSupervisor');
-  if (sup) sup.value = r.supervisor || '';
-  const hInicio = document.getElementById('fHoraInicio');
-  if (hInicio && r.hora_inicio_turno) hInicio.value = r.hora_inicio_turno;
-  const hFin = document.getElementById('fHoraFin');
-  if (hFin && r.hora_fin_turno) hFin.value = r.hora_fin_turno;
-  // Delete old record so the new save replaces it
-  const filtered = records.filter(rec => rec.id !== id);
-  saveRecords(filtered);
-  // Scroll to form
-  document.querySelector('.form-section-header, .form-card, form')?.scrollIntoView({behavior:'smooth'});
-  showToast('Editando registro ' + r.hora + ' — modifica y guarda');
+  editingProdId = id;
+  document.getElementById('mFecha').value = r.fecha || '';
+  document.getElementById('mTurno').value = r.turno || 'DIA';
+  document.getElementById('mHora').value = r.hora || '';
+  document.getElementById('mFruta').value = r.fruta || 'MANGO';
+  document.getElementById('mLinea').value = r.linea || 'Linea 1';
+  document.getElementById('mConsumo').value = r.consumo_kg || '';
+  document.getElementById('mPT').value = r.pt_aprox_kg || '';
+  document.getElementById('mSupervisor').value = r.supervisor || '';
+  document.getElementById('mObs').value = r.observacion || '';
+  document.getElementById('editModal').style.display = 'flex';
 }
+
+function closeEditModal() {
+  document.getElementById('editModal').style.display = 'none';
+  editingProdId = null;
+}
+
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeEditModal();
+});
+
+async function guardarEdicion() {
+  if (!editingProdId) return;
+  const records = getRecords();
+  const idx = records.findIndex(r => r.id === editingProdId);
+  if (idx === -1) { closeEditModal(); return; }
+
+  const consumo = parseFloat(document.getElementById('mConsumo').value) || 0;
+  const pt = parseFloat(document.getElementById('mPT').value) || 0;
+  const rend = consumo > 0 ? parseFloat((pt / consumo * 100).toFixed(1)) : 0;
+
+  records[idx] = {
+    ...records[idx],
+    fecha: document.getElementById('mFecha').value,
+    turno: document.getElementById('mTurno').value,
+    hora: document.getElementById('mHora').value,
+    fruta: document.getElementById('mFruta').value,
+    linea: document.getElementById('mLinea').value,
+    consumo_kg: consumo,
+    pt_aprox_kg: pt,
+    rendimiento: rend,
+    supervisor: document.getElementById('mSupervisor').value.trim(),
+    observacion: document.getElementById('mObs').value.trim()
+  };
+
+  saveRecords(records);
+
+  // Sync to Supabase
+  if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+    try {
+      const r = records[idx];
+      await supabaseClient.from('registro_produccion').upsert({
+        fecha: r.fecha, hora: r.hora, turno: r.turno, fruta: r.fruta, linea: r.linea,
+        proyectado_tn: r.proyectado_tn, consumo_kg: r.consumo_kg, pt_aprox_kg: r.pt_aprox_kg,
+        supervisor: r.supervisor, observacion: r.observacion
+      }, { onConflict: 'fecha,hora,linea' });
+    } catch(e) { console.error('Supabase sync error', e); }
+  }
+
+  closeEditModal();
+  refreshAll();
+  showToast('Registro actualizado');
+}
+
+// ═══════════════ CENA FUNCTIONS ═══════════════
+function registrarCena() {
+  var inicio = document.getElementById('fAlmInicio').value;
+  var fin = document.getElementById('fAlmFin').value;
+  if (!inicio || !fin) { showToast('Completa hora inicio y fin de la cena', true); return; }
+  var fecha = document.getElementById('fFecha').value;
+  localStorage.setItem('cena_' + fecha, JSON.stringify({ inicio: inicio, fin: fin }));
+  document.getElementById('cenaStatus').style.display = 'block';
+  document.getElementById('cenaStatusText').innerHTML = '✅ <b>Cena registrada:</b> ' + inicio + ' - ' + fin;
+  document.getElementById('cenaStatusText').style.color = '#8b5cf6';
+  showToast('Cena registrada: ' + inicio + ' - ' + fin);
+  actualizarTurnoResumen();
+  refreshAll();
+}
+
+function editarCena() {
+  document.getElementById('cenaStatus').style.display = 'none';
+}
+
+function cargarCenaGuardada() {
+  var fecha = document.getElementById('fFecha').value;
+  var saved = localStorage.getItem('cena_' + fecha);
+  if (saved) {
+    var data = JSON.parse(saved);
+    document.getElementById('cenaStatus').style.display = 'block';
+    document.getElementById('cenaStatusText').innerHTML = '✅ <b>Cena registrada:</b> ' + data.inicio + ' - ' + data.fin;
+    document.getElementById('cenaStatusText').style.color = '#8b5cf6';
+  } else {
+    document.getElementById('cenaStatus').style.display = 'none';
+  }
+}
+
+// ═══════════════ DELETE RECORD ═══════════════
 
 async function deleteRecord(id) {
   if (!confirm('¿Eliminar este registro?')) return;
@@ -1403,56 +1552,120 @@ function updateTable(recs) {
     }
   }
 
+  // Separar registros por turno
+  const diaRecs = sorted.filter(r => r.turno !== 'NOCHE');
+  const nocheRecs = sorted.filter(r => r.turno === 'NOCHE');
+
   let rows = '';
   let almRowInserted = false;
 
-  sorted.forEach((r, idx) => {
+  // Renderizar filas de turno DIA
+  diaRecs.forEach((r) => {
     const horaStart = r.hora.split('-')[0];
     const rendClass = r.rendimiento >= 45 ? 'badge-green' : r.rendimiento >= 40 ? 'badge-amber' : 'badge-red';
     const obs = r.observacion || '';
 
-    // Insert almuerzo row before the first hour that is >= almuerzo start
     if (almInicio && almFin && !almRowInserted && horaStart >= almInicio) {
       rows += `<tr class="row-almuerzo">
-        <td style="font-weight:700" colspan="2">🍽️ ALMUERZO (${almInicio} - ${almFin})</td>
-        <td colspan="6" style="color:var(--amber);font-weight:700;font-style:italic">Pausa de almuerzo</td>
+        <td style="font-weight:700" colspan="3">🍽️ ALMUERZO (${almInicio} - ${almFin})</td>
+        <td colspan="7" style="color:var(--amber);font-weight:700;font-style:italic">Pausa de almuerzo</td>
       </tr>`;
       almRowInserted = true;
     }
 
+    const turnoLabel = '<span class="badge" style="background:rgba(22,163,74,0.12);color:#4ade80">DIA</span>';
     rows += `<tr>
       <td style="font-weight:700">${r.hora}</td>
+      <td>${turnoLabel}</td>
       <td>${r.fruta}</td>
       <td>${r.linea}</td>
       <td class="num">${formatNum(r.consumo_kg)}</td>
       <td class="num">${formatNum(r.pt_aprox_kg)}</td>
       <td class="num"><span class="badge ${rendClass}">${r.rendimiento}%</span></td>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${obs}">${obs}</td>
-      <td style="text-align:center;white-space:nowrap"><button class="edit-btn" onclick="editRecord('${r.id}')" title="Editar" style="background:none;border:none;cursor:pointer;font-size:16px;padding:4px">✏️</button><button class="delete-btn" onclick="deleteRecord('${r.id}')" title="Eliminar">🗑️</button></td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.supervisor || '—'}</td>
+      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${obs}">${obs}</td>
+      <td style="text-align:center;white-space:nowrap"><button onclick="openEditModal('${r.id}')" title="Editar" style="background:rgba(37,99,235,0.12);color:#2563eb;border:none;cursor:pointer;font-size:14px;padding:4px;border-radius:8px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;transition:all 0.2s">✏️</button><button class="delete-btn" onclick="deleteRecord('${r.id}')" title="Eliminar">🗑️</button></td>
     </tr>`;
   });
 
-  // If almuerzo row not yet inserted (all hours before almuerzo), append at end
+  // Almuerzo al final si no se inserto
   if (almInicio && almFin && !almRowInserted) {
     rows += `<tr class="row-almuerzo">
-      <td style="font-weight:700" colspan="2">🍽️ ALMUERZO (${almInicio} - ${almFin})</td>
-      <td colspan="6" style="color:var(--amber);font-weight:700;font-style:italic">Pausa de almuerzo</td>
+      <td style="font-weight:700" colspan="3">🍽️ ALMUERZO (${almInicio} - ${almFin})</td>
+      <td colspan="7" style="color:var(--amber);font-weight:700;font-style:italic">Pausa de almuerzo</td>
+    </tr>`;
+  }
+
+  // SUBTOTAL DIA
+  if (diaRecs.length > 0) {
+    const diaC = diaRecs.reduce((s, r) => s + r.consumo_kg, 0);
+    const diaPT = diaRecs.reduce((s, r) => s + r.pt_aprox_kg, 0);
+    const diaRend = diaC > 0 ? (diaPT / diaC * 100).toFixed(1) : 0;
+    rows += `<tr style="background:rgba(22,163,74,0.08);border-top:2px solid rgba(22,163,74,0.3)">
+      <td style="font-weight:800;color:#16a34a" colspan="4">☀️ SUBTOTAL DIA (${diaRecs.length} hrs)</td>
+      <td class="num" style="font-weight:700;color:#16a34a">${formatNum(diaC)}</td>
+      <td class="num" style="font-weight:700;color:#16a34a">${formatNum(diaPT)}</td>
+      <td style="font-weight:700;color:#16a34a">${diaRend}%</td>
+      <td colspan="3"></td>
+    </tr>`;
+  }
+
+  // Renderizar filas de turno NOCHE
+  nocheRecs.forEach((r) => {
+    const rendClass = r.rendimiento >= 45 ? 'badge-green' : r.rendimiento >= 40 ? 'badge-amber' : 'badge-red';
+    const obs = r.observacion || '';
+    const turnoLabel = '<span class="badge" style="background:rgba(139,92,246,0.12);color:#8b5cf6">NOCHE</span>';
+    rows += `<tr>
+      <td style="font-weight:700">${r.hora}</td>
+      <td>${turnoLabel}</td>
+      <td>${r.fruta}</td>
+      <td>${r.linea}</td>
+      <td class="num">${formatNum(r.consumo_kg)}</td>
+      <td class="num">${formatNum(r.pt_aprox_kg)}</td>
+      <td class="num"><span class="badge ${rendClass}">${r.rendimiento}%</span></td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.supervisor || '—'}</td>
+      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${obs}">${obs}</td>
+      <td style="text-align:center;white-space:nowrap"><button onclick="openEditModal('${r.id}')" title="Editar" style="background:rgba(37,99,235,0.12);color:#2563eb;border:none;cursor:pointer;font-size:14px;padding:4px;border-radius:8px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;transition:all 0.2s">✏️</button><button class="delete-btn" onclick="deleteRecord('${r.id}')" title="Eliminar">🗑️</button></td>
+    </tr>`;
+  });
+
+  // Cena row
+  const fecha = document.getElementById('filterDate').value;
+  const cenaData = JSON.parse(localStorage.getItem('cena_' + fecha) || 'null');
+  if (cenaData && cenaData.inicio && cenaData.fin) {
+    rows += `<tr class="row-almuerzo" style="background:rgba(139,92,246,0.06)!important">
+      <td style="font-weight:700;border-left:3px solid #8b5cf6" colspan="3">🌙 CENA (${cenaData.inicio} - ${cenaData.fin})</td>
+      <td colspan="7" style="color:#8b5cf6;font-weight:700;font-style:italic">Pausa de cena</td>
+    </tr>`;
+  }
+
+  // SUBTOTAL NOCHE
+  if (nocheRecs.length > 0) {
+    const nocheC = nocheRecs.reduce((s, r) => s + r.consumo_kg, 0);
+    const nochePT = nocheRecs.reduce((s, r) => s + r.pt_aprox_kg, 0);
+    const nocheRend = nocheC > 0 ? (nochePT / nocheC * 100).toFixed(1) : 0;
+    rows += `<tr style="background:rgba(139,92,246,0.08);border-top:2px solid rgba(139,92,246,0.3)">
+      <td style="font-weight:800;color:#8b5cf6" colspan="4">🌙 SUBTOTAL NOCHE (${nocheRecs.length} hrs)</td>
+      <td class="num" style="font-weight:700;color:#8b5cf6">${formatNum(nocheC)}</td>
+      <td class="num" style="font-weight:700;color:#8b5cf6">${formatNum(nochePT)}</td>
+      <td style="font-weight:700;color:#8b5cf6">${nocheRend}%</td>
+      <td colspan="3"></td>
     </tr>`;
   }
 
   tbody.innerHTML = rows;
 
-  // Footer totals
+  // Footer - TOTAL GENERAL
   const totC = recs.reduce((s, r) => s + r.consumo_kg, 0);
   const totPT = recs.reduce((s, r) => s + r.pt_aprox_kg, 0);
   const totRend = totC > 0 ? (totPT / totC * 100).toFixed(1) : 0;
 
-  tfoot.innerHTML = `<tr class="table-footer">
-    <td colspan="3" style="font-weight:800">TOTALES</td>
-    <td class="num">${formatNum(totC)}</td>
-    <td class="num">${formatNum(totPT)}</td>
-    <td class="num">${totRend}%</td>
-    <td colspan="2"></td>
+  tfoot.innerHTML = `<tr class="table-footer" style="background:rgba(37,99,235,0.08);border-top:3px solid rgba(37,99,235,0.4)">
+    <td colspan="4" style="font-weight:900;color:#2563eb">🏭 TOTAL GENERAL (${recs.length} hrs)</td>
+    <td class="num" style="font-weight:800;color:#2563eb">${formatNum(totC)}</td>
+    <td class="num" style="font-weight:800;color:#2563eb">${formatNum(totPT)}</td>
+    <td class="num" style="font-weight:800;color:#2563eb">${totRend}%</td>
+    <td colspan="3"></td>
   </tr>`;
 }
 
@@ -1794,9 +2007,10 @@ async function loadFromSupabase() {
   // Auto-avanzar hora al default 07:00-08:00 o la siguiente disponible
   avanzarHora();
 
-  // Cargar horario y almuerzo guardados del dia
+  // Cargar horario, almuerzo y cena guardados del dia
   cargarHorarioGuardado();
   cargarAlmuerzoGuardado();
+  cargarCenaGuardada();
 
   // Load from Supabase (cloud sync)
   loadFromSupabase();
