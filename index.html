@@ -887,6 +887,21 @@ body.dark-mode .topbar-dev-signature .signature-name {
       <span class="nav-icon">⚡</span> Productividad
     </div>
 
+    <div class="nav-group-label">Areas de Planta</div>
+    <div class="nav-item" data-panel="area-recepcion">
+      <span class="nav-icon">🚛</span> Recepcion MP
+    </div>
+    <div class="nav-item" data-panel="area-acondicionado">
+      <span class="nav-icon">🔪</span> Acondicionado
+    </div>
+    <div class="nav-item" data-panel="area-tuneles">
+      <span class="nav-icon">❄️</span> Tuneles Estaticos
+      <span class="nav-badge">3</span>
+    </div>
+    <div class="nav-item" data-panel="area-empaque">
+      <span class="nav-icon">📦</span> Empaque
+    </div>
+
     <div class="nav-group-label">Operaciones</div>
     <div class="nav-item" data-panel="proceso">
       <span class="nav-icon">🔄</span> Flujo de Proceso
@@ -921,20 +936,6 @@ body.dark-mode .topbar-dev-signature .signature-name {
       <span class="nav-icon">🧱</span> Materiales
     </div>
 
-    <div class="nav-group-label">Areas de Planta</div>
-    <div class="nav-item" data-panel="area-recepcion">
-      <span class="nav-icon">🚛</span> Recepcion MP
-    </div>
-    <div class="nav-item" data-panel="area-acondicionado">
-      <span class="nav-icon">🔪</span> Acondicionado
-    </div>
-    <div class="nav-item" data-panel="area-tuneles">
-      <span class="nav-icon">❄️</span> Tuneles Estaticos
-      <span class="nav-badge">3</span>
-    </div>
-    <div class="nav-item" data-panel="area-empaque">
-      <span class="nav-icon">📦</span> Empaque
-    </div>
   </nav>
   <div class="sidebar-footer">
     <div class="sidebar-user">
@@ -1323,7 +1324,7 @@ body.dark-mode .topbar-dev-signature .signature-name {
     <div style="overflow-x:auto">
       <table class="data-table" id="pdLiveTable">
         <thead><tr>
-          <th>Hora</th><th>Fruta</th><th>Linea</th><th>Consumo (kg)</th><th>P. Terminado (kg)</th><th>Rend %</th><th>N° Personal</th><th class="pd-costo-col" style="display:none">Costo/Kg ($)</th>
+          <th>Hora</th><th>Turno</th><th>Fruta</th><th>Linea</th><th>Consumo (kg)</th><th>P. Terminado (kg)</th><th>Rend %</th><th>N° Personal</th><th>Supervisor</th><th class="pd-costo-col" style="display:none">Costo/Kg ($)</th>
         </tr></thead>
         <tbody id="pdLiveBody">
           <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted);font-style:italic">Cargando datos en tiempo real...</td></tr>
@@ -1419,36 +1420,46 @@ body.dark-mode .topbar-dev-signature .signature-name {
      PANEL: COSTOS
      ═══════════════════════════════════════════════════ -->
 <div class="panel-container" id="panel-costos">
-  <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">💰 Dashboard de Costos de Produccion <a class="btn-app-link" style="--area-color:#d97706" href="dash-costos.html" target="_blank">🚀 Abrir Dashboard Completo</a></div>
+  <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">💰 Dashboard de Costos de Produccion <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn-app-link" style="--area-color:#dc2626" href="app-registro-costos.html" target="_blank">💰 Registro Costos</a><a class="btn-app-link" style="--area-color:#d97706" href="dash-costos.html" target="_blank">🚀 Abrir Dashboard Completo</a></div></div>
   <div class="section-subtitle">Analisis de costos por kg congelado, turno y componente</div>
+
+  <!-- Filtros interactivos costos -->
+  <div class="filter-bar" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+    <label style="font-weight:700;font-size:13px;color:var(--text-muted)">Fecha:</label>
+    <input type="date" id="costosFechaFilter" style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);font-size:13px">
+    <label style="font-weight:700;font-size:13px;color:var(--text-muted)">Moneda:</label>
+    <div style="display:flex;gap:4px" id="costosMonedaChips">
+      <button class="chip-btn active" data-moneda="usd" onclick="setCostosMoneda('usd')" style="padding:4px 12px;border-radius:16px;border:1px solid var(--border);background:var(--verde);color:#fff;font-size:12px;font-weight:700;cursor:pointer">$ USD</button>
+      <button class="chip-btn" data-moneda="pen" onclick="setCostosMoneda('pen')" style="padding:4px 12px;border-radius:16px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);font-size:12px;font-weight:700;cursor:pointer">S/ PEN</button>
+    </div>
+  </div>
 
   <div class="kpi-grid">
     <div class="kpi-card" style="--kpi-color:var(--verde)">
       <div class="kpi-label">Costo Total / Kg</div>
-      <div class="kpi-value">$0.38</div>
-      <div class="kpi-change up">▼ $0.02 vs S12</div>
-      <div class="kpi-meta">Objetivo: $0.40/kg</div>
+      <div class="kpi-value" id="cosKpiTotal">—</div>
+      <div class="kpi-change" id="cosKpiTotalMeta">Objetivo: $0.40/kg</div>
     </div>
     <div class="kpi-card" style="--kpi-color:var(--azul)">
       <div class="kpi-label">Costo MOD / Kg</div>
-      <div class="kpi-value">$0.15</div>
-      <div class="kpi-meta">Tarifa: S/11.75/hr</div>
+      <div class="kpi-value" id="cosKpiMOD">—</div>
+      <div class="kpi-meta" id="cosKpiMODMeta">Tarifa por hora</div>
     </div>
     <div class="kpi-card" style="--kpi-color:var(--amber)">
-      <div class="kpi-label">Costo Materiales / Kg</div>
-      <div class="kpi-value">$0.08</div>
-      <div class="kpi-meta">Cajas, bolsas, etiquetas</div>
+      <div class="kpi-label">Personal Actual</div>
+      <div class="kpi-value" id="cosKpiPersonal">—</div>
+      <div class="kpi-meta" id="cosKpiPersonalMeta">Ultimo registro</div>
     </div>
     <div class="kpi-card" style="--kpi-color:var(--cyan)">
-      <div class="kpi-label">Costo Energia / Kg</div>
-      <div class="kpi-value">$0.15</div>
-      <div class="kpi-meta">Tuneles + sala proceso</div>
+      <div class="kpi-label">PT Acumulado</div>
+      <div class="kpi-value" id="cosKpiPT">—</div>
+      <div class="kpi-meta" id="cosKpiPTMeta">kg congelado hoy</div>
     </div>
   </div>
 
   <div class="grid-23 mb-24">
     <div class="card">
-      <div class="card-header"><div class="card-title">💰 Evolucion del Costo por Kg</div></div>
+      <div class="card-header"><div class="card-title">💰 Costo MOD por Hora (en vivo)</div></div>
       <div class="chart-wrap"><canvas id="chartCostoEvol"></canvas></div>
     </div>
     <div class="card">
@@ -1456,29 +1467,36 @@ body.dark-mode .topbar-dev-signature .signature-name {
       <div class="chart-wrap" style="height:220px;position:relative">
         <canvas id="chartCostoDonut"></canvas>
         <div class="donut-center">
-          <div class="donut-center-value">$0.38</div>
+          <div class="donut-center-value" id="cosDonutCenter">—</div>
           <div class="donut-center-label">por Kg</div>
         </div>
       </div>
-      <div class="cost-stack" style="margin-top:12px">
-        <div class="cost-row"><div class="cost-color" style="background:#16a34a"></div><div class="cost-label">MOD (Mano de obra)</div><div class="cost-value">$0.15</div><div class="cost-bar-bg"><div class="cost-bar" style="width:39%;background:#16a34a"></div></div></div>
-        <div class="cost-row"><div class="cost-color" style="background:#2563eb"></div><div class="cost-label">Energia / Frio</div><div class="cost-value">$0.15</div><div class="cost-bar-bg"><div class="cost-bar" style="width:39%;background:#2563eb"></div></div></div>
-        <div class="cost-row"><div class="cost-color" style="background:#ea580c"></div><div class="cost-label">Materiales</div><div class="cost-value">$0.08</div><div class="cost-bar-bg"><div class="cost-bar" style="width:21%;background:#ea580c"></div></div></div>
+      <div class="cost-stack" id="cosCostStack" style="margin-top:12px">
+        <div class="cost-row"><div class="cost-color" style="background:#16a34a"></div><div class="cost-label">MOD (Mano de obra)</div><div class="cost-value" id="cosCostMOD">—</div><div class="cost-bar-bg"><div class="cost-bar" id="cosCostMODBar" style="width:0%;background:#16a34a"></div></div></div>
+        <div class="cost-row"><div class="cost-color" style="background:#2563eb"></div><div class="cost-label">Energia / Frio</div><div class="cost-value" id="cosCostEnergia">—</div><div class="cost-bar-bg"><div class="cost-bar" id="cosCostEnergiaBar" style="width:0%;background:#2563eb"></div></div></div>
+        <div class="cost-row"><div class="cost-color" style="background:#ea580c"></div><div class="cost-label">Materiales</div><div class="cost-value" id="cosCostMat">—</div><div class="cost-bar-bg"><div class="cost-bar" id="cosCostMatBar" style="width:0%;background:#ea580c"></div></div></div>
       </div>
     </div>
   </div>
 
+  <div class="grid-23 mb-24">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Costo/Kg por Hora (en vivo)</div></div>
+      <div class="chart-wrap"><canvas id="chartCostoKgHora"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">📈 Costo Acumulado del Dia</div></div>
+      <div class="chart-wrap"><canvas id="chartCostoAcum"></canvas></div>
+    </div>
+  </div>
+
   <div class="card">
-    <div class="card-header"><div class="card-title">📋 Costos por Semana y Fruta</div></div>
+    <div class="card-header"><div class="card-title">📋 Detalle de Costos por Hora (Hoy)</div></div>
     <div style="overflow-x:auto">
       <table class="data-table">
-        <thead><tr><th>Semana</th><th>Fruta</th><th>Kg Procesados</th><th>$/Kg MOD</th><th>$/Kg Mat</th><th>$/Kg Energia</th><th>$/Kg Total</th><th>Precio Venta</th><th>Margen</th></tr></thead>
-        <tbody>
-          <tr><td>S13</td><td>🥭 Mango</td><td class="num">86,642</td><td class="num">$0.15</td><td class="num">$0.08</td><td class="num">$0.15</td><td class="num"><b>$0.38</b></td><td class="num">$2.80</td><td class="text-green">$2.42</td></tr>
-          <tr><td>S13</td><td>🫐 Arandano</td><td class="num">17,541</td><td class="num">$0.22</td><td class="num">$0.10</td><td class="num">$0.19</td><td class="num"><b>$0.51</b></td><td class="num">$5.50</td><td class="text-green">$4.99</td></tr>
-          <tr><td>S12</td><td>🥭 Mango</td><td class="num">92,180</td><td class="num">$0.16</td><td class="num">$0.08</td><td class="num">$0.16</td><td class="num"><b>$0.40</b></td><td class="num">$2.80</td><td class="text-green">$2.40</td></tr>
-          <tr><td>S12</td><td>🍎 Granada</td><td class="num">10,403</td><td class="num">$0.18</td><td class="num">$0.09</td><td class="num">$0.18</td><td class="num"><b>$0.45</b></td><td class="num">$4.20</td><td class="text-green">$3.75</td></tr>
-        </tbody>
+        <thead><tr><th>Hora</th><th>Personal</th><th>PT (kg)</th><th>Costo HH</th><th>Costo MOD</th><th>$/Kg Total</th></tr></thead>
+        <tbody id="costosTableBody"></tbody>
+        <tfoot id="costosTableFoot"></tfoot>
       </table>
     </div>
   </div>
@@ -1830,8 +1848,16 @@ body.dark-mode .topbar-dev-signature .signature-name {
      PANEL: ALMUERZOS
      ═══════════════════════════════════════════════════ -->
 <div class="panel-container" id="panel-almuerzos">
-  <div class="section-title">🍽️ Control de Almuerzos y Personal</div>
-  <div class="section-subtitle">Gestion de alimentacion del personal y control de asistencia</div>
+  <div class="area-header-bar" style="--area-color:#d97706">
+    <div class="area-header-icon">🍽️</div>
+    <div class="area-header-info">
+      <div class="area-header-title">Control de Almuerzos y Personal</div>
+      <div class="area-header-sub">Gestion de alimentacion del personal y control de asistencia</div>
+    </div>
+    <div class="area-header-actions">
+      <a class="btn-app-link" style="--area-color:#d97706" href="app-registro-personal.html" target="_blank">👥 Registro Personal</a>
+    </div>
+  </div>
 
   <div class="kpi-grid">
     <div class="kpi-card" style="--kpi-color:var(--naranja)"><div class="kpi-label">Almuerzos Hoy</div><div class="kpi-value">142</div><div class="kpi-meta">Turno Dia + Noche</div></div>
@@ -2015,10 +2041,7 @@ body.dark-mode .topbar-dev-signature .signature-name {
     </div>
     <div class="area-header-actions">
       <span class="live-tag"><span class="dot"></span> En vivo</span>
-      <a class="btn-app-link" style="--area-color:#16a34a" href="app-acondicionado.html" target="_blank">📱 Abrir App Completa</a>
       <a class="btn-app-link" style="--area-color:#16a34a" href="app-registro-produccion.html" target="_blank">📋 Registro Produccion</a>
-      <a class="btn-app-link" style="--area-color:#d97706" href="app-registro-personal.html" target="_blank">👥 Registro Personal</a>
-      <a class="btn-app-link" style="--area-color:#dc2626" href="app-registro-costos.html" target="_blank">💰 Registro Costos</a>
     </div>
   </div>
 
@@ -2048,7 +2071,7 @@ body.dark-mode .topbar-dev-signature .signature-name {
     <div style="overflow-x:auto">
       <table class="data-table" id="acoLiveTable">
         <thead><tr>
-          <th>Hora</th><th>Fruta</th><th>Linea</th><th>Consumo (kg)</th><th>P. Terminado (kg)</th><th>Rend %</th><th>N° Personal</th><th class="costo-col" style="display:none">Costo/Kg Cong. ($)</th>
+          <th>Hora</th><th>Turno</th><th>Fruta</th><th>Linea</th><th>Consumo (kg)</th><th>P. Terminado (kg)</th><th>Rend %</th><th>N° Personal</th><th>Supervisor</th><th class="costo-col" style="display:none">Costo/Kg Cong. ($)</th>
         </tr></thead>
         <tbody id="acoLiveBody">
           <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted);font-style:italic">
@@ -2075,6 +2098,17 @@ body.dark-mode .topbar-dev-signature .signature-name {
       <div class="chart-wrap"><canvas id="chartAcoRend"></canvas></div>
     </div>
   </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📈 Produccion Acumulada por Hora</div></div>
+      <div class="chart-wrap"><canvas id="chartAcoAcumulado"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🔀 Comparativo Turnos Dia vs Noche</div></div>
+      <div class="chart-wrap"><canvas id="chartAcoTurnos"></canvas></div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════
@@ -2090,7 +2124,6 @@ body.dark-mode .topbar-dev-signature .signature-name {
     <div class="area-header-actions">
       <span class="live-tag"><span class="dot"></span> En vivo</span>
       <a class="btn-app-link" style="--area-color:#0891b2" href="app-registro-tuneles.html" target="_blank">❄️ Registro Tuneles</a>
-      <a class="btn-app-link" style="--area-color:#0891b2" href="app-tuneles.html" target="_blank">📱 Abrir App Completa</a>
     </div>
   </div>
 
@@ -2197,78 +2230,63 @@ body.dark-mode .topbar-dev-signature .signature-name {
     </div>
     <div class="area-header-actions">
       <span class="live-tag"><span class="dot"></span> En vivo</span>
-      <a class="btn-app-link" style="--area-color:#7c3aed" href="app-empaque.html" target="_blank">📱 Abrir App Completa</a>
+      <a class="btn-app-link" style="--area-color:#7c3aed" href="app-empaque-congelado.html" target="_blank">📦 Registro Empaque Congelado</a>
     </div>
   </div>
 
   <div class="filter-bar mb-20">
-    <div class="filter-chip active">Turno Dia</div>
-    <div class="filter-chip">Turno Noche</div>
-    <select class="filter-select"><option>Hoy 25/03</option><option>Ayer 24/03</option><option>Semana 13</option></select>
-    <select class="filter-select"><option>Mango</option><option>Arandano</option><option>Granada</option></select>
+    <div class="filter-chip empaque-filter active" data-turno="DIA" onclick="filterEmpaque(this,'turno')">Turno Dia</div>
+    <div class="filter-chip empaque-filter" data-turno="NOCHE" onclick="filterEmpaque(this,'turno')">Turno Noche</div>
+    <div class="filter-chip empaque-filter" data-turno="AMBOS" onclick="filterEmpaque(this,'turno')">Ambos Turnos</div>
+    <select class="filter-select" id="empFilterFecha" onchange="refreshEmpaquePanel()"><option value="hoy">Hoy</option><option value="ayer">Ayer</option></select>
+    <select class="filter-select" id="empFilterFruta" onchange="refreshEmpaquePanel()"><option value="TODAS">Todas las Frutas</option><option value="MANGO">Mango</option><option value="FRESA">Fresa</option><option value="PALTA">Palta</option><option value="ARANDANO">Arandano</option><option value="GRANADA">Granada</option><option value="PIÑA">Piña</option></select>
+    <select class="filter-select" id="empFilterTipo" onchange="refreshEmpaquePanel()"><option value="TODOS">Todos los Tipos</option><option value="CONVENCIONAL">Convencional</option><option value="ORGANICO">Organico</option></select>
   </div>
 
-  <div class="kpi-grid">
-    <div class="kpi-card" style="--kpi-color:#7c3aed"><div class="kpi-icon" style="background:var(--purple-bg);color:var(--purple)">📦</div><div class="kpi-label">Cajas Producidas Hoy</div><div class="kpi-value" style="color:#7c3aed">644 <span class="kpi-unit">cajas</span></div><div class="kpi-progress"><div class="kpi-progress-bar" style="width:40%;background:#7c3aed"></div></div><div class="kpi-meta">Meta: 1,600 cajas/dia</div></div>
-    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">⚡</div><div class="kpi-label">Cajas/Hora</div><div class="kpi-value">92 <span class="kpi-unit">cj/hr</span></div><div class="kpi-change up">▲ vs proy. 91.6</div></div>
-    <div class="kpi-card" style="--kpi-color:var(--azul)"><div class="kpi-icon" style="background:var(--azul-bg);color:var(--azul)">⏱️</div><div class="kpi-label">Hrs Efectivas</div><div class="kpi-value">7 <span class="kpi-unit">hr</span></div><div class="kpi-meta">Turno dia hasta 15:00</div></div>
-    <div class="kpi-card" style="--kpi-color:var(--naranja)"><div class="kpi-icon" style="background:var(--naranja-bg);color:var(--naranja)">📊</div><div class="kpi-label">Kg Empacados</div><div class="kpi-value">6,440 <span class="kpi-unit">kg</span></div><div class="kpi-meta">644 cajas × 10 kg</div></div>
-    <div class="kpi-card" style="--kpi-color:var(--amber)"><div class="kpi-icon" style="background:var(--amber-bg);color:var(--amber)">👥</div><div class="kpi-label">Operarios</div><div class="kpi-value">28 <span class="kpi-unit">op.</span></div><div class="kpi-meta">Area empaque T1</div></div>
-    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">📈</div><div class="kpi-label">Cj/Hr por Operario</div><div class="kpi-value">3.3</div><div class="kpi-meta">92 cj/hr ÷ 28 op.</div></div>
+  <div class="kpi-grid" id="empKpiGrid">
+    <div class="kpi-card" style="--kpi-color:#7c3aed"><div class="kpi-icon" style="background:var(--purple-bg);color:var(--purple)">📦</div><div class="kpi-label">Cajas Producidas Hoy</div><div class="kpi-value" style="color:#7c3aed" id="empKpiCajas">0 <span class="kpi-unit">cajas</span></div><div class="kpi-progress"><div class="kpi-progress-bar" id="empProgressBar" style="width:0%;background:#7c3aed"></div></div><div class="kpi-meta" id="empKpiCajasMeta">Meta: 1,600 cajas/dia</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">⚡</div><div class="kpi-label">Cajas/Hora</div><div class="kpi-value" id="empKpiCjHr">0 <span class="kpi-unit">cj/hr</span></div><div class="kpi-meta" id="empKpiCjHrMeta">Promedio por hora</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--azul)"><div class="kpi-icon" style="background:var(--azul-bg);color:var(--azul)">⏱️</div><div class="kpi-label">Hrs Efectivas</div><div class="kpi-value" id="empKpiHrs">0 <span class="kpi-unit">hr</span></div><div class="kpi-meta" id="empKpiHrsMeta">Horas con registro</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--naranja)"><div class="kpi-icon" style="background:var(--naranja-bg);color:var(--naranja)">📊</div><div class="kpi-label">Kg Empacados</div><div class="kpi-value" id="empKpiKgPT">0 <span class="kpi-unit">kg</span></div><div class="kpi-meta" id="empKpiKgMeta">Producto terminado</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--amber)"><div class="kpi-icon" style="background:var(--amber-bg);color:var(--amber)">👥</div><div class="kpi-label">Operarios</div><div class="kpi-value" id="empKpiOp">0 <span class="kpi-unit">op.</span></div><div class="kpi-meta" id="empKpiOpMeta">Promedio area empaque</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--verde)"><div class="kpi-icon" style="background:var(--verde-bg);color:var(--verde)">📈</div><div class="kpi-label">Cj/Hr por Operario</div><div class="kpi-value" id="empKpiCjHrOp">0</div><div class="kpi-meta" id="empKpiCjHrOpMeta">Productividad</div></div>
   </div>
 
   <div class="grid-2 mb-24">
     <div class="card">
-      <div class="card-header"><div class="card-title">📊 Cajas Ejecutadas vs Proyectadas por Hora</div></div>
+      <div class="card-header"><div class="card-title">📊 Cajas por Hora</div></div>
       <div class="chart-wrap"><canvas id="chartEmpCajas"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-header"><div class="card-title">⚡ Productividad Cj/Hr</div></div>
+      <div class="card-header"><div class="card-title">⚡ Productividad CJ/HR*OP por Hora</div></div>
       <div class="chart-wrap"><canvas id="chartEmpEfic"></canvas></div>
     </div>
   </div>
 
-  <!-- Data entry form -->
-  <div class="form-section" style="--area-color:#7c3aed">
-    <div class="form-section-header" onclick="toggleFormSection(this)">
-      <div class="form-section-title">📝 Registrar Produccion de Empaque</div>
-      <div class="form-section-toggle">▼</div>
+  <div class="grid-2 mb-24">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 KG PT por Hora</div></div>
+      <div class="chart-wrap"><canvas id="chartEmpKgPT"></canvas></div>
     </div>
-    <div class="form-section-body">
-      <div class="form-grid-portal">
-        <div class="form-group-p"><label>Hora</label><select><option>07:00-08:00</option><option>08:00-09:00</option><option>09:00-10:00</option><option>10:00-11:00</option><option>11:00-12:00</option><option>12:00-13:00</option><option>14:00-15:00</option><option>15:00-16:00</option></select></div>
-        <div class="form-group-p"><label>Producto</label><select><option>Mango</option><option>Arandano</option><option>Granada</option></select></div>
-        <div class="form-group-p"><label>Tipo de Corte</label><select><option>Chunks</option><option>Slices</option><option>Diced</option></select></div>
-        <div class="form-group-p"><label>Cajas Ejecutadas</label><input type="number" placeholder="0"></div>
-        <div class="form-group-p"><label>Cajas Proyectadas</label><input type="number" placeholder="92"></div>
-        <div class="form-group-p"><label>N° Operarios</label><input type="number" placeholder="0"></div>
-        <div class="form-group-p"><label>Encargado</label><input type="text" placeholder="Nombre"></div>
-        <div class="form-group-p"><label>Estado Cajas</label><select><option>✅ OK</option><option>⚠️ Reproceso</option><option>❌ Rechazo</option></select></div>
-      </div>
-      <div class="form-actions">
-        <button class="btn-submit" style="--area-color:#7c3aed" onclick="showPortalToast('Registro guardado exitosamente','#7c3aed')">✅ Registrar Hora</button>
-        <button class="btn-clear">Limpiar</button>
-      </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Produccion Acumulada (Cajas)</div></div>
+      <div class="chart-wrap"><canvas id="chartEmpAcum"></canvas></div>
     </div>
   </div>
 
   <div class="card">
     <div class="card-header"><div class="card-title">📋 Produccion de Empaque Hora a Hora — Hoy</div><span class="live-tag"><span class="dot"></span> Live</span></div>
     <div style="overflow-x:auto">
-      <table class="data-table">
-        <thead><tr><th>Hora</th><th>Producto</th><th>Corte</th><th>Cajas Ej.</th><th>Cajas Proy.</th><th>Cj/Hr</th><th>Cj/Hr*Op</th><th>Operarios</th><th>Encargado</th></tr></thead>
-        <tbody>
-          <tr><td>07:00-08:00</td><td>Mango</td><td>Chunks</td><td class="num" style="color:#7c3aed;font-weight:800">82</td><td class="num">92</td><td class="num">82</td><td class="num">2.9</td><td class="num">28</td><td>J. Ramirez</td></tr>
-          <tr><td>08:00-09:00</td><td>Mango</td><td>Chunks</td><td class="num" style="color:#7c3aed;font-weight:800">97</td><td class="num">92</td><td class="num" style="color:var(--verde)">97</td><td class="num">3.5</td><td class="num">28</td><td>J. Ramirez</td></tr>
-          <tr><td>09:00-10:00</td><td>Mango</td><td>Chunks</td><td class="num" style="color:#7c3aed;font-weight:800">90</td><td class="num">92</td><td class="num">90</td><td class="num">3.2</td><td class="num">28</td><td>J. Ramirez</td></tr>
-          <tr><td>10:00-11:00</td><td>Mango</td><td>Chunks</td><td class="num" style="color:#7c3aed;font-weight:800">94</td><td class="num">92</td><td class="num" style="color:var(--verde)">94</td><td class="num">3.4</td><td class="num">28</td><td>J. Ramirez</td></tr>
-          <tr><td>11:00-12:00</td><td>Mango</td><td>Chunks</td><td class="num" style="color:#7c3aed;font-weight:800">102</td><td class="num">92</td><td class="num" style="color:var(--verde)">102</td><td class="num">3.6</td><td class="num">28</td><td>J. Ramirez</td></tr>
-          <tr><td>12:00-13:00</td><td>Mango</td><td>Chunks</td><td class="num" style="color:#7c3aed;font-weight:800">90</td><td class="num">92</td><td class="num">90</td><td class="num">3.2</td><td class="num">28</td><td>J. Ramirez</td></tr>
-          <tr><td>14:00-15:00</td><td>Mango</td><td>Chunks</td><td class="num" style="color:#7c3aed;font-weight:800">89</td><td class="num">92</td><td class="num">89</td><td class="num">3.2</td><td class="num">28</td><td>M. Lopez</td></tr>
-          <tr class="hora-actual"><td>15:00-16:00</td><td>Mango</td><td>Chunks</td><td class="text-muted">—</td><td class="num">92</td><td class="text-muted">—</td><td class="text-muted">—</td><td class="text-muted">—</td><td><span class="live-tag"><span class="dot"></span> En proceso</span></td></tr>
-        </tbody>
-        <tfoot><tr class="table-footer"><td><b>TOTAL</b></td><td><b>7 hrs</b></td><td></td><td class="num"><b>644</b></td><td class="num"><b>644</b></td><td class="num"><b>92 avg</b></td><td class="num"><b>3.3</b></td><td class="num"><b>28</b></td><td></td></tr></tfoot>
+      <table class="data-table" id="empTable">
+        <thead><tr><th>Hora</th><th>Producto</th><th>Corte</th><th>Tipo</th><th>Cajas Ej.</th><th>KG PT</th><th>CJ/HR</th><th>CJ/HR*OP</th><th>Operarios</th><th>Cliente</th><th>Encargado</th></tr></thead>
+        <tbody id="empTableBody"></tbody>
+        <tfoot id="empTableFoot"></tfoot>
       </table>
+    </div>
+    <div class="empty-state" id="empEmptyState" style="display:none">
+      <div style="font-size:48px;margin-bottom:12px">📭</div>
+      <div style="font-size:15px;font-weight:600">No hay registros de empaque para esta fecha</div>
+      <div style="font-size:12px;margin-top:6px">Registra desde <a href="app-empaque-congelado.html" target="_blank" style="color:#7c3aed;font-weight:700">Registro Empaque Congelado</a></div>
     </div>
   </div>
 </div>
@@ -2319,6 +2337,9 @@ function doLogin() {
         p.classList.add('active');
       });
       initAllCharts();
+      // Reset dynamic chart refs so live refresh creates them fresh
+      _chartCostoMODHora = null; _chartCostoDonut = null; _chartCostoKgHora = null; _chartCostoAcum = null;
+      empChartCajas = null; empChartEfic = null; empChartKgPT = null; empChartAcum = null;
     } catch(e) { console.error('initAllCharts error:', e); }
     // Restore panels
     document.querySelectorAll('.panel-container').forEach(p=>{
@@ -2336,10 +2357,10 @@ function doLogin() {
     sessionStorage.setItem('portal_logged_in', 'true');
     syncFromSupabase();
     subscribeRealtime();
-    // Sesion activa por 5 minutos
-    localStorage.setItem('portal_session', JSON.stringify({user:u, expires: Date.now() + 5*60*1000}));
+    // Sesion activa por 30 minutos
+    localStorage.setItem('portal_session', JSON.stringify({user:u, expires: Date.now() + 30*60*1000}));
     if (window._sessionTimer) clearTimeout(window._sessionTimer);
-    window._sessionTimer = setTimeout(function(){ doLogout(); }, 5*60*1000);
+    window._sessionTimer = setTimeout(function(){ doLogout(); }, 30*60*1000);
   } else {
     document.getElementById('loginError').textContent = 'Usuario o contrasena incorrectos';
   }
@@ -2406,6 +2427,9 @@ document.querySelectorAll('.nav-item[data-panel]').forEach(item => {
     document.querySelector('.main-content').scrollTop = 0;
     window.scrollTo(0, 0);
     if (window.innerWidth <= 1024) toggleSidebar();
+    // Refresh live panels when navigated to
+    if (panel === 'costos') setTimeout(refreshCostosPanel, 100);
+    if (panel === 'area-empaque') setTimeout(refreshEmpaquePanel, 100);
     // Fix blank charts: force resize after panel is fully visible
     setTimeout(function(){
       if(!target) return;
@@ -2630,26 +2654,9 @@ function initAllCharts() {
     options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{min:35,max:75},x:{grid:{display:false}}}}
   });
 
-  // Costo Evolucion
-  new Chart(document.getElementById('chartCostoEvol'), {
-    type:'line',
-    data:{
-      labels:['S8','S9','S10','S11','S12','S13'],
-      datasets:[
-        {label:'Costo Total/Kg',data:[0.42,0.41,0.40,0.39,0.40,0.38],borderColor:COLORS.verde,backgroundColor:COLORS.verdeLight,fill:true,tension:0.4,pointRadius:5},
-        {label:'MOD/Kg',data:[0.17,0.16,0.16,0.15,0.16,0.15],borderColor:COLORS.azul,tension:0.4,pointRadius:3},
-        {label:'Objetivo',data:[0.40,0.40,0.40,0.40,0.40,0.40],borderColor:'rgba(0,0,0,0.15)',borderDash:[5,5],pointRadius:0}
-      ]
-    },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{min:0.10,max:0.50},x:{grid:{display:false}}}}
-  });
-
-  // Costo Donut
-  new Chart(document.getElementById('chartCostoDonut'), {
-    type:'doughnut',
-    data:{labels:['MOD','Energia/Frio','Materiales'],datasets:[{data:[0.15,0.15,0.08],backgroundColor:[COLORS.verde,COLORS.azul,COLORS.naranja],borderWidth:0}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false},datalabels:{display:false}}}
-  });
+  // Costo charts are now built dynamically by buildCostosPanel()
+  // Placeholder init — they will be built on first refreshCostosPanel() call
+  if (!window._costosChartsBuilt) { buildCostosPanel(); window._costosChartsBuilt = true; }
 
   // KG/HR
   new Chart(document.getElementById('chartKgHr'), {
@@ -2876,28 +2883,228 @@ function initAllCharts() {
     options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{reverse:true,min:-35,max:-20,title:{display:true,text:'°C'},grid:{color:'rgba(0,0,0,0.08)'}},x:{grid:{display:false}}}}
   });
 
-  // Empaque Cajas por Hora (bar: ejecutadas vs proyectadas)
-  const empHoras = ['07-08','08-09','09-10','10-11','11-12','12-13','14-15'];
-  new Chart(document.getElementById('chartEmpCajas'), {
-    type:'bar',
-    data:{labels:empHoras,datasets:[
-      {label:'Cajas Ejecutadas',data:[82,97,90,94,102,90,89],backgroundColor:'rgba(124,58,237,0.25)',borderColor:'#7c3aed',borderWidth:2,borderRadius:6},
-      {label:'Cajas Proyectadas',data:[92,92,92,92,92,92,92],backgroundColor:'rgba(0,0,0,0.04)',borderColor:'rgba(0,0,0,0.15)',borderWidth:1,borderRadius:6,borderDash:[4,4]}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:true,max:130,grid:{color:'rgba(0,0,0,0.08)'}},x:{grid:{display:false}}}}
-  });
-
-  // Empaque Eficiencia Cj/Hr (line)
-  new Chart(document.getElementById('chartEmpEfic'), {
-    type:'line',
-    data:{labels:empHoras,datasets:[
-      {label:'Cj/Hr Real',data:[82,97,90,94,102,90,89],borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,0.1)',fill:true,tension:0.4,pointRadius:6,pointBackgroundColor:'#7c3aed',pointBorderColor:'#fff',pointBorderWidth:2},
-      {label:'Cj/Hr*Op',data:[2.9,3.5,3.2,3.4,3.6,3.2,3.2],borderColor:COLORS.amber,tension:0.4,pointRadius:4,yAxisID:'y1'},
-      {label:'Objetivo (92 cj/hr)',data:[92,92,92,92,92,92,92],borderColor:'rgba(0,0,0,0.15)',borderDash:[5,5],pointRadius:0,fill:false}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:false,min:70,max:120,title:{display:true,text:'Cj/Hr'},grid:{color:'rgba(0,0,0,0.08)'}},y1:{position:'right',min:0,max:5,title:{display:true,text:'Cj/Hr*Op'},grid:{display:false}},x:{grid:{display:false}}}}
-  });
+  // Empaque charts initialized dynamically via refreshEmpaquePanel()
+  refreshEmpaquePanel();
 }
+
+// ══════════════════════════════════════════════
+// ── EMPAQUE CONGELADO LIVE PANEL ──
+// ══════════════════════════════════════════════
+let empChartCajas=null, empChartEfic=null, empChartKgPT=null, empChartAcum=null;
+let empFilterTurno = 'DIA';
+
+function getEmpRecords() {
+  try { return JSON.parse(localStorage.getItem('empaque_congelado_registros') || '[]'); }
+  catch { return []; }
+}
+
+function filterEmpaque(el, type) {
+  if (type === 'turno') {
+    document.querySelectorAll('.empaque-filter').forEach(f => f.classList.remove('active'));
+    el.classList.add('active');
+    empFilterTurno = el.getAttribute('data-turno');
+    refreshEmpaquePanel();
+  }
+}
+
+function getEmpFilteredDate() {
+  const sel = document.getElementById('empFilterFecha');
+  if (!sel) return getToday();
+  if (sel.value === 'ayer') {
+    const d = new Date(); d.setDate(d.getDate() - 1);
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  return getToday();
+}
+
+function refreshEmpaquePanel() {
+  const fecha = getEmpFilteredDate();
+  const frutaFilter = document.getElementById('empFilterFruta') ? document.getElementById('empFilterFruta').value : 'TODAS';
+  const tipoFilter = document.getElementById('empFilterTipo') ? document.getElementById('empFilterTipo').value : 'TODOS';
+  let recs = getEmpRecords().filter(r => r.fecha === fecha);
+
+  if (empFilterTurno !== 'AMBOS') recs = recs.filter(r => r.turno === empFilterTurno);
+  if (frutaFilter !== 'TODAS') recs = recs.filter(r => r.fruta === frutaFilter);
+  if (tipoFilter !== 'TODOS') recs = recs.filter(r => r.tipo === tipoFilter);
+
+  updateEmpKPIs(recs);
+  updateEmpTable(recs);
+  buildEmpCharts(recs);
+}
+
+function empFmt(n) { return (n||0).toLocaleString('es-PE',{maximumFractionDigits:1}); }
+
+function updateEmpKPIs(recs) {
+  const totCajas = recs.reduce((s,r) => s + (r.cajas||0), 0);
+  const totKg = recs.reduce((s,r) => s + (r.kg_pt||0), 0);
+  const avgCjHr = recs.length > 0 ? Math.round(totCajas / recs.length) : 0;
+  const totOp = recs.reduce((s,r) => s + (r.operarios||0), 0);
+  const avgOp = recs.length > 0 ? Math.round(totOp / recs.length) : 0;
+  const cjHrOp = avgOp > 0 ? (avgCjHr / avgOp).toFixed(1) : '0';
+  const pct = Math.min(100, Math.round(totCajas / 1600 * 100));
+
+  var el;
+  el = document.getElementById('empKpiCajas'); if(el) el.innerHTML = empFmt(totCajas) + ' <span class="kpi-unit">cajas</span>';
+  el = document.getElementById('empProgressBar'); if(el) el.style.width = pct + '%';
+  el = document.getElementById('empKpiCajasMeta'); if(el) el.textContent = 'Meta: 1,600 · ' + pct + '% cumplido';
+  el = document.getElementById('empKpiCjHr'); if(el) el.innerHTML = avgCjHr + ' <span class="kpi-unit">cj/hr</span>';
+  el = document.getElementById('empKpiHrs'); if(el) el.innerHTML = recs.length + ' <span class="kpi-unit">hr</span>';
+  el = document.getElementById('empKpiKgPT'); if(el) el.innerHTML = empFmt(totKg) + ' <span class="kpi-unit">kg</span>';
+  el = document.getElementById('empKpiKgMeta'); if(el) el.textContent = totCajas + ' cajas empacadas';
+  el = document.getElementById('empKpiOp'); if(el) el.innerHTML = avgOp + ' <span class="kpi-unit">op.</span>';
+  el = document.getElementById('empKpiCjHrOp'); if(el) el.textContent = cjHrOp;
+  el = document.getElementById('empKpiCjHrOpMeta'); if(el) el.textContent = avgCjHr + ' cj/hr ÷ ' + avgOp + ' op.';
+}
+
+function updateEmpTable(recs) {
+  var tbody = document.getElementById('empTableBody');
+  var tfoot = document.getElementById('empTableFoot');
+  var empty = document.getElementById('empEmptyState');
+  if (!tbody) return;
+
+  if (recs.length === 0) {
+    tbody.innerHTML = '';
+    tfoot.innerHTML = '';
+    if(empty) empty.style.display = 'block';
+    return;
+  }
+  if(empty) empty.style.display = 'none';
+
+  var sorted = recs.slice().sort(function(a,b){ return a.hora.localeCompare(b.hora); });
+  var rows = '';
+  sorted.forEach(function(r) {
+    var cc = (r.cajas||0) >= 90 ? 'color:#7c3aed' : (r.cajas||0) >= 70 ? 'color:var(--amber)' : 'color:var(--rojo)';
+    var tipoBadge = r.tipo === 'ORGANICO' ? 'background:var(--verde-bg);color:var(--verde)' : 'background:var(--purple-bg);color:var(--purple)';
+    rows += '<tr><td style="font-weight:700">' + r.hora + '</td>' +
+      '<td>' + (r.fruta||'') + '</td>' +
+      '<td>' + (r.corte||'—') + '</td>' +
+      '<td><span class="badge" style="' + tipoBadge + '">' + (r.tipo||'CONV') + '</span></td>' +
+      '<td class="num" style="' + cc + ';font-weight:800">' + (r.cajas||0) + '</td>' +
+      '<td class="num">' + empFmt(r.kg_pt) + '</td>' +
+      '<td class="num" style="' + cc + '">' + (r.cj_hr||0) + '</td>' +
+      '<td class="num">' + (r.cj_hr_op||'—') + '</td>' +
+      '<td class="num">' + (r.operarios||'—') + '</td>' +
+      '<td>' + (r.cliente||'—') + '</td>' +
+      '<td>' + (r.supervisor||'—') + '</td></tr>';
+  });
+  tbody.innerHTML = rows;
+
+  var totC = recs.reduce(function(s,r){return s+(r.cajas||0);},0);
+  var totK = recs.reduce(function(s,r){return s+(r.kg_pt||0);},0);
+  var avgH = recs.length > 0 ? Math.round(totC/recs.length) : 0;
+  var totO = recs.reduce(function(s,r){return s+(r.operarios||0);},0);
+  var avgO = recs.length > 0 ? Math.round(totO/recs.length) : 0;
+  var avgP = avgO > 0 ? (avgH/avgO).toFixed(1) : '—';
+  tfoot.innerHTML = '<tr class="table-footer"><td><b>TOTAL</b></td><td><b>' + recs.length + ' hrs</b></td><td></td><td></td>' +
+    '<td class="num"><b>' + empFmt(totC) + '</b></td><td class="num"><b>' + empFmt(totK) + '</b></td>' +
+    '<td class="num"><b>' + avgH + ' avg</b></td><td class="num"><b>' + avgP + '</b></td>' +
+    '<td class="num"><b>' + avgO + '</b></td><td></td><td></td></tr>';
+}
+
+function buildEmpCharts(recs) {
+  var isDark = document.body.classList.contains('dark-mode');
+  var gridC = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
+  var textC = isDark ? '#94a3b8' : '#64748b';
+  var sorted = recs.slice().sort(function(a,b){ return a.hora.localeCompare(b.hora); });
+  var labels = sorted.map(function(r){ return r.hora.split('-')[0].substr(0,5); });
+  var cajasData = sorted.map(function(r){ return r.cajas||0; });
+  var kgData = sorted.map(function(r){ return r.kg_pt||0; });
+  var prodData = sorted.map(function(r){ return r.cj_hr_op||0; });
+  var cumul = []; var run = 0;
+  cajasData.forEach(function(v){ run+=v; cumul.push(run); });
+
+  // Recover chart refs from canvas if globals were reset (e.g. after initAllCharts)
+  if (!empChartCajas) { var _ec = document.getElementById('chartEmpCajas'); if (_ec) { empChartCajas = Chart.getChart(_ec) || null; } }
+  if (!empChartEfic) { var _ee = document.getElementById('chartEmpEfic'); if (_ee) { empChartEfic = Chart.getChart(_ee) || null; } }
+  if (!empChartKgPT) { var _ek = document.getElementById('chartEmpKgPT'); if (_ek) { empChartKgPT = Chart.getChart(_ek) || null; } }
+  if (!empChartAcum) { var _ea = document.getElementById('chartEmpAcum'); if (_ea) { empChartAcum = Chart.getChart(_ea) || null; } }
+
+  // Chart 1: Cajas por Hora — update if exists
+  var c1 = document.getElementById('chartEmpCajas');
+  if (c1) {
+    var bgCajas = cajasData.map(function(v){ return v>=90 ? 'rgba(22,163,74,0.65)' : v>=70 ? 'rgba(245,158,11,0.65)' : 'rgba(239,68,68,0.65)'; });
+    var brCajas = cajasData.map(function(v){ return v>=90 ? '#16a34a' : v>=70 ? '#f59e0b' : '#ef4444'; });
+    if (empChartCajas) {
+      empChartCajas.data.labels = labels;
+      empChartCajas.data.datasets[0].data = cajasData;
+      empChartCajas.data.datasets[0].backgroundColor = bgCajas;
+      empChartCajas.data.datasets[0].borderColor = brCajas;
+      empChartCajas.update('none');
+    } else {
+      empChartCajas = new Chart(c1, {
+        type:'bar',
+        data:{labels:labels,datasets:[{ label:'Cajas Ejecutadas', data:cajasData, backgroundColor:bgCajas, borderColor:brCajas, borderWidth:2, borderRadius:6, barPercentage:0.7 }]},
+        options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},plugins:{legend:{labels:{color:textC}},datalabels:{align:'top',color:textC,font:{weight:'800',size:11},formatter:function(v){return v||'';}}},scales:{y:{beginAtZero:true,grid:{color:gridC},ticks:{color:textC}},x:{grid:{display:false},ticks:{color:textC}}}},
+        plugins:[ChartDataLabels]
+      });
+    }
+  }
+
+  // Chart 2: Productividad CJ/HR*OP — update if exists
+  var c2 = document.getElementById('chartEmpEfic');
+  if (c2) {
+    var ptColors = prodData.map(function(v){ return v>=3.5?'#16a34a':v>=3?'#f59e0b':'#ef4444'; });
+    if (empChartEfic) {
+      empChartEfic.data.labels = labels;
+      empChartEfic.data.datasets[0].data = prodData;
+      empChartEfic.data.datasets[0].pointBackgroundColor = ptColors;
+      empChartEfic.update('none');
+    } else {
+      empChartEfic = new Chart(c2, {
+        type:'line',
+        data:{labels:labels,datasets:[{ label:'CJ/HR*OP', data:prodData, borderColor:'#8b5cf6', backgroundColor:'rgba(139,92,246,0.1)', fill:true, tension:0.3, pointRadius:6, pointBackgroundColor:ptColors, borderWidth:2.5 }]},
+        options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},plugins:{legend:{labels:{color:textC}},datalabels:{align:'top',color:function(ctx){var v=ctx.dataset.data[ctx.dataIndex];return v>=3.5?'#16a34a':v>=3?'#f59e0b':'#ef4444';},font:{weight:'800',size:11},formatter:function(v){return v?v.toFixed(1):'';}}},scales:{y:{beginAtZero:true,grid:{color:gridC},ticks:{color:textC}},x:{grid:{display:false},ticks:{color:textC}}}},
+        plugins:[ChartDataLabels]
+      });
+    }
+  }
+
+  // Chart 3: KG PT por Hora — update if exists
+  var c3 = document.getElementById('chartEmpKgPT');
+  if (c3) {
+    if (empChartKgPT) {
+      empChartKgPT.data.labels = labels;
+      empChartKgPT.data.datasets[0].data = kgData;
+      empChartKgPT.update('none');
+    } else {
+      empChartKgPT = new Chart(c3, {
+        type:'bar',
+        data:{labels:labels,datasets:[{ label:'KG PT',data:kgData, backgroundColor:'rgba(234,88,12,0.65)',borderColor:'#ea580c', borderWidth:1,borderRadius:6,barPercentage:0.7 }]},
+        options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},plugins:{legend:{labels:{color:textC}},datalabels:{align:'top',color:textC,font:{weight:'700',size:10},formatter:function(v){return v?empFmt(v):'';}}},scales:{y:{beginAtZero:true,grid:{color:gridC},ticks:{color:textC}},x:{grid:{display:false},ticks:{color:textC}}}},
+        plugins:[ChartDataLabels]
+      });
+    }
+  }
+
+  // Chart 4: Produccion Acumulada — update if exists
+  var c4 = document.getElementById('chartEmpAcum');
+  if (c4) {
+    if (empChartAcum) {
+      empChartAcum.data.labels = labels;
+      empChartAcum.data.datasets[0].data = cajasData;
+      empChartAcum.data.datasets[1].data = cumul;
+      empChartAcum.update('none');
+    } else {
+      empChartAcum = new Chart(c4, {
+        type:'bar',
+        data:{labels:labels,datasets:[
+          {label:'Cajas/Hora',data:cajasData,backgroundColor:'rgba(6,182,212,0.6)',borderColor:'#06b6d4',borderWidth:1,borderRadius:6,barPercentage:0.7,yAxisID:'y',order:2},
+          {label:'Acumulado',data:cumul,type:'line',borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,0.12)',fill:true,tension:0.3,pointRadius:5,pointBackgroundColor:'#16a34a',borderWidth:2.5,yAxisID:'y1',order:1}
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},plugins:{legend:{labels:{color:textC}},datalabels:{display:false}},scales:{y:{position:'left',title:{display:true,text:'Cajas/hr',color:textC},beginAtZero:true,grid:{color:gridC},ticks:{color:textC}},y1:{position:'right',title:{display:true,text:'Acumulado',color:textC},beginAtZero:true,grid:{drawOnChartArea:false},ticks:{color:textC}},x:{grid:{display:false},ticks:{color:textC}}}},
+        plugins:[ChartDataLabels]
+      });
+    }
+  }
+}
+
+// Auto-refresh empaque every 15 seconds
+setInterval(function(){ if(document.getElementById('panel-area-empaque') && document.getElementById('panel-area-empaque').classList.contains('active')) refreshEmpaquePanel(); }, 15000);
+
+// Listen for storage changes from app-empaque-congelado
+window.addEventListener('storage', function(e) {
+  if (e.key === 'empaque_congelado_registros') refreshEmpaquePanel();
+});
 
 // ── TOGGLE FORM SECTIONS ──
 function toggleFormSection(header) {
@@ -2955,7 +3162,12 @@ function loadAcoLiveData() {
   if (!tbody) return;
 
   let totalConsumo=0, totalPT=0, totalPersonal=0, nHoras=0;
+  // Subtotals por turno
+  let diaConsumo=0, diaPT=0, diaPersonal=0, diaHoras=0;
+  let nocheConsumo=0, nochePT=0, nochePersonal=0, nocheHoras=0;
   let rows = '';
+  let lastTurno = null;
+  let diaRowsHtml = '', nocheRowsHtml = '';
 
   horas.forEach(hora => {
     const horaStart = hora.split('-')[0].trim();
@@ -2972,7 +3184,7 @@ function loadAcoLiveData() {
 
     // Check if this hour is the almuerzo hour
     if (almInicio && horaStart === almInicio.substring(0,5)) {
-      rows += '<tr style="background:var(--amber-bg)"><td>'+hora+'</td><td class="text-muted" colspan="'+(costoVisible?6:5)+'" style="text-align:center;font-style:italic;color:var(--amber)">⏸️ Almuerzo '+almInicio+' — '+(almFin||'14:00')+'</td></tr>';
+      diaRowsHtml += '<tr style="background:var(--amber-bg)"><td>'+hora+'</td><td class="text-muted" colspan="'+(costoVisible?9:8)+'" style="text-align:center;font-style:italic;color:var(--amber)">⏸️ Almuerzo '+almInicio+' — '+(almFin||'14:00')+'</td></tr>';
       return;
     }
 
@@ -2983,34 +3195,63 @@ function loadAcoLiveData() {
       const nPers = pers ? (parseInt(pers.num_personal)||parseInt(pers.total_personal)||0) : 0;
       const costoKg = (nPers > 0 && pt > 0) ? (costoKgCongelado * nPers / pt) : 0;
       const rendClass = rend >= 45 ? 'text-green' : rend >= 40 ? 'text-orange' : 'text-red';
-      const linea = prod.linea === 'General' ? 'Gral' : prod.linea === 'Linea 1' ? 'L1' : prod.linea === 'Linea 2' ? 'L2' : prod.linea || 'Gral';
+      const linea = prod.linea === 'General' ? 'Gral' : prod.linea === 'Linea 1' ? 'L1' : prod.linea === 'Linea 2' ? 'L2' : prod.linea || 'L1';
+      const esNoche = prod.turno === 'NOCHE';
+      const turnoLabel = esNoche ? '<span style="color:#8b5cf6;font-weight:700;font-size:11px">NOCHE</span>' : '<span style="color:#16a34a;font-weight:700;font-size:11px">DIA</span>';
+      const supervisor = prod.supervisor || '—';
 
       totalConsumo += consumo;
       totalPT += pt;
       if (nPers > 0) totalPersonal = nPers;
       nHoras++;
 
-      rows += '<tr><td>'+hora+'</td><td>'+(prod.fruta||'MANGO')+'</td><td>'+linea+'</td>';
-      rows += '<td class="num">'+consumo.toLocaleString('es-PE')+'</td>';
-      rows += '<td class="num">'+pt.toLocaleString('es-PE')+'</td>';
-      rows += '<td class="'+rendClass+'">'+rend.toFixed(1)+'%</td>';
-      rows += '<td class="num">'+(nPers||'—')+'</td>';
-      rows += '<td class="costo-col num" style="display:'+(costoVisible?'':'none')+'">$'+(costoKg>0?costoKg.toFixed(4):'—')+'</td>';
-      rows += '</tr>';
+      // Acumular por turno
+      if (esNoche) {
+        nocheConsumo += consumo; nochePT += pt; if (nPers > 0) nochePersonal = nPers; nocheHoras++;
+      } else {
+        diaConsumo += consumo; diaPT += pt; if (nPers > 0) diaPersonal = nPers; diaHoras++;
+      }
+
+      const rowHtml = '<tr><td>'+hora+'</td><td>'+turnoLabel+'</td><td>'+(prod.fruta||'MANGO')+'</td><td>'+linea+'</td>'
+        + '<td class="num">'+consumo.toLocaleString('es-PE')+'</td>'
+        + '<td class="num">'+pt.toLocaleString('es-PE')+'</td>'
+        + '<td class="'+rendClass+'">'+rend.toFixed(1)+'%</td>'
+        + '<td class="num">'+(nPers||'—')+'</td>'
+        + '<td>'+supervisor+'</td>'
+        + '<td class="costo-col num" style="display:'+(costoVisible?'':'none')+'">$'+(costoKg>0?costoKg.toFixed(4):'—')+'</td>'
+        + '</tr>';
+
+      if (esNoche) nocheRowsHtml += rowHtml;
+      else diaRowsHtml += rowHtml;
     }
   });
 
+  // Build final rows with subtotals
+  rows = '';
+  if (diaHoras > 0) {
+    rows += diaRowsHtml;
+    const diaRend = diaConsumo > 0 ? (diaPT/diaConsumo*100) : 0;
+    const diaCosto = (diaPersonal > 0 && diaPT > 0) ? (costoKgCongelado * diaPersonal / diaPT) : 0;
+    rows += '<tr style="background:rgba(22,163,74,0.08);border-top:2px solid rgba(22,163,74,0.3)"><td style="font-weight:800;color:#16a34a">☀️ SUBTOTAL DIA</td><td></td><td style="font-weight:700;color:#16a34a">'+diaHoras+' hrs</td><td></td><td class="num" style="font-weight:700;color:#16a34a">'+diaConsumo.toLocaleString('es-PE')+'</td><td class="num" style="font-weight:700;color:#16a34a">'+diaPT.toLocaleString('es-PE')+'</td><td style="font-weight:700;color:#16a34a">'+diaRend.toFixed(1)+'%</td><td class="num" style="font-weight:700;color:#16a34a">'+diaPersonal+'</td><td></td><td class="costo-col num" style="display:'+(costoVisible?'':'none')+';font-weight:700;color:#16a34a">$'+(diaCosto>0?diaCosto.toFixed(4):'—')+'</td></tr>';
+  }
+  if (nocheHoras > 0) {
+    rows += nocheRowsHtml;
+    const nocheRend = nocheConsumo > 0 ? (nochePT/nocheConsumo*100) : 0;
+    const nocheCosto = (nochePersonal > 0 && nochePT > 0) ? (costoKgCongelado * nochePersonal / nochePT) : 0;
+    rows += '<tr style="background:rgba(139,92,246,0.08);border-top:2px solid rgba(139,92,246,0.3)"><td style="font-weight:800;color:#8b5cf6">🌙 SUBTOTAL NOCHE</td><td></td><td style="font-weight:700;color:#8b5cf6">'+nocheHoras+' hrs</td><td></td><td class="num" style="font-weight:700;color:#8b5cf6">'+nocheConsumo.toLocaleString('es-PE')+'</td><td class="num" style="font-weight:700;color:#8b5cf6">'+nochePT.toLocaleString('es-PE')+'</td><td style="font-weight:700;color:#8b5cf6">'+nocheRend.toFixed(1)+'%</td><td class="num" style="font-weight:700;color:#8b5cf6">'+nochePersonal+'</td><td></td><td class="costo-col num" style="display:'+(costoVisible?'':'none')+';font-weight:700;color:#8b5cf6">$'+(nocheCosto>0?nocheCosto.toFixed(4):'—')+'</td></tr>';
+  }
+
   if (rows === '') {
-    tbody.innerHTML = '<tr><td colspan="'+(costoVisible?8:7)+'" style="text-align:center;padding:40px;color:var(--text-muted);font-style:italic">No hay registros aun. Usa los aplicativos para registrar datos:<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><a href="app-registro-produccion.html" target="_blank" style="color:#16a34a;font-weight:700;text-decoration:none">📋 Produccion</a><a href="app-registro-personal.html" target="_blank" style="color:#d97706;font-weight:700;text-decoration:none">👥 Personal</a><a href="app-registro-costos.html" target="_blank" style="color:#dc2626;font-weight:700;text-decoration:none">💰 Costos</a></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="'+(costoVisible?10:9)+'" style="text-align:center;padding:40px;color:var(--text-muted);font-style:italic">No hay registros aun. Usa los aplicativos para registrar datos:<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><a href="app-registro-produccion.html" target="_blank" style="color:#16a34a;font-weight:700;text-decoration:none">📋 Produccion</a><a href="app-registro-personal.html" target="_blank" style="color:#d97706;font-weight:700;text-decoration:none">👥 Personal</a><a href="app-registro-costos.html" target="_blank" style="color:#dc2626;font-weight:700;text-decoration:none">💰 Costos</a></div></td></tr>';
   } else {
     tbody.innerHTML = rows;
   }
 
-  // Footer totals
+  // Footer - TOTAL GENERAL
   if (nHoras > 0) {
     const rendTotal = totalConsumo > 0 ? (totalPT/totalConsumo*100) : 0;
     const costoTotal = (totalPersonal > 0 && totalPT > 0) ? (costoKgCongelado * totalPersonal / totalPT) : 0;
-    tfoot.innerHTML = '<tr class="table-footer"><td><b>TOTAL</b></td><td><b>'+nHoras+' hrs</b></td><td></td><td class="num"><b>'+totalConsumo.toLocaleString('es-PE')+'</b></td><td class="num"><b>'+totalPT.toLocaleString('es-PE')+'</b></td><td class="text-green"><b>'+rendTotal.toFixed(1)+'%</b></td><td class="num"><b>'+totalPersonal+'</b></td><td class="costo-col num" style="display:'+(costoVisible?'':'none')+'"><b>$'+(costoTotal>0?costoTotal.toFixed(4):'—')+'</b></td></tr>';
+    tfoot.innerHTML = '<tr class="table-footer" style="background:rgba(37,99,235,0.08);border-top:3px solid rgba(37,99,235,0.4)"><td style="font-weight:900;color:#2563eb">🏭 TOTAL GENERAL</td><td></td><td style="font-weight:800;color:#2563eb">'+nHoras+' hrs</td><td></td><td class="num" style="font-weight:800;color:#2563eb">'+totalConsumo.toLocaleString('es-PE')+'</td><td class="num" style="font-weight:800;color:#2563eb">'+totalPT.toLocaleString('es-PE')+'</td><td style="font-weight:800;color:#2563eb">'+rendTotal.toFixed(1)+'%</td><td class="num" style="font-weight:800;color:#2563eb">'+totalPersonal+'</td><td></td><td class="costo-col num" style="display:'+(costoVisible?'':'none')+';font-weight:800;color:#2563eb">$'+(costoTotal>0?costoTotal.toFixed(4):'—')+'</td></tr>';
   } else {
     tfoot.innerHTML = '';
   }
@@ -3072,12 +3313,69 @@ function updateAcoCharts(prodRegs) {
     ch2.data.labels = horasLabels;
     ch2.data.datasets[0].data = rendData;
     if (ch2.data.datasets[1]) ch2.data.datasets[1].data = horasLabels.map(() => 50);
-    // Auto-adjust Y axis based on data
     const minRend = rendData.length > 0 ? Math.min(...rendData) : 0;
     const maxRend = rendData.length > 0 ? Math.max(...rendData) : 100;
     ch2.options.scales.y.min = Math.max(0, Math.floor(minRend / 5) * 5 - 5);
     ch2.options.scales.y.max = Math.min(100, Math.ceil(Math.max(maxRend, 50) / 5) * 5 + 5);
     ch2.update();
+  }
+
+  // Chart 3: Produccion Acumulada
+  const acumData = [];
+  let acumVal = 0;
+  consumoData.forEach(c => { acumVal += c; acumData.push(acumVal); });
+
+  const c3 = document.getElementById('chartAcoAcumulado');
+  if (c3) {
+    let ch3 = Chart.getChart(c3);
+    if (!ch3) {
+      ch3 = new Chart(c3, {
+        type: 'bar',
+        data: {
+          labels: horasLabels,
+          datasets: [
+            { label: 'Consumo por Hora (kg)', data: consumoData, backgroundColor: 'rgba(234,88,12,0.6)', borderRadius: 6, yAxisID: 'y' },
+            { label: 'Acumulado (kg)', data: acumData, type: 'line', borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.1)', fill: true, tension: 0.4, pointRadius: 5, pointBackgroundColor: '#16a34a', yAxisID: 'y1' }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Kg/hora' } }, y1: { position: 'right', beginAtZero: true, title: { display: true, text: 'Acumulado (kg)' }, grid: { display: false } }, x: { grid: { display: false } } } }
+      });
+    } else {
+      ch3.data.labels = horasLabels;
+      ch3.data.datasets[0].data = consumoData;
+      ch3.data.datasets[1].data = acumData;
+      ch3.update('none');
+    }
+  }
+
+  // Chart 4: Comparativo Turnos Dia vs Noche (semanal)
+  const c4 = document.getElementById('chartAcoTurnos');
+  if (c4) {
+    let ch4 = Chart.getChart(c4);
+    const dias = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
+    const diaData = [0, 0, 0, 0, 0, 0], nocheData = [0, 0, 0, 0, 0, 0];
+    const allProd = JSON.parse(localStorage.getItem('prod_registros') || '[]');
+    allProd.forEach(r => {
+      if (!r.fecha) return;
+      const d = new Date(r.fecha); const dow = d.getDay(); if (dow === 0 || dow > 6) return;
+      const c = parseFloat(r.consumo_kg) || 0;
+      if (r.turno === 'NOCHE') nocheData[dow - 1] += c;
+      else diaData[dow - 1] += c;
+    });
+    if (!ch4) {
+      ch4 = new Chart(c4, {
+        type: 'bar',
+        data: { labels: dias, datasets: [
+          { label: 'Turno Dia', data: diaData, backgroundColor: 'rgba(22,163,74,0.6)', borderRadius: 6 },
+          { label: 'Turno Noche', data: nocheData, backgroundColor: 'rgba(124,58,237,0.6)', borderRadius: 6 }
+        ] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Consumo (kg)' } }, x: { grid: { display: false } } } }
+      });
+    } else {
+      ch4.data.datasets[0].data = diaData;
+      ch4.data.datasets[1].data = nocheData;
+      ch4.update('none');
+    }
   }
 }
 
@@ -3425,58 +3723,111 @@ function loadPdLiveData(){
   if(!tbody) return;
 
   if(todayProd.length === 0){
-    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted);font-style:italic">No hay registros. Usa las apps para registrar datos.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text-muted);font-style:italic">No hay registros. Usa las apps para registrar datos.</td></tr>';
     if(tfoot) tfoot.innerHTML='';
     return;
   }
 
   const sorted = [...todayProd].sort((a,b)=>(a.hora||'').localeCompare(b.hora||''));
-  let html='', tCons=0, tPt=0, totalPersSum=0, hoursWithPers=0;
-  const colSpan = pdCostoVisible ? 7 : 6;
   const costoDisplay = pdCostoVisible ? '' : 'none';
+  const almColSpan = pdCostoVisible ? 9 : 8;
 
-  // Find almuerzo info from first record that has it
+  // Find almuerzo info
   let almInicio='', almFin='';
   sorted.forEach(r=>{ if(r.almuerzo_inicio&&r.almuerzo_fin&&!almInicio){ almInicio=r.almuerzo_inicio; almFin=r.almuerzo_fin; }});
+
+  // Separar por turno
+  const diaRecs = sorted.filter(r => r.turno !== 'NOCHE');
+  const nocheRecs = sorted.filter(r => r.turno === 'NOCHE');
+
+  let html='';
+  let diaC=0, diaPT=0, diaPersSum=0, diaPersHrs=0;
+  let nocheC=0, nochePTt=0, nochePersSum=0, nochePersHrs=0;
   let almuerzoInserted = false;
 
-  sorted.forEach(r => {
+  // Renderizar filas DIA
+  diaRecs.forEach(r => {
     const c=parseFloat(r.consumo_kg)||0, p=parseFloat(r.pt_aprox_kg)||0;
     const rd = c>0?(p/c*100):0;
     const persForHour = todayPers.find(pr=>(pr.hora||'').substring(0,5)===(r.hora||'').substring(0,5));
     const pers = persForHour?(parseInt(persForHour.num_personal)||parseInt(persForHour.total_personal)||0):totalPersonal;
     const costoKg = (pers>0&&p>0)?(costoKgCongPd*pers/p):0;
-    tCons+=c; tPt+=p;
-    if(pers>0){ totalPersSum+=pers; hoursWithPers++; }
+    diaC+=c; diaPT+=p;
+    if(pers>0){ diaPersSum+=pers; diaPersHrs++; }
 
-    // Insert almuerzo row at correct position (before first hour >= almuerzo time)
     if(!almuerzoInserted && almInicio && almFin){
       const hourNum = parseInt((r.hora||'').substring(0,2))||0;
       const almNum = parseInt(almInicio.substring(0,2))||13;
       if(hourNum >= almNum){
         almuerzoInserted = true;
-        html+='<tr style="background:var(--amber-bg)"><td><b>'+almInicio+'-'+almFin+'</b></td><td colspan="'+colSpan+'" style="text-align:center;font-style:italic;color:var(--amber)">🍽️ Almuerzo '+almInicio+' — '+almFin+'</td></tr>';
+        html+='<tr style="background:var(--amber-bg)"><td><b>'+almInicio+'-'+almFin+'</b></td><td colspan="'+almColSpan+'" style="text-align:center;font-style:italic;color:var(--amber)">🍽️ Almuerzo '+almInicio+' — '+almFin+'</td></tr>';
       }
     }
 
     const rendColor = rd>=50?'color:var(--verde)':rd>=45?'color:var(--amber)':'color:var(--danger)';
-    html+='<tr><td><b>'+(r.hora||'').substring(0,11)+'</b></td><td>'+(r.fruta||'')+'</td><td>'+(r.linea==='General'?'Gral':r.linea||'Gral')+'</td>';
+    const linea = r.linea==='General'?'Gral':r.linea==='Linea 1'?'L1':r.linea==='Linea 2'?'L2':r.linea||'L1';
+    html+='<tr><td><b>'+(r.hora||'').substring(0,11)+'</b></td>';
+    html+='<td><span style="color:#16a34a;font-weight:700;font-size:11px">DIA</span></td>';
+    html+='<td>'+(r.fruta||'')+'</td><td>'+linea+'</td>';
     html+='<td class="num">'+c.toLocaleString('es-PE')+'</td><td class="num">'+p.toLocaleString('es-PE')+'</td>';
     html+='<td style="'+rendColor+';font-weight:700">'+rd.toFixed(1)+'%</td>';
     html+='<td class="num">'+pers+'</td>';
+    html+='<td>'+(r.supervisor||'—')+'</td>';
     html+='<td class="pd-costo-col num" style="display:'+costoDisplay+'">$'+costoKg.toFixed(4)+'</td></tr>';
   });
 
-  // Append almuerzo at end if not inserted yet
+  // Almuerzo al final si no se inserto
   if(!almuerzoInserted && almInicio && almFin){
-    html+='<tr style="background:var(--amber-bg)"><td><b>'+almInicio+'-'+almFin+'</b></td><td colspan="'+colSpan+'" style="text-align:center;font-style:italic;color:var(--amber)">🍽️ Almuerzo '+almInicio+' — '+almFin+'</td></tr>';
+    html+='<tr style="background:var(--amber-bg)"><td><b>'+almInicio+'-'+almFin+'</b></td><td colspan="'+almColSpan+'" style="text-align:center;font-style:italic;color:var(--amber)">🍽️ Almuerzo '+almInicio+' — '+almFin+'</td></tr>';
   }
+
+  // SUBTOTAL DIA
+  if(diaRecs.length > 0){
+    const diaRend = diaC>0?(diaPT/diaC*100):0;
+    const diaPersAvg = diaPersHrs>0?Math.round(diaPersSum/diaPersHrs):0;
+    const diaCosto = (diaPersSum>0&&diaPT>0)?(costoKgCongPd*diaPersSum/diaPT):0;
+    html+='<tr style="background:rgba(22,163,74,0.08);border-top:2px solid rgba(22,163,74,0.3)"><td style="font-weight:800;color:#16a34a">☀️ SUBTOTAL DIA</td><td></td><td style="font-weight:700;color:#16a34a">'+diaRecs.length+' hrs</td><td></td><td class="num" style="font-weight:700;color:#16a34a">'+diaC.toLocaleString('es-PE')+'</td><td class="num" style="font-weight:700;color:#16a34a">'+diaPT.toLocaleString('es-PE')+'</td><td style="font-weight:700;color:#16a34a">'+diaRend.toFixed(1)+'%</td><td class="num" style="font-weight:700;color:#16a34a">'+diaPersAvg+'</td><td></td><td class="pd-costo-col num" style="display:'+costoDisplay+';font-weight:700;color:#16a34a">$'+diaCosto.toFixed(4)+'</td></tr>';
+  }
+
+  // Renderizar filas NOCHE
+  nocheRecs.forEach(r => {
+    const c=parseFloat(r.consumo_kg)||0, p=parseFloat(r.pt_aprox_kg)||0;
+    const rd = c>0?(p/c*100):0;
+    const persForHour = todayPers.find(pr=>(pr.hora||'').substring(0,5)===(r.hora||'').substring(0,5));
+    const pers = persForHour?(parseInt(persForHour.num_personal)||parseInt(persForHour.total_personal)||0):totalPersonal;
+    const costoKg = (pers>0&&p>0)?(costoKgCongPd*pers/p):0;
+    nocheC+=c; nochePTt+=p;
+    if(pers>0){ nochePersSum+=pers; nochePersHrs++; }
+
+    const rendColor = rd>=50?'color:var(--verde)':rd>=45?'color:var(--amber)':'color:var(--danger)';
+    const linea = r.linea==='General'?'Gral':r.linea==='Linea 1'?'L1':r.linea==='Linea 2'?'L2':r.linea||'L1';
+    html+='<tr><td><b>'+(r.hora||'').substring(0,11)+'</b></td>';
+    html+='<td><span style="color:#8b5cf6;font-weight:700;font-size:11px">NOCHE</span></td>';
+    html+='<td>'+(r.fruta||'')+'</td><td>'+linea+'</td>';
+    html+='<td class="num">'+c.toLocaleString('es-PE')+'</td><td class="num">'+p.toLocaleString('es-PE')+'</td>';
+    html+='<td style="'+rendColor+';font-weight:700">'+rd.toFixed(1)+'%</td>';
+    html+='<td class="num">'+pers+'</td>';
+    html+='<td>'+(r.supervisor||'—')+'</td>';
+    html+='<td class="pd-costo-col num" style="display:'+costoDisplay+'">$'+costoKg.toFixed(4)+'</td></tr>';
+  });
+
+  // SUBTOTAL NOCHE
+  if(nocheRecs.length > 0){
+    const nocheRend = nocheC>0?(nochePTt/nocheC*100):0;
+    const nochePersAvg = nochePersHrs>0?Math.round(nochePersSum/nochePersHrs):0;
+    const nocheCosto = (nochePersSum>0&&nochePTt>0)?(costoKgCongPd*nochePersSum/nochePTt):0;
+    html+='<tr style="background:rgba(139,92,246,0.08);border-top:2px solid rgba(139,92,246,0.3)"><td style="font-weight:800;color:#8b5cf6">🌙 SUBTOTAL NOCHE</td><td></td><td style="font-weight:700;color:#8b5cf6">'+nocheRecs.length+' hrs</td><td></td><td class="num" style="font-weight:700;color:#8b5cf6">'+nocheC.toLocaleString('es-PE')+'</td><td class="num" style="font-weight:700;color:#8b5cf6">'+nochePTt.toLocaleString('es-PE')+'</td><td style="font-weight:700;color:#8b5cf6">'+nocheRend.toFixed(1)+'%</td><td class="num" style="font-weight:700;color:#8b5cf6">'+nochePersAvg+'</td><td></td><td class="pd-costo-col num" style="display:'+costoDisplay+';font-weight:700;color:#8b5cf6">$'+nocheCosto.toFixed(4)+'</td></tr>';
+  }
+
   tbody.innerHTML=html;
 
+  // TOTAL GENERAL
+  const tCons=diaC+nocheC, tPt=diaPT+nochePTt;
+  const totalPersSum=diaPersSum+nochePersSum, hoursWithPers=diaPersHrs+nochePersHrs;
   const tRend = tCons>0?(tPt/tCons*100):0;
   const avgPers = hoursWithPers>0?Math.round(totalPersSum/hoursWithPers):0;
   const tCosto = (totalPersSum>0&&tPt>0)?(costoKgCongPd*totalPersSum/tPt):0;
-  if(tfoot) tfoot.innerHTML='<tr class="table-footer"><td><b>TOTAL</b></td><td><b>'+sorted.length+' hrs</b></td><td></td><td class="num"><b>'+tCons.toLocaleString('es-PE')+'</b></td><td class="num"><b>'+tPt.toLocaleString('es-PE')+'</b></td><td style="color:var(--verde);font-weight:800"><b>'+tRend.toFixed(1)+'%</b></td><td class="num"><b>'+avgPers+' prom</b></td><td class="pd-costo-col num" style="display:'+costoDisplay+'"><b>$'+tCosto.toFixed(4)+'</b></td></tr>';
+  if(tfoot) tfoot.innerHTML='<tr class="table-footer" style="background:rgba(37,99,235,0.08);border-top:3px solid rgba(37,99,235,0.4)"><td style="font-weight:900;color:#2563eb">🏭 TOTAL GENERAL</td><td></td><td style="font-weight:800;color:#2563eb">'+sorted.length+' hrs</td><td></td><td class="num" style="font-weight:800;color:#2563eb">'+tCons.toLocaleString('es-PE')+'</td><td class="num" style="font-weight:800;color:#2563eb">'+tPt.toLocaleString('es-PE')+'</td><td style="font-weight:800;color:#2563eb">'+tRend.toFixed(1)+'%</td><td class="num" style="font-weight:800;color:#2563eb">'+avgPers+' prom</td><td></td><td class="pd-costo-col num" style="display:'+costoDisplay+';font-weight:800;color:#2563eb">$'+tCosto.toFixed(4)+'</td></tr>';
 
   // Update live charts with real data
   updatePdCharts(sorted, todayProd, todayPers);
@@ -3539,6 +3890,268 @@ function updatePdCharts(sorted, todayProd, todayPers){
 window.addEventListener('storage', loadPdLiveData);
 setInterval(loadPdLiveData, 5000);
 setTimeout(loadPdLiveData, 600);
+
+// ══════════════════════════════════════════════════
+// ── COSTOS LIVE PANEL ──
+// ══════════════════════════════════════════════════
+let _costosMoneda = 'usd'; // 'usd' or 'pen'
+let _chartCostoMODHora = null;
+let _chartCostoDonut = null;
+let _chartCostoKgHora = null;
+let _chartCostoAcum = null;
+
+function setCostosMoneda(m) {
+  _costosMoneda = m;
+  document.querySelectorAll('#costosMonedaChips button').forEach(b => {
+    b.classList.toggle('active', b.dataset.moneda === m);
+    b.style.background = b.dataset.moneda === m ? 'var(--verde)' : 'var(--card-bg)';
+    b.style.color = b.dataset.moneda === m ? '#fff' : 'var(--text)';
+  });
+  // Force rebuild charts on moneda change (formatters change)
+  if (_chartCostoMODHora) { _chartCostoMODHora.destroy(); _chartCostoMODHora = null; }
+  if (_chartCostoDonut) { _chartCostoDonut.destroy(); _chartCostoDonut = null; }
+  if (_chartCostoKgHora) { _chartCostoKgHora.destroy(); _chartCostoKgHora = null; }
+  if (_chartCostoAcum) { _chartCostoAcum.destroy(); _chartCostoAcum = null; }
+  refreshCostosPanel();
+}
+
+function getCostosConfig(fecha) {
+  try {
+    const regs = JSON.parse(localStorage.getItem('costos_registros') || '[]');
+    return regs.find(r => r.fecha === fecha) || null;
+  } catch(e) { return null; }
+}
+
+function getCostosHourlyData(fecha) {
+  const hourly = {};
+  try {
+    const prod = JSON.parse(localStorage.getItem('prod_registros') || '[]').filter(r => r.fecha === fecha);
+    const pers = JSON.parse(localStorage.getItem('personal_registros') || '[]').filter(r => r.fecha === fecha);
+    prod.forEach(r => {
+      const h = (r.hora || '').substring(0,5);
+      if (!h) return;
+      if (!hourly[h]) hourly[h] = { consumo: 0, pt: 0, personal: 0 };
+      hourly[h].consumo += parseFloat(r.consumo_kg) || 0;
+      hourly[h].pt += parseFloat(r.pt_aprox_kg) || 0;
+    });
+    pers.forEach(r => {
+      const h = (r.hora || '').substring(0,5);
+      if (!h) return;
+      if (!hourly[h]) hourly[h] = { consumo: 0, pt: 0, personal: 0 };
+      hourly[h].personal = parseInt(r.num_personal) || parseInt(r.total_personal) || 0;
+    });
+  } catch(e) {}
+  return hourly;
+}
+
+function refreshCostosPanel() {
+  const fechaInput = document.getElementById('costosFechaFilter');
+  if (!fechaInput) return;
+  if (!fechaInput.value) {
+    const d = new Date();
+    fechaInput.value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  const fecha = fechaInput.value;
+  const config = getCostosConfig(fecha);
+  const hourly = getCostosHourlyData(fecha);
+  const sym = _costosMoneda === 'pen' ? 'S/' : '$';
+  const tc = config ? (parseFloat(config.tipo_cambio) || 3.75) : 3.75;
+  const costoKgCong = config ? (parseFloat(config.costo_kg_congelado) || 3.51) : 3.51;
+  const costoHH = config ? (parseFloat(config.costo_hora_hombre) || 5.95) : 5.95;
+  const tarifaSol = config ? (parseFloat(config.tarifa_soles) || 11.75) : 11.75;
+
+  const convert = (usd) => _costosMoneda === 'pen' ? usd * tc : usd;
+
+  // Sort hours
+  const horas = Object.keys(hourly).sort();
+  let totalPT = 0, totalPersonalSum = 0, horasConDatos = 0;
+  let totalCostoMOD = 0;
+  const labels = [], modValues = [], costoKgValues = [], acumValues = [];
+  let acumCosto = 0;
+
+  horas.forEach(h => {
+    const d = hourly[h];
+    if (d.pt <= 0 && d.personal <= 0) return;
+    totalPT += d.pt;
+    totalPersonalSum += d.personal;
+    horasConDatos++;
+
+    const modUSD = (costoHH * d.personal);
+    totalCostoMOD += modUSD;
+
+    const costoKgUSD = (d.pt > 0 && d.personal > 0) ? (costoKgCong * d.personal / d.pt) : 0;
+    acumCosto = totalPT > 0 ? (costoKgCong * totalPersonalSum / totalPT) : 0;
+
+    labels.push(h);
+    modValues.push(convert(modUSD));
+    costoKgValues.push(convert(costoKgUSD));
+    acumValues.push(convert(acumCosto));
+  });
+
+  const avgCostoKg = totalPT > 0 ? (costoKgCong * totalPersonalSum / totalPT) : 0;
+  const lastPersonal = horas.length > 0 ? (hourly[horas[horas.length-1]].personal || 0) : 0;
+
+  // Estimate cost components (MOD ~40%, Energia ~40%, Materiales ~20%)
+  const modPct = 0.40, energiaPct = 0.40, matPct = 0.20;
+  const modKg = avgCostoKg * modPct;
+  const energiaKg = avgCostoKg * energiaPct;
+  const matKg = avgCostoKg * matPct;
+
+  // Update KPIs
+  const el = (id, v) => { const e = document.getElementById(id); if (e) e.innerHTML = v; };
+  el('cosKpiTotal', avgCostoKg > 0 ? sym + convert(avgCostoKg).toFixed(4) : '—');
+  el('cosKpiTotalMeta', avgCostoKg > 0 ? (avgCostoKg <= 0.40 ? '<span style="color:#16a34a">▼ Bajo objetivo</span>' : '<span style="color:#ef4444">▲ Sobre objetivo $0.40</span>') : 'Objetivo: $0.40/kg');
+  el('cosKpiMOD', totalCostoMOD > 0 ? sym + convert(totalCostoMOD).toFixed(2) : '—');
+  el('cosKpiMODMeta', 'Tarifa: S/' + tarifaSol.toFixed(2) + '/hr');
+  el('cosKpiPersonal', lastPersonal > 0 ? lastPersonal + ' <span class="kpi-unit">op.</span>' : '—');
+  el('cosKpiPersonalMeta', lastPersonal > 0 ? 'Ultimo registro: ' + (horas[horas.length-1] || '') : 'Sin datos');
+  el('cosKpiPT', totalPT > 0 ? totalPT.toLocaleString('es-PE') + ' <span class="kpi-unit">kg</span>' : '—');
+  el('cosKpiPTMeta', horasConDatos + ' horas registradas');
+
+  // Update donut center & cost stack
+  el('cosDonutCenter', avgCostoKg > 0 ? sym + convert(avgCostoKg).toFixed(4) : '—');
+  el('cosCostMOD', sym + convert(modKg).toFixed(4));
+  el('cosCostEnergia', sym + convert(energiaKg).toFixed(4));
+  el('cosCostMat', sym + convert(matKg).toFixed(4));
+  const totalComp = modKg + energiaKg + matKg;
+  const setPct = (id, val) => { const e = document.getElementById(id); if (e) e.style.width = (totalComp > 0 ? (val/totalComp*100) : 0) + '%'; };
+  setPct('cosCostMODBar', modKg);
+  setPct('cosCostEnergiaBar', energiaKg);
+  setPct('cosCostMatBar', matKg);
+
+  // Update table
+  const tbody = document.getElementById('costosTableBody');
+  const tfoot = document.getElementById('costosTableFoot');
+  if (tbody) {
+    if (labels.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted);font-style:italic">Sin datos de costos para esta fecha. Registra datos en <a href="app-registro-costos.html" target="_blank" style="color:#dc2626;font-weight:700">Registro Costos</a> y <a href="app-registro-produccion.html" target="_blank" style="color:#16a34a;font-weight:700">Produccion</a></td></tr>';
+    } else {
+      let rows = '';
+      labels.forEach((h, i) => {
+        const d = hourly[h];
+        const modH = costoHH * d.personal;
+        const ckgH = (d.pt > 0 && d.personal > 0) ? (costoKgCong * d.personal / d.pt) : 0;
+        rows += '<tr><td>' + h + '</td><td class="num">' + d.personal + '</td><td class="num">' + d.pt.toLocaleString('es-PE') + '</td><td class="num">' + sym + convert(costoHH).toFixed(2) + '</td><td class="num">' + sym + convert(modH).toFixed(2) + '</td><td class="num"><b>' + sym + convert(ckgH).toFixed(4) + '</b></td></tr>';
+      });
+      tbody.innerHTML = rows;
+    }
+  }
+  if (tfoot && labels.length > 0) {
+    tfoot.innerHTML = '<tr class="table-footer"><td><b>TOTAL</b></td><td class="num"><b>' + totalPersonalSum + '</b></td><td class="num"><b>' + totalPT.toLocaleString('es-PE') + '</b></td><td></td><td class="num"><b>' + sym + convert(totalCostoMOD).toFixed(2) + '</b></td><td class="num"><b>' + sym + convert(avgCostoKg).toFixed(4) + '</b></td></tr>';
+  } else if (tfoot) {
+    tfoot.innerHTML = '';
+  }
+
+  // Build/update charts
+  buildCostosCharts(labels, modValues, costoKgValues, acumValues, sym, modKg, energiaKg, matKg);
+}
+
+function buildCostosCharts(labels, modValues, costoKgValues, acumValues, sym, modKg, energiaKg, matKg) {
+  const isDark = document.body.classList.contains('dark-mode');
+  const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const textColor = isDark ? '#94a3b8' : '#475569';
+  const objThreshold = _costosMoneda === 'pen' ? 0.40 * 3.75 : 0.40;
+
+  // Recover chart refs from canvas if globals were reset
+  if (!_chartCostoMODHora) { const _c = document.getElementById('chartCostoEvol'); if (_c) _chartCostoMODHora = Chart.getChart(_c) || null; }
+  if (!_chartCostoDonut) { const _c = document.getElementById('chartCostoDonut'); if (_c) _chartCostoDonut = Chart.getChart(_c) || null; }
+  if (!_chartCostoKgHora) { const _c = document.getElementById('chartCostoKgHora'); if (_c) _chartCostoKgHora = Chart.getChart(_c) || null; }
+  if (!_chartCostoAcum) { const _c = document.getElementById('chartCostoAcum'); if (_c) _chartCostoAcum = Chart.getChart(_c) || null; }
+
+  // Chart 1: Costo MOD por Hora (bar) — update if exists, create if not
+  const ctx1 = document.getElementById('chartCostoEvol');
+  if (ctx1) {
+    if (_chartCostoMODHora) {
+      _chartCostoMODHora.data.labels = labels;
+      _chartCostoMODHora.data.datasets[0].data = modValues;
+      _chartCostoMODHora.data.datasets[0].label = 'Costo MOD (' + sym + ')';
+      _chartCostoMODHora.update('none');
+    } else {
+      _chartCostoMODHora = new Chart(ctx1, {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Costo MOD (' + sym + ')', data: modValues, backgroundColor: 'rgba(124,58,237,0.6)', borderColor: '#7c3aed', borderWidth: 2, borderRadius: 8, borderSkipped: false }] },
+        options: { responsive: true, maintainAspectRatio: false, animation: { duration: 400 }, interaction: { intersect: false, mode: 'index' }, plugins: { legend: { display: false }, datalabels: { display: function(c){ return c.dataset.data[c.dataIndex] > 0; }, color: textColor, anchor: 'end', align: 'top', font: { size: 10, weight: 700 }, formatter: function(v){ return sym + v.toFixed(2); } } }, scales: { x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } }, y: { grid: { color: gridColor }, ticks: { color: textColor, callback: function(v){ return sym + v.toFixed(0); } }, beginAtZero: true } } },
+        plugins: [ChartDataLabels]
+      });
+    }
+  }
+
+  // Chart 2: Donut composicion — update if exists
+  const ctx2 = document.getElementById('chartCostoDonut');
+  if (ctx2) {
+    if (_chartCostoDonut) {
+      _chartCostoDonut.data.datasets[0].data = [modKg || 0.15, energiaKg || 0.15, matKg || 0.08];
+      _chartCostoDonut.update('none');
+    } else {
+      _chartCostoDonut = new Chart(ctx2, {
+        type: 'doughnut',
+        data: { labels: ['MOD', 'Energia/Frio', 'Materiales'], datasets: [{ data: [modKg || 0.15, energiaKg || 0.15, matKg || 0.08], backgroundColor: [COLORS.verde, COLORS.azul, COLORS.naranja], borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, animation: { duration: 400 }, cutout: '70%', plugins: { legend: { display: false }, datalabels: { display: false } } }
+      });
+    }
+  }
+
+  // Chart 3: Costo/Kg por Hora (bar) — update if exists
+  const ctx3 = document.getElementById('chartCostoKgHora');
+  if (ctx3) {
+    const bgCols = costoKgValues.map(function(v){ return v > objThreshold ? 'rgba(239,68,68,0.6)' : 'rgba(22,163,74,0.6)'; });
+    const brCols = costoKgValues.map(function(v){ return v > objThreshold ? '#ef4444' : '#16a34a'; });
+    if (_chartCostoKgHora) {
+      _chartCostoKgHora.data.labels = labels;
+      _chartCostoKgHora.data.datasets[0].data = costoKgValues;
+      _chartCostoKgHora.data.datasets[0].backgroundColor = bgCols;
+      _chartCostoKgHora.data.datasets[0].borderColor = brCols;
+      _chartCostoKgHora.update('none');
+    } else {
+      _chartCostoKgHora = new Chart(ctx3, {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Costo/Kg (' + sym + ')', data: costoKgValues, backgroundColor: bgCols, borderColor: brCols, borderWidth: 2, borderRadius: 8, borderSkipped: false }] },
+        options: { responsive: true, maintainAspectRatio: false, animation: { duration: 400 }, plugins: { legend: { display: false }, datalabels: { display: function(c){ return c.dataset.data[c.dataIndex] > 0; }, color: textColor, anchor: 'end', align: 'top', font: { size: 10, weight: 700 }, formatter: function(v){ return sym + v.toFixed(4); } } }, scales: { x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } }, y: { grid: { color: gridColor }, ticks: { color: textColor, callback: function(v){ return sym + v.toFixed(3); } }, beginAtZero: true } } },
+        plugins: [ChartDataLabels]
+      });
+    }
+  }
+
+  // Chart 4: Costo acumulado (line) — update if exists
+  const ctx4 = document.getElementById('chartCostoAcum');
+  if (ctx4) {
+    const objLine = labels.map(function(){ return objThreshold; });
+    if (_chartCostoAcum) {
+      _chartCostoAcum.data.labels = labels;
+      _chartCostoAcum.data.datasets[0].data = acumValues;
+      _chartCostoAcum.data.datasets[1].data = objLine;
+      _chartCostoAcum.update('none');
+    } else {
+      _chartCostoAcum = new Chart(ctx4, {
+        type: 'line',
+        data: { labels, datasets: [
+          { label: 'Costo/Kg Acum (' + sym + ')', data: acumValues, borderColor: COLORS.verde, backgroundColor: COLORS.verdeLight, fill: true, tension: 0.4, pointRadius: 5 },
+          { label: 'Objetivo', data: objLine, borderColor: 'rgba(239,68,68,0.4)', borderDash: [5, 5], pointRadius: 0, fill: false }
+        ] },
+        options: { responsive: true, maintainAspectRatio: false, animation: { duration: 400 }, plugins: { datalabels: { display: function(c){ return c.datasetIndex === 0 && c.dataset.data[c.dataIndex] > 0; }, color: textColor, anchor: 'end', align: 'top', font: { size: 10, weight: 700 }, formatter: function(v){ return sym + v.toFixed(4); } } }, scales: { x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } }, y: { grid: { color: gridColor }, ticks: { color: textColor, callback: function(v){ return sym + v.toFixed(3); } }, beginAtZero: true } } },
+        plugins: [ChartDataLabels]
+      });
+    }
+  }
+}
+
+function buildCostosPanel() {
+  const fechaInput = document.getElementById('costosFechaFilter');
+  if (fechaInput && !fechaInput.value) {
+    const d = new Date();
+    fechaInput.value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  if (fechaInput) fechaInput.addEventListener('change', refreshCostosPanel);
+  refreshCostosPanel();
+}
+
+// Auto-refresh costos every 15 seconds when panel is active
+setInterval(function() { if (document.getElementById('panel-costos') && document.getElementById('panel-costos').classList.contains('active')) refreshCostosPanel(); }, 15000);
+
+// Listen for storage changes from costos/prod/personal apps
+window.addEventListener('storage', function(e) {
+  if (e.key === 'costos_registros' || e.key === 'costos_config' || e.key === 'prod_registros' || e.key === 'personal_registros') refreshCostosPanel();
+});
 
 // ── PORTAL TOAST ──
 function showPortalToast(message, color) {
