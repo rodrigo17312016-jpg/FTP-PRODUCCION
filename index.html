@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es"><script>(function(){var d=localStorage.getItem('portal_theme')==='dark';if(d)document.documentElement.classList.add('pre-dark');if(sessionStorage.getItem('portal_logged_in'))document.documentElement.classList.add('pre-logged');window.__preDark=d})()</script>
+<html lang="es"><script>(function(){var t=localStorage.getItem('portal_theme');var d=t==='dark';if(d){document.documentElement.classList.add('dark-mode','pre-dark');}if(sessionStorage.getItem('portal_logged_in'))document.documentElement.classList.add('pre-logged');window.__preDark=d})()</script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -59,7 +59,7 @@ html.pre-logged #appScreen { display:block!important; }
   --shadow-glow-verde: 0 0 20px rgba(22,163,74,0.15);
   --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
 }
-body.dark-mode {
+body.dark-mode, html.dark-mode body {
   --bg: #0a0f1a;
   --surface: rgba(30,41,59,0.85);
   --surface2: rgba(38,53,72,0.7);
@@ -294,6 +294,7 @@ body.dark-mode .sidebar { background:linear-gradient(180deg,#080f0b 0%,#0d1f14 3
   padding:24px;transition:var(--transition);position:relative;overflow:hidden;
 }
 .card:hover { box-shadow:var(--shadow); }
+html:not(.dark-mode) body:not(.dark-mode) .card { background:#ffffff; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
 .card-header {
   display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;
 }
@@ -318,6 +319,7 @@ body.dark-mode .sidebar { background:linear-gradient(180deg,#080f0b 0%,#0d1f14 3
   padding:20px;position:relative;overflow:hidden;transition:var(--transition);
 }
 .kpi-card:hover { transform:translateY(-2px);box-shadow:var(--shadow); }
+html:not(.dark-mode) body:not(.dark-mode) .kpi-card { background:#ffffff; border:1px solid #e2e8f0; }
 .kpi-card::before {
   content:'';position:absolute;top:0;left:0;right:0;height:3px;
   background:linear-gradient(90deg,var(--kpi-color,var(--verde)),transparent);
@@ -2311,6 +2313,17 @@ const USERS = {
   'admin': { pass:'ftp2026', name:'Administrador', role:'Administrador del Sistema', initials:'AD' }
 };
 
+// ── IMMEDIATE SESSION CHECK (prevent login flash on refresh) ──
+(function(){
+  try {
+    var session = JSON.parse(localStorage.getItem('portal_session') || 'null');
+    if(session && session.user && session.expires > Date.now() && USERS[session.user]) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('appScreen').style.display = 'block';
+    }
+  } catch(e){}
+})();
+
 // ── LOGIN ──
 let _loggedIn = false;
 function doLogin() {
@@ -2381,15 +2394,16 @@ window.addEventListener('load', function(){
       // Small delay to ensure fonts/resources are fully loaded
       setTimeout(function(){ doLogin(); }, 100);
     } else {
-      // No valid session - remove pre-logged class
+      // No valid session - remove pre-logged class and reset screens
       document.documentElement.classList.remove('pre-logged','pre-dark');
-      if (!document.body.classList.contains('dark-mode')) {
-        document.getElementById('loginScreen').style.display = 'flex';
-      }
+      document.getElementById('appScreen').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
     }
   } catch(e){
     console.log('Auto-login error:', e);
     document.documentElement.classList.remove('pre-logged','pre-dark');
+    document.getElementById('appScreen').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
   }
 });
 function doLogout() {
@@ -2545,6 +2559,7 @@ const COLORS = {
 
 function initAllCharts() {
   // Destroy ALL existing charts first to prevent "canvas already in use"
+  try { Chart.helpers.each(Chart.instances, function(instance) { instance.destroy(); }); } catch(e) {}
   document.querySelectorAll('canvas').forEach(c=>{ try{const ch=Chart.getChart(c);if(ch)ch.destroy();}catch(e){} });
   // Resumen Semanal
   new Chart(document.getElementById('chartResumenSemanal'), {
@@ -3348,35 +3363,65 @@ function updateAcoCharts(prodRegs) {
     }
   }
 
-  // Chart 4: Comparativo Turnos Dia vs Noche (semanal)
+  // Chart 4: Comparativo Turnos Dia vs Noche (semana actual)
   const c4 = document.getElementById('chartAcoTurnos');
   if (c4) {
+    const tData = getTurnosWeekData();
     let ch4 = Chart.getChart(c4);
-    const dias = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
-    const diaData = [0, 0, 0, 0, 0, 0], nocheData = [0, 0, 0, 0, 0, 0];
-    const allProd = JSON.parse(localStorage.getItem('prod_registros') || '[]');
-    allProd.forEach(r => {
-      if (!r.fecha) return;
-      const d = new Date(r.fecha); const dow = d.getDay(); if (dow === 0 || dow > 6) return;
-      const c = parseFloat(r.consumo_kg) || 0;
-      if (r.turno === 'NOCHE') nocheData[dow - 1] += c;
-      else diaData[dow - 1] += c;
-    });
     if (!ch4) {
       ch4 = new Chart(c4, {
         type: 'bar',
-        data: { labels: dias, datasets: [
-          { label: 'Turno Dia', data: diaData, backgroundColor: 'rgba(22,163,74,0.6)', borderRadius: 6 },
-          { label: 'Turno Noche', data: nocheData, backgroundColor: 'rgba(124,58,237,0.6)', borderRadius: 6 }
+        data: { labels: tData.labels, datasets: [
+          { label: 'Turno Dia', data: tData.dia, backgroundColor: 'rgba(22,163,74,0.6)', borderRadius: 6 },
+          { label: 'Turno Noche', data: tData.noche, backgroundColor: 'rgba(124,58,237,0.6)', borderRadius: 6 }
         ] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Consumo (kg)' } }, x: { grid: { display: false } } } }
       });
     } else {
-      ch4.data.datasets[0].data = diaData;
-      ch4.data.datasets[1].data = nocheData;
+      ch4.data.labels = tData.labels;
+      ch4.data.datasets[0].data = tData.dia;
+      ch4.data.datasets[1].data = tData.noche;
       ch4.update('none');
     }
   }
+}
+
+// Helper: Obtener datos de turnos de la semana actual (Lun-Sab)
+function getTurnosWeekData() {
+  const now = new Date();
+  const dow = now.getDay(); // 0=Dom,1=Lun...6=Sab
+  // Calcular lunes de esta semana
+  const mondayOffset = dow === 0 ? -6 : 1 - dow;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + mondayOffset);
+  monday.setHours(0,0,0,0);
+
+  // Generar fechas Lun-Sab con labels
+  const diasNombres = ['Lun','Mar','Mie','Jue','Vie','Sab'];
+  const fechasSemana = [];
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const f = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    fechasSemana.push(f);
+  }
+
+  const labels = diasNombres.map(function(n, i) {
+    return n + ' ' + fechasSemana[i].substring(8,10) + '/' + fechasSemana[i].substring(5,7);
+  });
+  const diaData = [0,0,0,0,0,0], nocheData = [0,0,0,0,0,0];
+
+  const allProd = JSON.parse(localStorage.getItem('prod_registros') || '[]');
+  allProd.forEach(function(r) {
+    if (!r.fecha) return;
+    const idx = fechasSemana.indexOf(r.fecha);
+    if (idx < 0) return;
+    const c = parseFloat(r.consumo_kg) || 0;
+    if (r.turno === 'NOCHE') nocheData[idx] += c;
+    else diaData[idx] += c;
+  });
+
+  return { labels: labels, dia: diaData, noche: nocheData };
 }
 
 // ── TUNELES IQF LIVE DATA ──
@@ -3867,23 +3912,14 @@ function updatePdCharts(sorted, todayProd, todayPers){
   // Chart 4: Turnos (chartPdTurnos) - create/update
   const c4=document.getElementById('chartPdTurnos');
   if(c4){
+    const tData = getTurnosWeekData();
     let ch4=Chart.getChart(c4);
-    const dias=['Lun','Mar','Mie','Jue','Vie','Sab'];
-    const diaData=[0,0,0,0,0,0], nocheData=[0,0,0,0,0,0];
-    const allProd=JSON.parse(localStorage.getItem('prod_registros')||'[]');
-    allProd.forEach(r=>{
-      if(!r.fecha) return;
-      const d=new Date(r.fecha); const dow=d.getDay(); if(dow===0||dow>6) return;
-      const c=parseFloat(r.consumo_kg)||0;
-      if((r.turno||'').includes('NOCHE')) nocheData[dow-1]+=c;
-      else diaData[dow-1]+=c;
-    });
     if(!ch4){
-      ch4=new Chart(c4,{type:'bar',data:{labels:dias,datasets:[
-        {label:'Turno Dia',data:diaData,backgroundColor:'rgba(22,163,74,0.7)',borderRadius:6},
-        {label:'Turno Noche',data:nocheData,backgroundColor:'rgba(124,58,237,0.6)',borderRadius:6}
+      ch4=new Chart(c4,{type:'bar',data:{labels:tData.labels,datasets:[
+        {label:'Turno Dia',data:tData.dia,backgroundColor:'rgba(22,163,74,0.7)',borderRadius:6},
+        {label:'Turno Noche',data:tData.noche,backgroundColor:'rgba(124,58,237,0.6)',borderRadius:6}
       ]},options:{responsive:true,maintainAspectRatio:false,plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:'Consumo (kg)'}},x:{grid:{display:false}}}}});
-    } else {ch4.data.datasets[0].data=diaData;ch4.data.datasets[1].data=nocheData;ch4.update('none');}
+    } else {ch4.data.labels=tData.labels;ch4.data.datasets[0].data=tData.dia;ch4.data.datasets[1].data=tData.noche;ch4.update('none');}
   }
 }
 
