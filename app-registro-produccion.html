@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -436,6 +437,18 @@ body {
 .kpi-unit { font-size: 14px; font-weight: 600; color: var(--muted); }
 .kpi-meta { font-size: 11px; color: var(--muted); margin-top: 6px; }
 
+/* ═══════════════ AVANCE META DIARIA ═══════════════ */
+.avance-pulse { width:10px; height:10px; border-radius:50%; background:#22c55e; box-shadow:0 0 0 0 rgba(34,197,94,0.6); animation:avPulse 1.5s ease infinite; }
+.avance-pct { font-size:28px; font-weight:900; background:linear-gradient(135deg,#16a34a,#22c55e,#0891b2); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.avance-track { background:rgba(148,163,184,0.15); border-radius:14px; height:36px; overflow:hidden; position:relative; box-shadow:inset 0 2px 6px rgba(0,0,0,0.15); border:1px solid rgba(148,163,184,0.1); }
+.avance-fill { height:100%; border-radius:14px; background:linear-gradient(90deg,#059669,#16a34a,#22c55e,#059669); background-size:300% 100%; animation:avBarFlow 3s linear infinite; transition:width 1s cubic-bezier(0.4,0,0.2,1); width:0%; position:relative; display:flex; align-items:center; justify-content:flex-end; padding-right:12px; min-width:0; box-shadow:0 0 12px rgba(22,163,74,0.3); }
+.avance-shine { position:absolute; top:0; left:-50%; width:50%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent); animation:avShine 3s ease-in-out infinite; pointer-events:none; }
+.avance-label { color:#fff; font-size:12px; font-weight:900; text-shadow:0 1px 3px rgba(0,0,0,0.5); position:relative; z-index:1; white-space:nowrap; }
+@keyframes avPulse { 0%{box-shadow:0 0 0 0 rgba(34,197,94,0.6)} 70%{box-shadow:0 0 0 8px rgba(34,197,94,0)} 100%{box-shadow:0 0 0 0 rgba(34,197,94,0)} }
+@keyframes avGradFlow { 0%{background-position:0 0} 100%{background-position:300% 0} }
+@keyframes avBarFlow { 0%{background-position:0 0} 100%{background-position:300% 0} }
+@keyframes avShine { 0%{left:-50%} 100%{left:150%} }
+
 /* ═══════════════ CHARTS ═══════════════ */
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
 .chart-wrap { height: 280px; position: relative; }
@@ -498,6 +511,17 @@ body {
 
 .row-almuerzo { background: rgba(245,158,11,0.06) !important; }
 .row-almuerzo td:first-child { border-left: 3px solid var(--amber); }
+
+/* Chart filter chips */
+.chart-filter-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 700;
+  border: 1px solid var(--border); background: transparent; color: var(--muted);
+  cursor: pointer; transition: all 0.2s; font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.chart-filter-chip:hover { border-color: var(--verde); color: var(--verde); }
+.chart-filter-chip.active { background: var(--verde); color: #fff; border-color: var(--verde); }
+[data-theme="light"] .chart-filter-chip.active { background: #16a34a; color: #fff; }
 
 .delete-btn {
   background: var(--rojo-bg);
@@ -665,6 +689,7 @@ body {
   </div>
   <div class="topbar-right">
     <div id="supabaseStatus" style="width:12px;height:12px;border-radius:50%;background:#ef4444;box-shadow:0 0 6px rgba(0,0,0,0.3);cursor:help;flex-shrink:0" title="Supabase: Verificando..."></div>
+    <button onclick="syncLocalToSupabase()" title="Sincronizar registros locales a Supabase" style="background:rgba(37,99,235,0.15);color:#3b82f6;border:1px solid rgba(37,99,235,0.3);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px" id="btnSync">🔄 Sync</button>
     <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema" id="themeBtn">🌙</button>
     <div class="topbar-dev-signature">
       <div class="topbar-sig-label">Desarrollado por:</div>
@@ -783,36 +808,6 @@ body {
     </div>
   </div>
 
-  <!-- HORARIO DEL TURNO - SECCION INDEPENDIENTE -->
-  <div class="card" id="horarioCard">
-    <div class="card-title" onclick="toggleSection('horarioBody','horarioChevron')">
-      🕐 <span id="horarioTitleTurno">Horario Turno DIA</span>
-      <span class="chevron" id="horarioChevron">▼</span>
-    </div>
-    <div class="card-body" id="horarioBody">
-      <div id="horarioStatus" style="margin-bottom:12px;padding:10px 16px;border-radius:10px;background:rgba(22,163,74,0.1);border:1px solid rgba(22,163,74,0.3);font-size:13px;display:none">
-        <span id="horarioStatusText" style="color:#16a34a"></span>
-      </div>
-      <div id="horarioForm">
-        <div class="form-grid" style="grid-template-columns:1fr auto 1fr auto;">
-          <div class="form-group">
-            <label>Hora Inicio Turno</label>
-            <input type="time" id="fHoraInicio" value="07:00">
-          </div>
-          <div class="form-group" style="align-self:end">
-            <button class="btn btn-primary" onclick="registrarInicio()" style="background:linear-gradient(135deg,#2563eb,#3b82f6);white-space:nowrap">✅ Registrar Inicio</button>
-          </div>
-          <div class="form-group">
-            <label>Hora Fin Turno</label>
-            <input type="time" id="fHoraFin" value="17:00">
-          </div>
-          <div class="form-group" style="align-self:end">
-            <button class="btn btn-primary" onclick="registrarFin()" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6);white-space:nowrap">✅ Registrar Final</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- ALMUERZO / CENA - SECCION INDEPENDIENTE -->
   <div class="card" id="almuerzoCard">
@@ -821,10 +816,7 @@ body {
       <span class="chevron" id="almuerzoChevron">▼</span>
     </div>
     <div class="card-body" id="almuerzoBody">
-      <div id="almuerzoStatus" style="margin-bottom:12px;padding:10px 16px;border-radius:10px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);font-size:13px;color:#f59e0b;display:none">
-        <span id="almuerzoStatusText"></span>
-        <button onclick="editarAlmuerzo()" style="margin-left:12px;background:none;border:1px solid #f59e0b;color:#f59e0b;padding:4px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">✏️ Editar</button>
-      </div>
+      <!-- Almuerzo Form -->
       <div id="almuerzoForm">
         <div class="form-grid" style="grid-template-columns:1fr 1fr auto;">
           <div class="form-group">
@@ -836,24 +828,33 @@ body {
             <input type="time" id="fAlmFin" value="14:00">
           </div>
           <div class="form-group" style="justify-content:flex-end">
-            <div class="checkbox-inline">
-              <input type="checkbox" id="fSinAlmuerzo" onchange="toggleSinAlmuerzo()">
-              <label for="fSinAlmuerzo">Sin almuerzo / Corrido</label>
-            </div>
+            <button class="btn btn-primary" onclick="registrarAlmuerzo()" style="background:linear-gradient(135deg,#ea580c,#f97316)">🍽️ Registrar Almuerzo</button>
           </div>
         </div>
-        <div class="btn-row" style="margin-top:10px">
-          <button class="btn btn-primary" onclick="registrarAlmuerzo()" style="background:linear-gradient(135deg,#ea580c,#f97316)">🍽️ Registrar Almuerzo</button>
-          <button class="btn btn-primary" onclick="registrarCena()" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)">🌙 Registrar Cena</button>
+      </div>
+      <!-- Cena Form -->
+      <div id="cenaForm" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:800;color:#8b5cf6;margin-bottom:10px">🌙 Datos de Cena</div>
+        <div class="form-grid" style="grid-template-columns:1fr 1fr auto;">
+          <div class="form-group">
+            <label>Inicio Cena</label>
+            <input type="time" id="fCenaInicio" value="00:00">
+          </div>
+          <div class="form-group">
+            <label>Fin Cena</label>
+            <input type="time" id="fCenaFin" value="01:00">
+          </div>
+          <div class="form-group" style="justify-content:flex-end">
+            <button class="btn btn-primary" onclick="registrarCena()" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)">🌙 Registrar Cena</button>
+          </div>
         </div>
       </div>
-      <!-- Cena section -->
-      <div id="cenaStatus" style="margin-top:12px;padding:10px 16px;border-radius:10px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);font-size:13px;color:#8b5cf6;display:none">
-        <span id="cenaStatusText"></span>
-        <button onclick="editarCena()" style="margin-left:12px;background:none;border:1px solid #8b5cf6;color:#8b5cf6;padding:4px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">✏️ Editar</button>
-      </div>
-      <div style="margin-top:6px;font-size:11px;color:var(--text-muted,#94a3b8);font-style:italic;">
-        Completar cuando se confirme la hora de almuerzo/cena
+      <!-- Resumen visual de Almuerzo/Cena registrados (solo lectura) -->
+      <div id="almCenaResumen" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+        <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:8px">PAUSAS REGISTRADAS</div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <tbody id="almCenaResumenBody"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -865,30 +866,56 @@ body {
       <div class="kpi-label">Consumo Total</div>
       <div class="kpi-value" id="kpiConsumo">0 <span class="kpi-unit">kg</span></div>
       <div class="kpi-meta">MP ingresada hoy</div>
+      <div id="kpiConsumoFrutas" style="margin-top:6px;border-top:1px dashed var(--border,#e2e8f0);padding-top:6px"></div>
     </div>
     <div class="kpi-card" style="--kpi-c:var(--naranja)">
       <div class="kpi-icon">🏭</div>
       <div class="kpi-label">P. Terminado Total</div>
       <div class="kpi-value" id="kpiPT">0 <span class="kpi-unit">kg</span></div>
       <div class="kpi-meta">Antes de tunel IQF</div>
+      <div id="kpiPTFrutas" style="margin-top:6px;border-top:1px dashed var(--border,#e2e8f0);padding-top:6px"></div>
     </div>
     <div class="kpi-card" style="--kpi-c:var(--azul)">
       <div class="kpi-icon">📊</div>
       <div class="kpi-label">Rendimiento Promedio</div>
       <div class="kpi-value" id="kpiRend">0<span class="kpi-unit">%</span></div>
       <div class="kpi-meta">PT / Consumo total</div>
+      <div id="kpiRendFrutas" style="margin-top:6px;border-top:1px dashed var(--border,#e2e8f0);padding-top:6px"></div>
     </div>
     <div class="kpi-card" style="--kpi-c:var(--verde)">
       <div class="kpi-icon">📝</div>
       <div class="kpi-label">Registros Hoy</div>
       <div class="kpi-value" id="kpiCount">0</div>
       <div class="kpi-meta">Horas registradas</div>
+      <div id="kpiCountFrutas" style="margin-top:6px;border-top:1px dashed var(--border,#e2e8f0);padding-top:6px"></div>
     </div>
     <div class="kpi-card" style="--kpi-c:var(--gold)">
       <div class="kpi-icon">⭐</div>
       <div class="kpi-label">Mejor Hora</div>
       <div class="kpi-value" id="kpiBest" style="font-size:18px;">—</div>
       <div class="kpi-meta">Mayor rendimiento</div>
+    </div>
+  </div>
+
+  <!-- AVANCE META DIARIA POR FRUTA (dinamico) -->
+  <div id="avanceFrutasContainer"></div>
+
+  <!-- CHART FILTERS -->
+  <div class="card" style="padding:12px 16px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="font-size:12px;font-weight:800;color:var(--muted);margin-right:4px">TURNO:</span>
+      <button class="chart-filter-chip active" data-filter="turno" data-value="AMBOS" onclick="toggleChartFilter(this)">Ambos</button>
+      <button class="chart-filter-chip" data-filter="turno" data-value="DIA" onclick="toggleChartFilter(this)">☀️ Dia</button>
+      <button class="chart-filter-chip" data-filter="turno" data-value="NOCHE" onclick="toggleChartFilter(this)">🌙 Noche</button>
+      <span style="width:1px;height:20px;background:var(--border);margin:0 6px"></span>
+      <span style="font-size:12px;font-weight:800;color:var(--muted);margin-right:4px">FRUTA:</span>
+      <button class="chart-filter-chip active" data-filter="fruta" data-value="TODAS" onclick="toggleChartFilter(this)">Todas</button>
+      <button class="chart-filter-chip" data-filter="fruta" data-value="MANGO" onclick="toggleChartFilter(this)">🥭 Mango</button>
+      <button class="chart-filter-chip" data-filter="fruta" data-value="FRESA" onclick="toggleChartFilter(this)">🍓 Fresa</button>
+      <button class="chart-filter-chip" data-filter="fruta" data-value="PALTA" onclick="toggleChartFilter(this)">🥑 Palta</button>
+      <button class="chart-filter-chip" data-filter="fruta" data-value="ARANDANO" onclick="toggleChartFilter(this)">🫐 Arandano</button>
+      <button class="chart-filter-chip" data-filter="fruta" data-value="PIÑA" onclick="toggleChartFilter(this)">🍍 Piña</button>
+      <button class="chart-filter-chip" data-filter="fruta" data-value="GRANADA" onclick="toggleChartFilter(this)">🍎 Granada</button>
     </div>
   </div>
 
@@ -919,13 +946,6 @@ body {
   <!-- HISTORY TABLE -->
   <div class="card">
     <div class="card-title">📋 Historial de Registros — Hoy</div>
-    <!-- Resumen turno arriba -->
-    <div id="turnoResumenBar" style="display:none;margin-bottom:12px;padding:10px 16px;border-radius:10px;background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.15);font-size:13px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
-      <span style="font-weight:700;color:var(--azul,#2563eb)">🕐 Turno:</span>
-      <span id="turnoResumenInicio">Inicio: —</span>
-      <span id="turnoResumenFin">Fin: —</span>
-      <span id="turnoResumenAlmuerzo">Almuerzo: —</span>
-    </div>
     <div class="table-controls">
       <label style="font-size:12px;font-weight:700;color:var(--muted)">Filtrar por fecha:</label>
       <input type="date" id="filterDate" onchange="refreshAll()">
@@ -969,11 +989,12 @@ body {
     <div class="form-grid" style="grid-template-columns:1fr 1fr;">
       <div class="form-group"><label>Fecha</label><input type="date" id="mFecha"></div>
       <div class="form-group"><label>Turno</label><select id="mTurno"><option value="DIA">TURNO DIA</option><option value="NOCHE">TURNO NOCHE</option></select></div>
-      <div class="form-group"><label>Hora</label><select id="mHora"><option value="05:00-06:00">05:00 - 06:00</option><option value="06:00-07:00">06:00 - 07:00</option><option value="07:00-08:00">07:00 - 08:00</option><option value="08:00-09:00">08:00 - 09:00</option><option value="09:00-10:00">09:00 - 10:00</option><option value="10:00-11:00">10:00 - 11:00</option><option value="11:00-12:00">11:00 - 12:00</option><option value="12:00-13:00">12:00 - 13:00</option><option value="13:00-14:00">13:00 - 14:00</option><option value="14:00-15:00">14:00 - 15:00</option><option value="15:00-16:00">15:00 - 16:00</option><option value="16:00-17:00">16:00 - 17:00</option><option value="17:00-18:00">17:00 - 18:00</option><option value="18:00-19:00">18:00 - 19:00</option><option value="19:00-20:00">19:00 - 20:00</option><option value="20:00-21:00">20:00 - 21:00</option><option value="21:00-22:00">21:00 - 22:00</option><option value="22:00-23:00">22:00 - 23:00</option><option value="23:00-00:00">23:00 - 00:00</option></select></div>
+      <div class="form-group"><label>Hora</label><select id="mHora"><option value="00:00-01:00">00:00 - 01:00</option><option value="01:00-02:00">01:00 - 02:00</option><option value="02:00-03:00">02:00 - 03:00</option><option value="03:00-04:00">03:00 - 04:00</option><option value="04:00-05:00">04:00 - 05:00</option><option value="05:00-06:00">05:00 - 06:00</option><option value="06:00-07:00">06:00 - 07:00</option><option value="07:00-08:00">07:00 - 08:00</option><option value="08:00-09:00">08:00 - 09:00</option><option value="09:00-10:00">09:00 - 10:00</option><option value="10:00-11:00">10:00 - 11:00</option><option value="11:00-12:00">11:00 - 12:00</option><option value="12:00-13:00">12:00 - 13:00</option><option value="13:00-14:00">13:00 - 14:00</option><option value="14:00-15:00">14:00 - 15:00</option><option value="15:00-16:00">15:00 - 16:00</option><option value="16:00-17:00">16:00 - 17:00</option><option value="17:00-18:00">17:00 - 18:00</option><option value="18:00-19:00">18:00 - 19:00</option><option value="19:00-20:00">19:00 - 20:00</option><option value="20:00-21:00">20:00 - 21:00</option><option value="21:00-22:00">21:00 - 22:00</option><option value="22:00-23:00">22:00 - 23:00</option><option value="23:00-00:00">23:00 - 00:00</option></select></div>
       <div class="form-group"><label>Fruta</label><select id="mFruta"><option value="MANGO">MANGO</option><option value="FRESA">FRESA</option><option value="PALTA">PALTA</option><option value="ARANDANO">ARANDANO</option><option value="PIÑA">PIÑA</option><option value="GRANADA">GRANADA</option></select></div>
       <div class="form-group"><label>Linea</label><select id="mLinea"><option value="Linea 1">Linea 1</option><option value="Linea 2">Linea 2</option></select></div>
       <div class="form-group"><label>Consumo MP (kg)</label><input type="number" id="mConsumo" min="0" step="0.1"></div>
       <div class="form-group"><label>P. Terminado (kg)</label><input type="number" id="mPT" min="0" step="0.1"></div>
+      <div class="form-group"><label>Proyectado TN/dia</label><input type="number" id="mProyectado" min="0" step="0.1"></div>
       <div class="form-group"><label>Supervisor</label><input type="text" id="mSupervisor"></div>
       <div class="form-group" style="grid-column:1/-1"><label>Observacion</label><input type="text" id="mObs"></div>
     </div>
@@ -1017,31 +1038,20 @@ function toggleSection(bodyId, chevronId) {
 }
 
 // ═══════════════ SIN ALMUERZO TOGGLE ═══════════════
-function toggleSinAlmuerzo() {
-  const checked = document.getElementById('fSinAlmuerzo').checked;
-  document.getElementById('fAlmInicio').disabled = checked;
-  document.getElementById('fAlmFin').disabled = checked;
-  if (checked) {
-    document.getElementById('fAlmInicio').value = '';
-    document.getElementById('fAlmFin').value = '';
-  } else {
-    document.getElementById('fAlmInicio').value = '13:00';
-    document.getElementById('fAlmFin').value = '14:00';
-  }
-}
-
 // ═══════════════ TURNO CHANGE ═══════════════
 function onTurnoChange() {
   const turno = document.getElementById('fTurno').value;
+  const hi = document.getElementById('fHoraInicio');
+  const hf = document.getElementById('fHoraFin');
   if (turno === 'DIA') {
-    document.getElementById('fHoraInicio').value = '07:00';
-    document.getElementById('fHoraFin').value = '17:00';
+    if (hi) hi.value = '07:00';
+    if (hf) hf.value = '17:00';
   } else {
-    document.getElementById('fHoraInicio').value = '19:00';
-    document.getElementById('fHoraFin').value = '07:00';
+    if (hi) hi.value = '19:00';
+    if (hf) hf.value = '07:00';
   }
-  actualizarTituloHorario();
-  cargarHorarioGuardado();
+  if (typeof actualizarTituloHorario === 'function') actualizarTituloHorario();
+  if (typeof cargarHorarioGuardado === 'function') cargarHorarioGuardado();
 }
 
 // ═══════════════ CALC PREVIEW ═══════════════
@@ -1071,6 +1081,71 @@ function saveRecords(records) {
   window.dispatchEvent(new Event('storage'));
 }
 
+// ═══════════════ SYNC LOCAL -> SUPABASE ═══════════════
+async function syncLocalToSupabase() {
+  if (typeof supabaseClient === 'undefined' || !supabaseClient) {
+    showToast('Supabase no conectado, intenta en unos segundos', true);
+    return;
+  }
+  const btn = document.getElementById('btnSync');
+  if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Sincronizando...'; }
+
+  const records = getRecords();
+  if (records.length === 0) {
+    showToast('No hay registros locales para sincronizar', true);
+    if (btn) { btn.disabled = false; btn.innerHTML = '🔄 Sync'; }
+    return;
+  }
+
+  let synced = 0, errors = 0;
+  // Agrupar por lotes de 50 para no saturar
+  const batchSize = 50;
+  for (let i = 0; i < records.length; i += batchSize) {
+    const batch = records.slice(i, i + batchSize).map(r => ({
+      fecha: r.fecha,
+      hora: r.hora,
+      turno: r.turno,
+      fruta: r.fruta || 'MANGO',
+      linea: r.linea || 'Linea 1',
+      proyectado_tn: r.proyectado_tn || 16,
+      consumo_kg: r.consumo_kg,
+      pt_aprox_kg: r.pt_aprox_kg,
+      hora_inicio_turno: r.hora_inicio_turno || null,
+      hora_fin_turno: r.hora_fin_turno || null,
+      almuerzo_inicio: r.almuerzo_inicio || null,
+      almuerzo_fin: r.almuerzo_fin || null,
+      supervisor: r.supervisor || null,
+      observacion: r.observacion || null
+    })).filter(r => r.fecha && r.hora && r.consumo_kg);
+
+    if (batch.length === 0) continue;
+
+    try {
+      const { data, error } = await supabaseClient
+        .from('registro_produccion')
+        .upsert(batch, { onConflict: 'fecha,hora,linea' });
+
+      if (error) {
+        console.error('Sync batch error:', error);
+        errors += batch.length;
+      } else {
+        synced += batch.length;
+      }
+    } catch(e) {
+      console.error('Sync exception:', e);
+      errors += batch.length;
+    }
+  }
+
+  if (btn) { btn.disabled = false; btn.innerHTML = '🔄 Sync'; }
+
+  if (errors === 0) {
+    showSupabaseToast('Sincronizados ' + synced + ' registros a Supabase', '#16a34a');
+  } else {
+    showSupabaseToast('Sync parcial: ' + synced + ' OK, ' + errors + ' errores', '#d97706');
+  }
+}
+
 // ═══════════════ REGISTER ═══════════════
 async function registrarHora() {
   if (typeof supabaseClient === 'undefined' || !supabaseClient) {
@@ -1087,11 +1162,14 @@ async function registrarHora() {
 
   const rend = (pt / consumo * 100).toFixed(1);
   const hora = document.getElementById('fHora').value;
-  const sinAlmuerzo = document.getElementById('fSinAlmuerzo').checked;
+  if (!hora || hora.trim() === '') { showToast('Selecciona la hora del registro', true); return; }
+  // Obtener almuerzo guardado del dia
+  const fecha = document.getElementById('fFecha').value;
+  const almGuardado = JSON.parse(localStorage.getItem('almuerzo_' + fecha) || 'null');
 
   const record = {
     id: Date.now().toString(36) + Math.random().toString(36).substr(2,5),
-    fecha: document.getElementById('fFecha').value,
+    fecha: fecha,
     hora: hora,
     turno: document.getElementById('fTurno').value,
     fruta: document.getElementById('fFruta').value,
@@ -1100,10 +1178,10 @@ async function registrarHora() {
     consumo_kg: consumo,
     pt_aprox_kg: pt,
     rendimiento: parseFloat(rend),
-    hora_inicio_turno: document.getElementById('fHoraInicio').value,
-    hora_fin_turno: document.getElementById('fHoraFin').value,
-    almuerzo_inicio: sinAlmuerzo ? '' : (document.getElementById('fAlmInicio').value || ''),
-    almuerzo_fin: sinAlmuerzo ? '' : (document.getElementById('fAlmFin').value || ''),
+    hora_inicio_turno: (document.getElementById('fHoraInicio') || {}).value || null,
+    hora_fin_turno: (document.getElementById('fHoraFin') || {}).value || null,
+    almuerzo_inicio: (almGuardado && almGuardado.inicio) || '',
+    almuerzo_fin: (almGuardado && almGuardado.fin) || '',
     supervisor: supervisor,
     observacion: document.getElementById('fObs').value.trim(),
     created_at: (function(){const _d=new Date();return _d.getFullYear()+'-'+String(_d.getMonth()+1).padStart(2,'0')+'-'+String(_d.getDate()).padStart(2,'0')+' '+String(_d.getHours()).padStart(2,'0')+':'+String(_d.getMinutes()).padStart(2,'0')+':'+String(_d.getSeconds()).padStart(2,'0')})()
@@ -1206,27 +1284,27 @@ function actualizarTituloHorario() {
 }
 
 function registrarInicio() {
-  var inicio = document.getElementById('fHoraInicio').value;
-  if (!inicio) { showToast('Selecciona la hora de inicio'); return; }
+  var el = document.getElementById('fHoraInicio');
+  if (!el || !el.value) { showToast('Selecciona la hora de inicio'); return; }
   var fecha = document.getElementById('fFecha').value;
   var key = 'horario_' + fecha;
   var saved = JSON.parse(localStorage.getItem(key) || '{}');
-  saved.inicio = inicio;
+  saved.inicio = el.value;
   localStorage.setItem(key, JSON.stringify(saved));
   actualizarHorarioStatus();
-  showToast('Hora de INICIO registrada: ' + inicio);
+  showToast('Hora de INICIO registrada: ' + el.value);
 }
 
 function registrarFin() {
-  var fin = document.getElementById('fHoraFin').value;
-  if (!fin) { showToast('Selecciona la hora de fin'); return; }
+  var el = document.getElementById('fHoraFin');
+  if (!el || !el.value) { showToast('Selecciona la hora de fin'); return; }
   var fecha = document.getElementById('fFecha').value;
   var key = 'horario_' + fecha;
   var saved = JSON.parse(localStorage.getItem(key) || '{}');
-  saved.fin = fin;
+  saved.fin = el.value;
   localStorage.setItem(key, JSON.stringify(saved));
   actualizarHorarioStatus();
-  showToast('Hora de FIN registrada: ' + fin);
+  showToast('Hora de FIN registrada: ' + el.value);
 }
 
 function actualizarHorarioStatus() {
@@ -1234,115 +1312,227 @@ function actualizarHorarioStatus() {
   var key = 'horario_' + fecha;
   var saved = JSON.parse(localStorage.getItem(key) || '{}');
   var statusEl = document.getElementById('horarioStatus');
+  if (!statusEl) return;
   var textEl = document.getElementById('horarioStatusText');
   var parts = [];
-  if (saved.inicio) parts.push('✅ Inicio: <b>' + saved.inicio + '</b>');
-  if (saved.fin) parts.push('✅ Fin: <b>' + saved.fin + '</b>');
-  if (parts.length > 0) {
+  if (saved.inicio) parts.push('Inicio: <b>' + saved.inicio + '</b>');
+  if (saved.fin) parts.push('Fin: <b>' + saved.fin + '</b>');
+  if (parts.length > 0 && textEl) {
     statusEl.style.display = 'block';
-    textEl.innerHTML = parts.join('  |  ') + '  <button onclick="editarHorario()" style="margin-left:12px;background:none;border:1px solid #16a34a;color:#16a34a;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">✏️ Editar</button>';
+    textEl.innerHTML = parts.join('  |  ');
   } else {
     statusEl.style.display = 'none';
   }
-  // Actualizar resumen arriba del historial
-  actualizarTurnoResumen();
 }
 
 function editarHorario() {
-  document.getElementById('horarioStatus').style.display = 'none';
+  var el = document.getElementById('horarioStatus');
+  if (el) el.style.display = 'none';
 }
 
 function cargarHorarioGuardado() {
   var fecha = document.getElementById('fFecha').value;
   var key = 'horario_' + fecha;
   var saved = JSON.parse(localStorage.getItem(key) || '{}');
-  if (saved.inicio) document.getElementById('fHoraInicio').value = saved.inicio;
-  if (saved.fin) document.getElementById('fHoraFin').value = saved.fin;
+  var hi = document.getElementById('fHoraInicio');
+  var hf = document.getElementById('fHoraFin');
+  if (saved.inicio && hi) hi.value = saved.inicio;
+  if (saved.fin && hf) hf.value = saved.fin;
   actualizarHorarioStatus();
-  actualizarTituloHorario();
 }
 
 function actualizarTurnoResumen() {
-  var fecha = document.getElementById('fFecha').value;
-  var horario = JSON.parse(localStorage.getItem('horario_' + fecha) || '{}');
-  var almuerzo = JSON.parse(localStorage.getItem('almuerzo_' + fecha) || '{}');
-  var bar = document.getElementById('turnoResumenBar');
-  if (horario.inicio || horario.fin || almuerzo.inicio) {
-    bar.style.display = 'flex';
-    document.getElementById('turnoResumenInicio').innerHTML = '🟢 Inicio: <b>' + (horario.inicio || '—') + '</b>';
-    document.getElementById('turnoResumenFin').innerHTML = '🔴 Fin: <b>' + (horario.fin || '—') + '</b>';
-    if (almuerzo.sinAlmuerzo) {
-      document.getElementById('turnoResumenAlmuerzo').innerHTML = '🍽️ <b>Sin almuerzo / Corrido</b>';
-    } else {
-      document.getElementById('turnoResumenAlmuerzo').innerHTML = '🍽️ Almuerzo: <b>' + (almuerzo.inicio || '—') + ' - ' + (almuerzo.fin || '—') + '</b>';
-    }
-  } else {
-    bar.style.display = 'none';
-  }
+  // Seccion eliminada - no-op
 }
 
 // ═══════════════ REGISTRAR ALMUERZO ═══════════════
 function registrarAlmuerzo() {
-  var sinAlm = document.getElementById('fSinAlmuerzo').checked;
   var inicio = document.getElementById('fAlmInicio').value;
   var fin = document.getElementById('fAlmFin').value;
-
-  if (!sinAlm && (!inicio || !fin)) { showToast('Completa hora inicio y fin del almuerzo'); return; }
+  if (!inicio || !fin) { showToast('Completa hora inicio y fin del almuerzo', true); return; }
 
   var fecha = document.getElementById('fFecha').value;
-  var key = 'almuerzo_' + fecha;
-  localStorage.setItem(key, JSON.stringify({ inicio: sinAlm ? null : inicio, fin: sinAlm ? null : fin, sinAlmuerzo: sinAlm }));
+  localStorage.setItem('almuerzo_' + fecha, JSON.stringify({ inicio: inicio, fin: fin }));
 
-  // Mostrar estado registrado
-  document.getElementById('almuerzoForm').style.display = 'none';
-  document.getElementById('almuerzoStatus').style.display = 'block';
-  document.getElementById('almuerzoStatus').style.background = 'rgba(22,163,74,0.1)';
-  document.getElementById('almuerzoStatus').style.borderColor = 'rgba(22,163,74,0.3)';
+  // Actualizar almuerzo en todos los registros existentes del dia
+  var records = getRecords();
+  var changed = false;
+  records.forEach(function(r) {
+    if (r.fecha === fecha) { r.almuerzo_inicio = inicio; r.almuerzo_fin = fin; changed = true; }
+  });
+  if (changed) saveRecords(records);
 
-  var editBtn = '  <button onclick="editarAlmuerzo()" style="margin-left:12px;background:none;border:1px solid #16a34a;color:#16a34a;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">✏️ Editar</button>';
-  if (sinAlm) {
-    document.getElementById('almuerzoStatusText').innerHTML = '✅ <b>Sin almuerzo / Corrido</b>' + editBtn;
-  } else {
-    document.getElementById('almuerzoStatusText').innerHTML = '✅ <b>Almuerzo registrado:</b> ' + inicio + ' - ' + fin + editBtn;
-  }
-  document.getElementById('almuerzoStatusText').style.color = '#16a34a';
-
-  showToast(sinAlm ? 'Registrado: Sin almuerzo / Corrido' : 'Almuerzo registrado: ' + inicio + ' - ' + fin);
+  showToast('Almuerzo registrado: ' + inicio + ' - ' + fin);
   actualizarTurnoResumen();
+  actualizarAlmCenaUI();
+  refreshAll();
 }
 
-function editarAlmuerzo() {
-  document.getElementById('almuerzoForm').style.display = 'block';
-  document.getElementById('almuerzoStatus').style.display = 'none';
+function registrarCena() {
+  var inicio = document.getElementById('fCenaInicio').value;
+  var fin = document.getElementById('fCenaFin').value;
+  if (!inicio || !fin) { showToast('Completa hora inicio y fin de la cena', true); return; }
+  var fecha = document.getElementById('fFecha').value;
+  localStorage.setItem('cena_' + fecha, JSON.stringify({ inicio: inicio, fin: fin }));
+
+  showToast('Cena registrada: ' + inicio + ' - ' + fin);
+  actualizarTurnoResumen();
+  actualizarAlmCenaUI();
+  refreshAll();
+}
+
+function actualizarAlmCenaUI() {
+  var fecha = document.getElementById('fFecha').value;
+  var almSaved = JSON.parse(localStorage.getItem('almuerzo_' + fecha) || 'null');
+  var cenaSaved = JSON.parse(localStorage.getItem('cena_' + fecha) || 'null');
+  var almForm = document.getElementById('almuerzoForm');
+  var cenaForm = document.getElementById('cenaForm');
+  var resumen = document.getElementById('almCenaResumen');
+  var tbody = document.getElementById('almCenaResumenBody');
+
+  // Ocultar formularios si ya registrados
+  if (almForm) almForm.style.display = (almSaved && almSaved.inicio) ? 'none' : 'block';
+  if (cenaForm) cenaForm.style.display = (cenaSaved && cenaSaved.inicio) ? 'none' : 'block';
+
+  // Mostrar/ocultar resumen
+  if (!resumen || !tbody) return;
+  if (!almSaved && !cenaSaved) { resumen.style.display = 'none'; return; }
+
+  resumen.style.display = 'block';
+  var html = '';
+
+  if (almSaved && almSaved.inicio) {
+    html += '<tr style="border-bottom:1px solid var(--border)">' +
+      '<td style="padding:10px 14px;font-weight:700;color:#ea580c;font-size:13px">🍽️ Almuerzo</td>' +
+      '<td style="padding:10px 14px;font-weight:600;font-size:13px">' + almSaved.inicio + ' — ' + almSaved.fin + '</td>' +
+      '<td style="padding:10px 6px;text-align:right;white-space:nowrap">' +
+        '<button onclick="abrirEditPausa(\'almuerzo\')" style="background:rgba(234,88,12,0.1);border:1px solid rgba(234,88,12,0.3);color:#ea580c;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">✏️ Editar</button> ' +
+        '<button onclick="eliminarPausa(\'almuerzo\')" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;margin-left:4px">🗑️ Eliminar</button>' +
+      '</td></tr>';
+  }
+  if (cenaSaved && cenaSaved.inicio) {
+    html += '<tr>' +
+      '<td style="padding:10px 14px;font-weight:700;color:#8b5cf6;font-size:13px">🌙 Cena</td>' +
+      '<td style="padding:10px 14px;font-weight:600;font-size:13px">' + cenaSaved.inicio + ' — ' + cenaSaved.fin + '</td>' +
+      '<td style="padding:10px 6px;text-align:right;white-space:nowrap">' +
+        '<button onclick="abrirEditPausa(\'cena\')" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);color:#8b5cf6;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">✏️ Editar</button> ' +
+        '<button onclick="eliminarPausa(\'cena\')" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;margin-left:4px">🗑️ Eliminar</button>' +
+      '</td></tr>';
+  }
+  tbody.innerHTML = html;
+}
+
+// Modal de edicion para Almuerzo/Cena
+function abrirEditPausa(tipo) {
+  var fecha = document.getElementById('fFecha').value;
+  var saved = JSON.parse(localStorage.getItem((tipo === 'almuerzo' ? 'almuerzo_' : 'cena_') + fecha) || 'null');
+  var ini = (saved && saved.inicio) || (tipo === 'almuerzo' ? '13:00' : '00:00');
+  var fin = (saved && saved.fin) || (tipo === 'almuerzo' ? '14:00' : '01:00');
+  var color = tipo === 'almuerzo' ? '#ea580c' : '#8b5cf6';
+  var icon = tipo === 'almuerzo' ? '🍽️' : '🌙';
+  var titulo = tipo === 'almuerzo' ? 'Editar Almuerzo' : 'Editar Cena';
+
+  var modal = document.getElementById('pausaEditModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'pausaEditModal';
+    modal.style.cssText = 'display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);z-index:1001;justify-content:center;align-items:center;padding:20px';
+    modal.addEventListener('click', function(e) { if (e.target === modal) modal.style.display = 'none'; });
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = '<div style="background:var(--surface-solid,#1a1a2e);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:modalIn 0.3s cubic-bezier(0.16,1,0.3,1)">' +
+    '<div style="font-size:18px;font-weight:900;margin-bottom:20px;display:flex;align-items:center;gap:8px;color:'+color+'">' + icon + ' ' + titulo + '</div>' +
+    '<div class="form-grid" style="grid-template-columns:1fr 1fr">' +
+      '<div class="form-group"><label>Hora Inicio</label><input type="time" id="pausaEditInicio" value="'+ini+'"></div>' +
+      '<div class="form-group"><label>Hora Fin</label><input type="time" id="pausaEditFin" value="'+fin+'"></div>' +
+    '</div>' +
+    '<div style="display:flex;gap:12px;margin-top:20px;justify-content:flex-end">' +
+      '<button onclick="document.getElementById(\'pausaEditModal\').style.display=\'none\'" style="padding:10px 24px;border:2px solid var(--border);border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;background:transparent;color:var(--muted);font-family:Plus Jakarta Sans,sans-serif">Cancelar</button>' +
+      '<button onclick="guardarEditPausa(\''+tipo+'\')" style="padding:10px 24px;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;background:'+color+';color:#fff;font-family:Plus Jakarta Sans,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,0.2)">💾 Guardar</button>' +
+    '</div>' +
+  '</div>';
+
+  modal.style.display = 'flex';
+}
+
+function guardarEditPausa(tipo) {
+  var inicio = document.getElementById('pausaEditInicio').value;
+  var fin = document.getElementById('pausaEditFin').value;
+  if (!inicio || !fin) { showToast('Completa ambas horas', true); return; }
+  var fecha = document.getElementById('fFecha').value;
+  var key = (tipo === 'almuerzo' ? 'almuerzo_' : 'cena_') + fecha;
+  localStorage.setItem(key, JSON.stringify({ inicio: inicio, fin: fin }));
+
+  // Actualizar registros si es almuerzo
+  if (tipo === 'almuerzo') {
+    var records = getRecords();
+    records.forEach(function(r) { if (r.fecha === fecha) { r.almuerzo_inicio = inicio; r.almuerzo_fin = fin; } });
+    saveRecords(records);
+  }
+
+  document.getElementById('pausaEditModal').style.display = 'none';
+  showToast((tipo === 'almuerzo' ? 'Almuerzo' : 'Cena') + ' actualizado: ' + inicio + ' - ' + fin);
+  actualizarAlmCenaUI();
+  // Refrescar tabla localmente
+  var filterDate = document.getElementById('filterDate').value;
+  var recs = getRecords().filter(function(r) { return r.fecha === filterDate; });
+  updateTable(recs);
+  rebuildCharts(recs);
+}
+
+function eliminarPausa(tipo) {
+  var label = tipo === 'almuerzo' ? 'Almuerzo' : 'Cena';
+  if (!confirm('¿Eliminar ' + label + ' registrado? Los registros de hoy se actualizarán.')) return;
+  var fecha = document.getElementById('fFecha').value;
+  var key = (tipo === 'almuerzo' ? 'almuerzo_' : 'cena_') + fecha;
+  localStorage.removeItem(key);
+
+  // Si es almuerzo, limpiar campos de los registros
+  if (tipo === 'almuerzo') {
+    var records = getRecords();
+    records.forEach(function(r) {
+      if (r.fecha === fecha) {
+        r.almuerzo_inicio = '';
+        r.almuerzo_fin = '';
+      }
+    });
+    saveRecords(records);
+    // Actualizar en Supabase
+    if (supabaseClient) {
+      supabaseClient.from('registro_produccion')
+        .update({ almuerzo_inicio: null, almuerzo_fin: null })
+        .eq('fecha', fecha)
+        .then(function() { console.log(label + ' eliminado en Supabase'); });
+    }
+  }
+  if (tipo === 'cena') {
+    // Cena solo se guarda en localStorage, limpiar
+    if (supabaseClient) {
+      supabaseClient.from('registro_produccion')
+        .update({ cena_inicio: null, cena_fin: null })
+        .eq('fecha', fecha)
+        .then(function() { console.log(label + ' eliminado en Supabase'); });
+    }
+  }
+
+  showToast(label + ' eliminado correctamente');
+  actualizarAlmCenaUI();
+  var filterDate = document.getElementById('filterDate').value;
+  var recs = getRecords().filter(function(r) { return r.fecha === filterDate; });
+  updateTable(recs);
+  rebuildCharts(recs);
 }
 
 function cargarAlmuerzoGuardado() {
   var fecha = document.getElementById('fFecha').value;
-  var key = 'almuerzo_' + fecha;
-  var saved = localStorage.getItem(key);
+  var saved = localStorage.getItem('almuerzo_' + fecha);
   if (saved) {
     var data = JSON.parse(saved);
-    if (data.sinAlmuerzo) {
-      document.getElementById('fSinAlmuerzo').checked = true;
-      toggleSinAlmuerzo();
-    } else {
-      document.getElementById('fAlmInicio').value = data.inicio || '13:00';
-      document.getElementById('fAlmFin').value = data.fin || '14:00';
-    }
-    document.getElementById('almuerzoForm').style.display = 'none';
-    document.getElementById('almuerzoStatus').style.display = 'block';
-    document.getElementById('almuerzoStatus').style.background = 'rgba(22,163,74,0.1)';
-    document.getElementById('almuerzoStatus').style.borderColor = 'rgba(22,163,74,0.3)';
-    if (data.sinAlmuerzo) {
-      document.getElementById('almuerzoStatusText').innerHTML = '✅ <b>Sin almuerzo / Corrido</b>';
-    } else {
-      document.getElementById('almuerzoStatusText').innerHTML = '✅ <b>Almuerzo registrado:</b> ' + data.inicio + ' - ' + data.fin;
-    }
-    document.getElementById('almuerzoStatusText').style.color = '#16a34a';
-  } else {
-    document.getElementById('almuerzoForm').style.display = 'block';
-    document.getElementById('almuerzoStatus').style.display = 'none';
+    document.getElementById('fAlmInicio').value = data.inicio || '13:00';
+    document.getElementById('fAlmFin').value = data.fin || '14:00';
   }
+  actualizarAlmCenaUI();
 }
 
 // ═══════════════ EDIT MODAL ═══════════════
@@ -1360,6 +1550,7 @@ function openEditModal(id) {
   document.getElementById('mLinea').value = r.linea || 'Linea 1';
   document.getElementById('mConsumo').value = r.consumo_kg || '';
   document.getElementById('mPT').value = r.pt_aprox_kg || '';
+  document.getElementById('mProyectado').value = r.proyectado_tn || 16;
   document.getElementById('mSupervisor').value = r.supervisor || '';
   document.getElementById('mObs').value = r.observacion || '';
   document.getElementById('editModal').style.display = 'flex';
@@ -1380,9 +1571,14 @@ async function guardarEdicion() {
   const idx = records.findIndex(r => r.id === editingProdId);
   if (idx === -1) { closeEditModal(); return; }
 
+  const horaVal = document.getElementById('mHora').value;
+  if (!horaVal || horaVal.trim() === '') { showToast('ERROR: La hora es obligatoria', true); return; }
   const consumo = parseFloat(document.getElementById('mConsumo').value) || 0;
+  if (consumo <= 0) { showToast('Ingresa el consumo de MP', true); return; }
   const pt = parseFloat(document.getElementById('mPT').value) || 0;
+  if (pt <= 0) { showToast('Ingresa el P. Terminado', true); return; }
   const rend = consumo > 0 ? parseFloat((pt / consumo * 100).toFixed(1)) : 0;
+  const proyectado = parseFloat(document.getElementById('mProyectado').value) || 16;
 
   records[idx] = {
     ...records[idx],
@@ -1394,13 +1590,14 @@ async function guardarEdicion() {
     consumo_kg: consumo,
     pt_aprox_kg: pt,
     rendimiento: rend,
+    proyectado_tn: proyectado,
     supervisor: document.getElementById('mSupervisor').value.trim(),
     observacion: document.getElementById('mObs').value.trim()
   };
 
   saveRecords(records);
 
-  // Sync to Supabase
+  // Sync to Supabase (await para que termine antes de refrescar)
   if (typeof supabaseClient !== 'undefined' && supabaseClient) {
     try {
       const r = records[idx];
@@ -1413,27 +1610,13 @@ async function guardarEdicion() {
   }
 
   closeEditModal();
-  refreshAll();
+  // Refrescar localmente sin sobreescribir desde Supabase
+  const filterDate = document.getElementById('filterDate').value;
+  const todayRecs = records.filter(r => r.fecha === filterDate);
+  updateKPIs(todayRecs);
+  updateTable(todayRecs);
+  rebuildCharts(todayRecs);
   showToast('Registro actualizado');
-}
-
-// ═══════════════ CENA FUNCTIONS ═══════════════
-function registrarCena() {
-  var inicio = document.getElementById('fAlmInicio').value;
-  var fin = document.getElementById('fAlmFin').value;
-  if (!inicio || !fin) { showToast('Completa hora inicio y fin de la cena', true); return; }
-  var fecha = document.getElementById('fFecha').value;
-  localStorage.setItem('cena_' + fecha, JSON.stringify({ inicio: inicio, fin: fin }));
-  document.getElementById('cenaStatus').style.display = 'block';
-  document.getElementById('cenaStatusText').innerHTML = '✅ <b>Cena registrada:</b> ' + inicio + ' - ' + fin;
-  document.getElementById('cenaStatusText').style.color = '#8b5cf6';
-  showToast('Cena registrada: ' + inicio + ' - ' + fin);
-  actualizarTurnoResumen();
-  refreshAll();
-}
-
-function editarCena() {
-  document.getElementById('cenaStatus').style.display = 'none';
 }
 
 function cargarCenaGuardada() {
@@ -1441,12 +1624,10 @@ function cargarCenaGuardada() {
   var saved = localStorage.getItem('cena_' + fecha);
   if (saved) {
     var data = JSON.parse(saved);
-    document.getElementById('cenaStatus').style.display = 'block';
-    document.getElementById('cenaStatusText').innerHTML = '✅ <b>Cena registrada:</b> ' + data.inicio + ' - ' + data.fin;
-    document.getElementById('cenaStatusText').style.color = '#8b5cf6';
-  } else {
-    document.getElementById('cenaStatus').style.display = 'none';
+    document.getElementById('fCenaInicio').value = data.inicio || '00:00';
+    document.getElementById('fCenaFin').value = data.fin || '01:00';
   }
+  actualizarAlmCenaUI();
 }
 
 // ═══════════════ DELETE RECORD ═══════════════
@@ -1488,8 +1669,36 @@ function showToast(msg, isError) {
 }
 
 // ═══════════════ REFRESH ALL ═══════════════
-function refreshAll() {
+async function refreshAll() {
   const filterDate = document.getElementById('filterDate').value;
+
+  // Primero intentar cargar datos de Supabase para la fecha seleccionada
+  if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+    try {
+      const { data, error } = await supabaseClient
+        .from('registro_produccion')
+        .select('*')
+        .eq('fecha', filterDate)
+        .order('hora');
+
+      if (!error && data && data.length > 0) {
+        // Merge con localStorage - Supabase es fuente de verdad para esta fecha
+        const localRecords = JSON.parse(localStorage.getItem('prod_registros') || '[]');
+        const otherDays = localRecords.filter(r => r.fecha !== filterDate);
+        const merged = [...otherDays, ...data.map(d => ({
+          ...d,
+          consumo_kg: parseFloat(d.consumo_kg),
+          pt_aprox_kg: parseFloat(d.pt_aprox_kg),
+          rendimiento: parseFloat(d.rendimiento),
+          proyectado_tn: parseFloat(d.proyectado_tn)
+        }))];
+        localStorage.setItem('prod_registros', JSON.stringify(merged));
+      }
+    } catch(e) {
+      console.log('Supabase no disponible, usando localStorage para fecha:', filterDate);
+    }
+  }
+
   const records = getRecords();
   const todayRecs = records.filter(r => r.fecha === filterDate);
 
@@ -1499,6 +1708,18 @@ function refreshAll() {
 }
 
 // ═══════════════ KPIs ═══════════════
+const FRUTA_COLORS = {
+  'MANGO': {main:'#ea580c',bg:'rgba(234,88,12,0.08)',grad:'linear-gradient(90deg,#ea580c,#f97316,#fb923c,#ea580c)'},
+  'FRESA': {main:'#dc2626',bg:'rgba(220,38,38,0.08)',grad:'linear-gradient(90deg,#dc2626,#ef4444,#f87171,#dc2626)'},
+  'PALTA': {main:'#16a34a',bg:'rgba(22,163,74,0.08)',grad:'linear-gradient(90deg,#059669,#16a34a,#22c55e,#059669)'},
+  'ARANDANO': {main:'#7c3aed',bg:'rgba(124,58,237,0.08)',grad:'linear-gradient(90deg,#7c3aed,#8b5cf6,#a78bfa,#7c3aed)'},
+  'PIÑA': {main:'#d97706',bg:'rgba(217,119,6,0.08)',grad:'linear-gradient(90deg,#d97706,#f59e0b,#fbbf24,#d97706)'},
+  'GRANADA': {main:'#be185d',bg:'rgba(190,24,93,0.08)',grad:'linear-gradient(90deg,#be185d,#db2777,#ec4899,#be185d)'}
+};
+const FRUTA_ICONS = {'MANGO':'🥭','FRESA':'🍓','PALTA':'🥑','ARANDANO':'🫐','PIÑA':'🍍','GRANADA':'🍎'};
+
+function getFrutaColor(fruta) { return FRUTA_COLORS[fruta] || {main:'#2563eb',bg:'rgba(37,99,235,0.08)',grad:'linear-gradient(90deg,#2563eb,#3b82f6,#60a5fa,#2563eb)'}; }
+
 function updateKPIs(recs) {
   const totalConsumo = recs.reduce((s, r) => s + (r.consumo_kg || 0), 0);
   const totalPT = recs.reduce((s, r) => s + (r.pt_aprox_kg || 0), 0);
@@ -1516,6 +1737,110 @@ function updateKPIs(recs) {
   } else {
     document.getElementById('kpiBest').innerHTML = '—';
   }
+
+  // Mini desglose por fruta dentro de cada KPI card
+  buildKpiFrutasInline(recs);
+
+  // Avance Meta Diaria POR FRUTA
+  buildAvancePorFruta(recs);
+}
+
+function buildKpiFrutasInline(recs) {
+  const cCont = document.getElementById('kpiConsumoFrutas');
+  const pCont = document.getElementById('kpiPTFrutas');
+  const rCont = document.getElementById('kpiRendFrutas');
+  const hCont = document.getElementById('kpiCountFrutas');
+  if (!cCont) return;
+
+  const frutasMap = {};
+  recs.forEach(r => {
+    const f = r.fruta || 'MANGO';
+    if (!frutasMap[f]) frutasMap[f] = { consumo: 0, pt: 0, horas: 0 };
+    frutasMap[f].consumo += (r.consumo_kg || 0);
+    frutasMap[f].pt += (r.pt_aprox_kg || 0);
+    frutasMap[f].horas++;
+  });
+  const frutas = Object.keys(frutasMap);
+  if (frutas.length <= 1) {
+    [cCont, pCont, rCont, hCont].forEach(c => { if (c) c.innerHTML = ''; });
+    return;
+  }
+
+  let cH = '', pH = '', rH = '', hH = '';
+  frutas.forEach(fruta => {
+    const d = frutasMap[fruta];
+    const rend = d.consumo > 0 ? (d.pt / d.consumo * 100) : 0;
+    const fc = getFrutaColor(fruta);
+    const icon = FRUTA_ICONS[fruta] || '📦';
+    const rendColor = rend >= 50 ? '#16a34a' : rend >= 40 ? '#d97706' : '#ef4444';
+    const row = '<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;font-size:11px"><span style="display:flex;align-items:center;gap:3px"><span style="width:6px;height:6px;border-radius:50%;background:'+fc.main+';display:inline-block"></span>'+icon+' <b style="color:'+fc.main+'">'+fruta+'</b></span>';
+    cH += row + '<span style="font-weight:700">' + formatNum(d.consumo) + ' kg</span></div>';
+    pH += row + '<span style="font-weight:700">' + formatNum(d.pt) + ' kg</span></div>';
+    rH += row + '<span style="font-weight:700;color:'+rendColor+'">' + rend.toFixed(1) + '%</span></div>';
+    hH += row + '<span style="font-weight:700">' + d.horas + ' hrs</span></div>';
+  });
+
+  cCont.innerHTML = cH;
+  pCont.innerHTML = pH;
+  rCont.innerHTML = rH;
+  hCont.innerHTML = hH;
+}
+
+function buildAvancePorFruta(recs) {
+  const container = document.getElementById('avanceFrutasContainer');
+  if (!container) return;
+
+  // Agrupar por fruta y obtener el ultimo proyectado de cada fruta
+  const frutasMap = {};
+  recs.forEach(r => {
+    const f = r.fruta || 'MANGO';
+    if (!frutasMap[f]) frutasMap[f] = { consumo: 0, proyTN: 16 };
+    frutasMap[f].consumo += (r.consumo_kg || 0);
+    if (r.proyectado_tn) frutasMap[f].proyTN = parseFloat(r.proyectado_tn);
+  });
+
+  const frutas = Object.keys(frutasMap);
+  if (frutas.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  let html = '';
+  frutas.forEach(fruta => {
+    const data = frutasMap[fruta];
+    const proyKg = data.proyTN * 1000;
+    const pct = proyKg > 0 ? Math.min(100, Math.round(data.consumo / proyKg * 100)) : 0;
+    const fc = getFrutaColor(fruta);
+    const icon = FRUTA_ICONS[fruta] || '📦';
+    let barGrad;
+    if (pct >= 90) barGrad = fc.grad;
+    else if (pct >= 60) barGrad = 'linear-gradient(90deg,#d97706,#f59e0b,#fbbf24,#d97706)';
+    else barGrad = 'linear-gradient(90deg,#ea580c,#f97316,#fb923c,#ea580c)';
+
+    html += `<div class="card" style="margin-bottom:12px;padding:16px 20px;position:relative;overflow:hidden;border-left:4px solid ${fc.main}">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${fc.grad};background-size:300% 100%;animation:avGradFlow 3s linear infinite"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="avance-pulse" style="background:${fc.main}"></div>
+          <div style="font-weight:800;font-size:14px">${icon} Avance Meta — ${fruta}</div>
+          <span style="font-size:11px;color:var(--text-secondary,#94a3b8);font-weight:600">Proy: ${data.proyTN} TN</span>
+        </div>
+        <div style="font-size:22px;font-weight:900;color:${fc.main}">${pct}%</div>
+      </div>
+      <div class="avance-track">
+        <div class="avance-fill" style="width:${pct}%;background:${barGrad};background-size:300% 100%;animation:avBarFlow 3s linear infinite">
+          <div class="avance-shine"></div>
+          <span class="avance-label">${formatNum(data.consumo)} kg</span>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--text-secondary,#94a3b8)">
+        <span>0 kg</span>
+        <span>Meta: ${formatNum(proyKg)} kg</span>
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
 }
 
 function formatNum(n) {
@@ -1523,7 +1848,125 @@ function formatNum(n) {
 }
 
 // ═══════════════ TABLE ═══════════════
+// Funcion para ordenar horas del turno noche: 19,20,21,22,23,00,01,02...
+function sortNocheHoras(a, b) {
+  const ha = parseInt(a.hora.split(':')[0]);
+  const hb = parseInt(b.hora.split(':')[0]);
+  const oa = ha >= 19 ? ha - 19 : ha + 5;
+  const ob = hb >= 19 ? hb - 19 : hb + 5;
+  return oa - ob;
+}
+
+// Agrupa registros por fruta en orden de aparicion, manteniendo el orden de horas
+function groupByFrutaOrdered(sortedRecs) {
+  const groups = [];
+  let currentFruta = null;
+  let currentGroup = [];
+  sortedRecs.forEach(r => {
+    if (r.fruta !== currentFruta) {
+      if (currentGroup.length > 0) groups.push({ fruta: currentFruta, recs: currentGroup });
+      currentFruta = r.fruta;
+      currentGroup = [r];
+    } else {
+      currentGroup.push(r);
+    }
+  });
+  if (currentGroup.length > 0) groups.push({ fruta: currentFruta, recs: currentGroup });
+  return groups;
+}
+
+// Genera fila de subtotal de fruta
+function buildFruitSubRow(fruta, recsArr, colorRgb) {
+  const fC = recsArr.reduce((s, r) => s + r.consumo_kg, 0);
+  const fPT = recsArr.reduce((s, r) => s + r.pt_aprox_kg, 0);
+  const fRend = fC > 0 ? (fPT / fC * 100).toFixed(1) : 0;
+  const fc = getFrutaColor(fruta);
+  const icon = FRUTA_ICONS[fruta] || '📦';
+  return `<tr style="background:${fc.bg};border-top:1px dashed rgba(${colorRgb},0.3)">
+    <td style="font-weight:700;color:${fc.main};padding-left:20px" colspan="4">${icon} ${fruta} (${recsArr.length} hrs)</td>
+    <td class="num" style="font-weight:700;color:${fc.main}">${formatNum(fC)}</td>
+    <td class="num" style="font-weight:700;color:${fc.main}">${formatNum(fPT)}</td>
+    <td style="font-weight:700;color:${fc.main}">${fRend}%</td>
+    <td colspan="3"></td>
+  </tr>`;
+}
+
+function renderTurnoRows(sortedRecs, turnoLabel, almInicio, almFin, cenaData) {
+  let rows = '';
+  let almRowInserted = false;
+  let cenaRowInserted = false;
+  const frutaGroups = groupByFrutaOrdered(sortedRecs);
+  const multipleFrutas = [...new Set(sortedRecs.map(r => r.fruta))].length > 1;
+
+  frutaGroups.forEach(group => {
+    group.recs.forEach(r => {
+      const horaStart = r.hora.split('-')[0];
+
+      // Almuerzo inline
+      if (almInicio && almFin && !almRowInserted && horaStart >= almInicio) {
+        rows += `<tr class="row-almuerzo">
+          <td style="font-weight:700" colspan="3">🍽️ ALMUERZO (${almInicio} - ${almFin})</td>
+          <td colspan="6" style="color:var(--amber);font-weight:700;font-style:italic">Pausa de almuerzo</td>
+          <td style="text-align:center;white-space:nowrap"><button onclick="abrirEditPausa('almuerzo')" title="Editar" style="background:rgba(245,158,11,0.12);color:#f59e0b;border:none;cursor:pointer;font-size:14px;padding:4px;border-radius:8px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center">✏️</button><button onclick="eliminarPausa('almuerzo')" title="Eliminar" style="background:rgba(239,68,68,0.12);color:#ef4444;border:none;cursor:pointer;font-size:14px;padding:4px;border-radius:8px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;margin-left:4px">🗑️</button></td>
+        </tr>`;
+        almRowInserted = true;
+      }
+
+      // Cena inline: insertar antes de la hora que es >= cena inicio (en orden noche: 00:00 > 23:00)
+      if (cenaData && !cenaRowInserted) {
+        const horaNum = parseInt(horaStart);
+        const cenaNum = parseInt(cenaData.inicio);
+        // En turno noche, horas < 19 son despues de medianoche
+        const horaOrd = horaNum >= 19 ? horaNum - 19 : horaNum + 5;
+        const cenaOrd = cenaNum >= 19 ? cenaNum - 19 : cenaNum + 5;
+        if (horaOrd >= cenaOrd) {
+          rows += `<tr class="row-almuerzo" style="background:rgba(139,92,246,0.06)!important">
+            <td style="font-weight:700;border-left:3px solid #8b5cf6" colspan="3">🌙 CENA (${cenaData.inicio} - ${cenaData.fin})</td>
+            <td colspan="6" style="color:#8b5cf6;font-weight:700;font-style:italic">Pausa de cena</td>
+            <td style="text-align:center;white-space:nowrap"><button onclick="abrirEditPausa('cena')" title="Editar" style="background:rgba(139,92,246,0.12);color:#8b5cf6;border:none;cursor:pointer;font-size:14px;padding:4px;border-radius:8px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center">✏️</button><button onclick="eliminarPausa('cena')" title="Eliminar" style="background:rgba(239,68,68,0.12);color:#ef4444;border:none;cursor:pointer;font-size:14px;padding:4px;border-radius:8px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;margin-left:4px">🗑️</button></td>
+          </tr>`;
+          cenaRowInserted = true;
+        }
+      }
+
+      const rendClass = r.rendimiento >= 45 ? 'badge-green' : r.rendimiento >= 40 ? 'badge-amber' : 'badge-red';
+      const obs = r.observacion || '';
+
+      rows += `<tr>
+        <td style="font-weight:700">${r.hora}</td>
+        <td>${turnoLabel}</td>
+        <td>${r.fruta}</td>
+        <td>${r.linea}</td>
+        <td class="num">${formatNum(r.consumo_kg)}</td>
+        <td class="num">${formatNum(r.pt_aprox_kg)}</td>
+        <td class="num"><span class="badge ${rendClass}">${r.rendimiento}%</span></td>
+        <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.supervisor || '—'}</td>
+        <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${obs}">${obs}</td>
+        <td style="text-align:center;white-space:nowrap"><button onclick="openEditModal('${r.id}')" title="Editar" style="background:rgba(37,99,235,0.12);color:#2563eb;border:none;cursor:pointer;font-size:14px;padding:4px;border-radius:8px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;transition:all 0.2s">✏️</button><button class="delete-btn" onclick="deleteRecord('${r.id}')" title="Eliminar">🗑️</button></td>
+      </tr>`;
+    });
+
+    // Subtotal por fruta despues de cada grupo (solo si hay 2+ frutas)
+    if (multipleFrutas) {
+      rows += buildFruitSubRow(group.fruta, group.recs, group.recs[0].turno === 'NOCHE' ? '139,92,246' : '22,163,74');
+    }
+  });
+
+  // Si la cena no se inserto (todos los registros son antes de la hora de cena), agregarla al final
+  if (cenaData && !cenaRowInserted) {
+    rows += `<tr class="row-almuerzo" style="background:rgba(139,92,246,0.06)!important">
+      <td style="font-weight:700;border-left:3px solid #8b5cf6" colspan="3">🌙 CENA (${cenaData.inicio} - ${cenaData.fin})</td>
+      <td colspan="6" style="color:#8b5cf6;font-weight:700;font-style:italic">Pausa de cena</td>
+      <td style="text-align:center;white-space:nowrap"><button onclick="abrirEditPausa('cena')" title="Editar" style="background:rgba(139,92,246,0.12);color:#8b5cf6;border:none;cursor:pointer;font-size:14px;padding:4px;border-radius:8px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center">✏️</button><button onclick="eliminarPausa('cena')" title="Eliminar" style="background:rgba(239,68,68,0.12);color:#ef4444;border:none;cursor:pointer;font-size:14px;padding:4px;border-radius:8px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;margin-left:4px">🗑️</button></td>
+    </tr>`;
+  }
+
+  return { rows, almInserted: almRowInserted };
+}
+
 function updateTable(recs) {
+  // Filtrar registros sin hora (datos corruptos)
+  recs = recs.filter(r => r.hora && r.hora.trim() !== '');
   const tbody = document.getElementById('historyBody');
   const tfoot = document.getElementById('historyFoot');
   const empty = document.getElementById('emptyState');
@@ -1539,61 +1982,29 @@ function updateTable(recs) {
   empty.style.display = 'none';
   document.querySelector('.table-wrap').style.display = 'block';
 
-  // Sort by hora
-  const sorted = [...recs].sort((a, b) => a.hora.localeCompare(b.hora));
-
-  // Determine almuerzo time range from first record that has it
+  // Determine almuerzo (desde registros o localStorage)
   let almInicio = '', almFin = '';
-  for (const r of sorted) {
-    if (r.almuerzo_inicio && r.almuerzo_fin) {
-      almInicio = r.almuerzo_inicio;
-      almFin = r.almuerzo_fin;
-      break;
-    }
+  for (const r of recs) {
+    if (r.almuerzo_inicio && r.almuerzo_fin) { almInicio = r.almuerzo_inicio; almFin = r.almuerzo_fin; break; }
+  }
+  if (!almInicio) {
+    const fecha = document.getElementById('filterDate').value;
+    const almData = JSON.parse(localStorage.getItem('almuerzo_' + fecha) || 'null');
+    if (almData && almData.inicio && almData.fin) { almInicio = almData.inicio; almFin = almData.fin; }
   }
 
-  // Separar registros por turno
-  const diaRecs = sorted.filter(r => r.turno !== 'NOCHE');
-  const nocheRecs = sorted.filter(r => r.turno === 'NOCHE');
+  const diaRecs = [...recs.filter(r => r.turno !== 'NOCHE')].sort((a, b) => a.hora.localeCompare(b.hora));
+  const nocheRecs = [...recs.filter(r => r.turno === 'NOCHE')].sort(sortNocheHoras);
 
   let rows = '';
-  let almRowInserted = false;
 
-  // Renderizar filas de turno DIA
-  diaRecs.forEach((r) => {
-    const horaStart = r.hora.split('-')[0];
-    const rendClass = r.rendimiento >= 45 ? 'badge-green' : r.rendimiento >= 40 ? 'badge-amber' : 'badge-red';
-    const obs = r.observacion || '';
+  // ── TURNO DIA ──
+  const diaLabel = '<span class="badge" style="background:rgba(22,163,74,0.12);color:#4ade80">DIA</span>';
+  const diaResult = renderTurnoRows(diaRecs, diaLabel, almInicio, almFin, null);
+  rows += diaResult.rows;
 
-    if (almInicio && almFin && !almRowInserted && horaStart >= almInicio) {
-      rows += `<tr class="row-almuerzo">
-        <td style="font-weight:700" colspan="3">🍽️ ALMUERZO (${almInicio} - ${almFin})</td>
-        <td colspan="7" style="color:var(--amber);font-weight:700;font-style:italic">Pausa de almuerzo</td>
-      </tr>`;
-      almRowInserted = true;
-    }
-
-    const turnoLabel = '<span class="badge" style="background:rgba(22,163,74,0.12);color:#4ade80">DIA</span>';
-    rows += `<tr>
-      <td style="font-weight:700">${r.hora}</td>
-      <td>${turnoLabel}</td>
-      <td>${r.fruta}</td>
-      <td>${r.linea}</td>
-      <td class="num">${formatNum(r.consumo_kg)}</td>
-      <td class="num">${formatNum(r.pt_aprox_kg)}</td>
-      <td class="num"><span class="badge ${rendClass}">${r.rendimiento}%</span></td>
-      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.supervisor || '—'}</td>
-      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${obs}">${obs}</td>
-      <td style="text-align:center;white-space:nowrap"><button onclick="openEditModal('${r.id}')" title="Editar" style="background:rgba(37,99,235,0.12);color:#2563eb;border:none;cursor:pointer;font-size:14px;padding:4px;border-radius:8px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;transition:all 0.2s">✏️</button><button class="delete-btn" onclick="deleteRecord('${r.id}')" title="Eliminar">🗑️</button></td>
-    </tr>`;
-  });
-
-  // Almuerzo al final si no se inserto
-  if (almInicio && almFin && !almRowInserted) {
-    rows += `<tr class="row-almuerzo">
-      <td style="font-weight:700" colspan="3">🍽️ ALMUERZO (${almInicio} - ${almFin})</td>
-      <td colspan="7" style="color:var(--amber);font-weight:700;font-style:italic">Pausa de almuerzo</td>
-    </tr>`;
+  if (almInicio && almFin && !diaResult.almInserted && diaRecs.length > 0) {
+    rows += `<tr class="row-almuerzo"><td style="font-weight:700" colspan="3">🍽️ ALMUERZO (${almInicio} - ${almFin})</td><td colspan="6" style="color:var(--amber);font-weight:700;font-style:italic">Pausa de almuerzo</td><td style="text-align:center;white-space:nowrap"><button onclick="abrirEditPausa('almuerzo')" title="Editar" style="background:rgba(245,158,11,0.12);color:#f59e0b;border:none;cursor:pointer;font-size:14px;padding:4px;border-radius:8px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center">✏️</button><button onclick="eliminarPausa('almuerzo')" title="Eliminar" style="background:rgba(239,68,68,0.12);color:#ef4444;border:none;cursor:pointer;font-size:14px;padding:4px;border-radius:8px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;margin-left:4px">🗑️</button></td></tr>`;
   }
 
   // SUBTOTAL DIA
@@ -1610,34 +2021,13 @@ function updateTable(recs) {
     </tr>`;
   }
 
-  // Renderizar filas de turno NOCHE
-  nocheRecs.forEach((r) => {
-    const rendClass = r.rendimiento >= 45 ? 'badge-green' : r.rendimiento >= 40 ? 'badge-amber' : 'badge-red';
-    const obs = r.observacion || '';
-    const turnoLabel = '<span class="badge" style="background:rgba(139,92,246,0.12);color:#8b5cf6">NOCHE</span>';
-    rows += `<tr>
-      <td style="font-weight:700">${r.hora}</td>
-      <td>${turnoLabel}</td>
-      <td>${r.fruta}</td>
-      <td>${r.linea}</td>
-      <td class="num">${formatNum(r.consumo_kg)}</td>
-      <td class="num">${formatNum(r.pt_aprox_kg)}</td>
-      <td class="num"><span class="badge ${rendClass}">${r.rendimiento}%</span></td>
-      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.supervisor || '—'}</td>
-      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${obs}">${obs}</td>
-      <td style="text-align:center;white-space:nowrap"><button onclick="openEditModal('${r.id}')" title="Editar" style="background:rgba(37,99,235,0.12);color:#2563eb;border:none;cursor:pointer;font-size:14px;padding:4px;border-radius:8px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;transition:all 0.2s">✏️</button><button class="delete-btn" onclick="deleteRecord('${r.id}')" title="Eliminar">🗑️</button></td>
-    </tr>`;
-  });
-
-  // Cena row
+  // ── TURNO NOCHE ──
+  const nocheLabel = '<span class="badge" style="background:rgba(139,92,246,0.12);color:#8b5cf6">NOCHE</span>';
   const fecha = document.getElementById('filterDate').value;
   const cenaData = JSON.parse(localStorage.getItem('cena_' + fecha) || 'null');
-  if (cenaData && cenaData.inicio && cenaData.fin) {
-    rows += `<tr class="row-almuerzo" style="background:rgba(139,92,246,0.06)!important">
-      <td style="font-weight:700;border-left:3px solid #8b5cf6" colspan="3">🌙 CENA (${cenaData.inicio} - ${cenaData.fin})</td>
-      <td colspan="7" style="color:#8b5cf6;font-weight:700;font-style:italic">Pausa de cena</td>
-    </tr>`;
-  }
+  const cenaValid = (cenaData && cenaData.inicio && cenaData.fin) ? cenaData : null;
+  const nocheResult = renderTurnoRows(nocheRecs, nocheLabel, '', '', cenaValid);
+  rows += nocheResult.rows;
 
   // SUBTOTAL NOCHE
   if (nocheRecs.length > 0) {
@@ -1669,6 +2059,41 @@ function updateTable(recs) {
   </tr>`;
 }
 
+// ═══════════════ CHART FILTERS ═══════════════
+let chartFilterTurno = 'AMBOS';
+let chartFilterFruta = 'TODAS';
+
+function toggleChartFilter(btn) {
+  const filterType = btn.dataset.filter;
+  const value = btn.dataset.value;
+  // Desactivar hermanos del mismo tipo
+  document.querySelectorAll('.chart-filter-chip[data-filter="'+filterType+'"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (filterType === 'turno') chartFilterTurno = value;
+  if (filterType === 'fruta') chartFilterFruta = value;
+  rebuildCharts();
+}
+
+// Objetivos de rendimiento por fruta (editables)
+const REND_OBJETIVOS = {
+  'MANGO': 50, 'FRESA': 85, 'PALTA': 70, 'ARANDANO': 90,
+  'PIÑA': 55, 'GRANADA': 45
+};
+function getRendimientoObjetivo(fruta) {
+  return REND_OBJETIVOS[fruta] || 50;
+}
+
+function applyChartFilters(recs) {
+  let filtered = recs;
+  if (chartFilterTurno !== 'AMBOS') {
+    filtered = filtered.filter(r => r.turno === chartFilterTurno);
+  }
+  if (chartFilterFruta !== 'TODAS') {
+    filtered = filtered.filter(r => r.fruta === chartFilterFruta);
+  }
+  return filtered;
+}
+
 // ═══════════════ CHARTS ═══════════════
 let chartBar = null, chartLine = null, chartAcumulado = null, chartTurnos = null;
 
@@ -1677,17 +2102,34 @@ function rebuildCharts(recs) {
     const filterDate = document.getElementById('filterDate').value;
     recs = getRecords().filter(r => r.fecha === filterDate);
   }
+  // Aplicar filtros de turno y fruta
+  recs = applyChartFilters(recs);
 
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
   const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
   const textColor = isLight ? '#64748b' : '#94a3b8';
 
-  const sorted = [...recs].sort((a, b) => a.hora.localeCompare(b.hora));
+  // Ordenar: DIA primero (orden normal), NOCHE despues (19,20..23,00,01..)
+  const diaC = recs.filter(r => r.turno !== 'NOCHE').sort((a, b) => a.hora.localeCompare(b.hora));
+  const nocheC = recs.filter(r => r.turno === 'NOCHE').sort(sortNocheHoras);
+  const sorted = [...diaC, ...nocheC];
   const labels = sorted.map(r => r.hora.split('-')[0]);
 
-  // ── BAR CHART: Consumo vs PT ──
+  // ── BAR CHART: Consumo vs PT con colores por turno/fruta ──
   if (chartBar) chartBar.destroy();
   const ctxBar = document.getElementById('chartBarras').getContext('2d');
+
+  // Colores de barra por fruta
+  const barBgConsumo = sorted.map(r => {
+    const fc = getFrutaColor(r.fruta);
+    return fc.main + 'B3'; // ~70% opacity
+  });
+  const barBorderConsumo = sorted.map(r => getFrutaColor(r.fruta).main);
+  const barBgPT = sorted.map(r => {
+    return r.turno === 'NOCHE' ? 'rgba(139,92,246,0.55)' : 'rgba(37,99,235,0.55)';
+  });
+  const barBorderPT = sorted.map(r => r.turno === 'NOCHE' ? '#8b5cf6' : '#2563eb');
+
   chartBar = new Chart(ctxBar, {
     type: 'bar',
     data: {
@@ -1696,8 +2138,8 @@ function rebuildCharts(recs) {
         {
           label: 'Consumo MP (kg)',
           data: sorted.map(r => r.consumo_kg),
-          backgroundColor: 'rgba(22,163,74,0.7)',
-          borderColor: '#16a34a',
+          backgroundColor: barBgConsumo,
+          borderColor: barBorderConsumo,
           borderWidth: 1,
           borderRadius: 6,
           barPercentage: 0.7,
@@ -1706,8 +2148,8 @@ function rebuildCharts(recs) {
         {
           label: 'P. Terminado (kg)',
           data: sorted.map(r => r.pt_aprox_kg),
-          backgroundColor: 'rgba(234,88,12,0.7)',
-          borderColor: '#ea580c',
+          backgroundColor: barBgPT,
+          borderColor: barBorderPT,
           borderWidth: 1,
           borderRadius: 6,
           barPercentage: 0.7,
@@ -1720,21 +2162,34 @@ function rebuildCharts(recs) {
       maintainAspectRatio: false,
       plugins: {
         legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600', size: 11 } } },
-        datalabels: { display: false }
+        datalabels: { display: false },
+        tooltip: {
+          callbacks: {
+            title: function(items) {
+              const i = items[0].dataIndex;
+              const r = sorted[i];
+              return r.hora + ' — ' + r.fruta + ' (' + r.turno + ')';
+            }
+          }
+        }
       },
       scales: {
-        x: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } },
+        x: { ticks: { color: function(ctx) { const r = sorted[ctx.index]; return r && r.turno === 'NOCHE' ? '#8b5cf6' : textColor; }, font: { size: 10, weight: function(ctx) { const r = sorted[ctx.index]; return r && r.turno === 'NOCHE' ? '700' : '400'; } } }, grid: { color: gridColor } },
         y: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor }, beginAtZero: true }
       }
     },
     plugins: [ChartDataLabels]
   });
 
-  // ── LINE CHART: Rendimiento % ──
+  // ── LINE CHART: Rendimiento % con colores por fruta ──
   if (chartLine) chartLine.destroy();
   const ctxLine = document.getElementById('chartRendimiento').getContext('2d');
   const rendData = sorted.map(r => r.rendimiento);
-  const pointColors = rendData.map(v => v >= 45 ? '#16a34a' : v >= 40 ? '#f59e0b' : '#ef4444');
+  const pointColors = sorted.map(r => {
+    const fc = getFrutaColor(r.fruta);
+    return fc.main;
+  });
+  const pointBorders = sorted.map(r => r.turno === 'NOCHE' ? '#8b5cf6' : '#fff');
 
   chartLine = new Chart(ctxLine, {
     type: 'line',
@@ -1748,15 +2203,22 @@ function rebuildCharts(recs) {
           backgroundColor: 'rgba(22,163,74,0.1)',
           fill: true,
           tension: 0.3,
-          pointRadius: 6,
+          pointRadius: 7,
           pointBackgroundColor: pointColors,
-          pointBorderColor: pointColors,
-          pointBorderWidth: 2,
-          borderWidth: 2.5
+          pointBorderColor: pointBorders,
+          pointBorderWidth: 2.5,
+          borderWidth: 2.5,
+          segment: {
+            borderColor: function(ctx) {
+              const i = ctx.p0DataIndex;
+              const r = sorted[i];
+              return r && r.turno === 'NOCHE' ? 'rgba(139,92,246,0.6)' : '#16a34a';
+            }
+          }
         },
         {
-          label: 'Objetivo 50%',
-          data: sorted.map(() => 50),
+          label: 'Objetivo Rend. %',
+          data: sorted.map(r => getRendimientoObjetivo(r.fruta)),
           borderColor: 'rgba(239,68,68,0.5)',
           borderDash: [8, 4],
           borderWidth: 2,
@@ -1773,19 +2235,37 @@ function rebuildCharts(recs) {
         datalabels: {
           align: 'top',
           color: function(ctx) {
-            const v = ctx.dataset.data[ctx.dataIndex];
             if (ctx.datasetIndex !== 0) return 'transparent';
+            const r = sorted[ctx.dataIndex];
+            if (r) return getFrutaColor(r.fruta).main;
+            const v = ctx.dataset.data[ctx.dataIndex];
             return v >= 45 ? '#16a34a' : v >= 40 ? '#f59e0b' : '#ef4444';
           },
-          font: { weight: '800', size: 11, family: 'Plus Jakarta Sans' },
+          font: { weight: '800', size: 9, family: 'Plus Jakarta Sans' },
           formatter: function(value, ctx) {
             if (ctx.datasetIndex !== 0) return '';
-            return value + '%';
+            if (Number.isInteger(value)) return value + '%';
+            return parseFloat(value).toFixed(1) + '%';
+          }
+        },
+        tooltip: {
+          callbacks: {
+            title: function(items) {
+              const i = items[0].dataIndex;
+              const r = sorted[i];
+              if (!r) return '';
+              const icon = FRUTA_ICONS[r.fruta] || '';
+              return r.hora + ' — ' + icon + ' ' + r.fruta + ' (' + r.turno + ')';
+            },
+            label: function(item) {
+              if (item.datasetIndex === 1) return 'Objetivo: ' + item.raw + '%';
+              return 'Rendimiento: ' + item.raw + '%';
+            }
           }
         }
       },
       scales: {
-        x: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } },
+        x: { ticks: { color: function(ctx) { const r = sorted[ctx.index]; return r && r.turno === 'NOCHE' ? '#8b5cf6' : textColor; }, font: { size: 10 } }, grid: { color: gridColor } },
         y: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor }, beginAtZero: true, max: 100 }
       }
     },
@@ -2015,8 +2495,16 @@ async function loadFromSupabase() {
   // Load from Supabase (cloud sync)
   loadFromSupabase();
 
-  // Check Supabase connection status indicator
-  checkSupabaseConnection();
+  // Check Supabase connection status indicator (con reintentos)
+  setTimeout(async () => {
+    const ok = await checkSupabaseConnection();
+    if (!ok) {
+      setTimeout(async () => {
+        const ok2 = await checkSupabaseConnection();
+        if (!ok2) setTimeout(checkSupabaseConnection, 5000);
+      }, 3000);
+    }
+  }, 1500);
 })();
 </script>
 </body>
