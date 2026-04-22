@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Registro de Produccion — FTP Planta</title>
+<title>Registro de Acondicionado — FTP Planta</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -450,7 +450,34 @@ body {
 
 /* ═══════════════ CHARTS ═══════════════ */
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
-.chart-wrap { height: 280px; position: relative; }
+.chart-wrap { height: 320px; position: relative; }
+/* Acumulado full-width y Comparativo Turnos: más altura para datalabels del acumulado */
+#chartAcumulado, #chartTurnos { min-height: 280px; }
+
+/* ═══════════════ VISTA MOVIL AUTOMATICA (<=640px) ═══════════════
+   Detecta automaticamente celular/tablet pequena y aplica layout compacto
+   optimizado: 1 columna, graficos mas bajos, tabla densa, form 2 cols. */
+@media (max-width: 640px) {
+  .content { padding: 10px !important; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+  .kpi-card { padding: 10px !important; }
+  .kpi-value { font-size: 20px !important; }
+  .kpi-label { font-size: 9px !important; }
+  .kpi-icon { font-size: 18px !important; }
+  .form-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  .grid-2 { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .chart-wrap { height: 230px !important; }
+  #chartAcumulado, #chartTurnos { min-height: 230px !important; }
+  .card { padding: 12px !important; border-radius: 12px !important; margin-bottom: 12px !important; }
+  .card-title { font-size: 13px !important; }
+  .data-table { font-size: 11px !important; }
+  .data-table th, .data-table td { padding: 6px 8px !important; }
+  .chart-filter-chip { font-size: 10px !important; padding: 4px 8px !important; }
+  #chartsPorFruta > div { margin-bottom: 14px !important; padding: 12px !important; }
+  .topbar-dev-signature { display: none !important; }
+  .topbar-title { font-size: 15px !important; }
+  .topbar-subtitle { font-size: 9px !important; }
+}
 
 /* ═══════════════ TABLE ═══════════════ */
 .table-controls {
@@ -680,10 +707,10 @@ body {
 
 <!-- TOP BAR -->
 <div class="topbar">
-  <a href="index.html" class="topbar-back">&larr; Portal</a>
+  <a href="../../portal.html" class="topbar-back">&larr; Portal</a>
   <img src="LOGO.png" class="dash-logo" alt="FTP Logo">
   <div class="topbar-title-wrap">
-    <div class="topbar-title">Registro de Produccion</div>
+    <div class="topbar-title">Registro de Acondicionado</div>
     <div class="topbar-subtitle">Frutos Tropicales Peru Export S.A.C.</div>
   </div>
   <div class="topbar-right">
@@ -922,7 +949,14 @@ body {
   <div id="avanceFrutasContainer"></div>
 
   <!-- CHART FILTERS -->
-  <div class="card" style="padding:12px 16px;margin-bottom:12px">
+  <div class="card" style="padding:14px 18px;margin-bottom:12px">
+    <!-- FILA 1: MODO DE VISTA -->
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;padding-bottom:10px;border-bottom:1px dashed var(--border)">
+      <span style="font-size:12px;font-weight:800;color:var(--muted);margin-right:4px">MODO:</span>
+      <button class="chart-filter-chip active" data-filter="modo" data-value="CONSOLIDADO" onclick="toggleChartFilter(this)">📊 Consolidado</button>
+      <button class="chart-filter-chip" data-filter="modo" data-value="POR_FRUTA" onclick="toggleChartFilter(this)">🍎 Separado por Fruta</button>
+    </div>
+    <!-- FILA 2: TURNO Y FRUTA -->
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <span style="font-size:12px;font-weight:800;color:var(--muted);margin-right:4px">TURNO:</span>
       <button class="chart-filter-chip active" data-filter="turno" data-value="AMBOS" onclick="toggleChartFilter(this)">Ambos</button>
@@ -940,28 +974,34 @@ body {
     </div>
   </div>
 
-  <!-- CHARTS ROW 1 -->
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">📊 Consumo vs PT por Hora</div>
-      <div class="chart-wrap"><canvas id="chartBarras"></canvas></div>
+  <!-- MODO CONSOLIDADO: 3 gráficos consolidados + comparativo de turnos -->
+  <div id="chartsConsolidado">
+    <!-- CHARTS ROW 1 -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">📊 Consumo vs PT por Hora</div>
+        <div class="chart-wrap"><canvas id="chartBarras"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">👥 Productividad por Hora <span style="font-size:11px;color:var(--muted);font-weight:500">(kg consumidos / N° personas)</span></div>
+        <div class="chart-wrap"><canvas id="chartProductividad"></canvas></div>
+      </div>
     </div>
-    <div class="card">
-      <div class="card-title">👥 Productividad por Hora <span style="font-size:11px;color:var(--muted);font-weight:500">(kg consumidos / N° personas)</span></div>
-      <div class="chart-wrap"><canvas id="chartProductividad"></canvas></div>
-    </div>
-  </div>
 
-  <!-- CHARTS ROW 2 -->
-  <div class="grid-2">
-    <div class="card">
+    <!-- CHART FILA: Acumulado (ancho completo cuando chartTurnos está abajo) -->
+    <div class="card" style="margin-bottom:18px">
       <div class="card-title">📊 Produccion Acumulada por Hora</div>
       <div class="chart-wrap"><canvas id="chartAcumulado"></canvas></div>
     </div>
-    <div class="card">
-      <div class="card-title">📊 Comparativo Turnos Dia vs Noche</div>
-      <div class="chart-wrap"><canvas id="chartTurnos"></canvas></div>
-    </div>
+  </div>
+
+  <!-- MODO POR FRUTA: contenedor dinámico con secciones separadas por fruta -->
+  <div id="chartsPorFruta" style="display:none"></div>
+
+  <!-- COMPARATIVO TURNOS DIA vs NOCHE (siempre visible) -->
+  <div class="card">
+    <div class="card-title">📊 Comparativo Turnos Dia vs Noche</div>
+    <div class="chart-wrap"><canvas id="chartTurnos"></canvas></div>
   </div>
 
   <!-- HISTORY TABLE -->
@@ -1008,7 +1048,7 @@ body {
 <div id="editModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:1000;justify-content:center;align-items:center;padding:20px">
   <div style="background:var(--surface-solid);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:modalIn 0.3s cubic-bezier(0.16,1,0.3,1)">
     <style>@keyframes modalIn{from{transform:scale(0.9) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}</style>
-    <div style="font-size:18px;font-weight:900;margin-bottom:20px;display:flex;align-items:center;gap:8px">🔧 Editar Registro de Produccion</div>
+    <div style="font-size:18px;font-weight:900;margin-bottom:20px;display:flex;align-items:center;gap:8px">🔧 Editar Registro de Acondicionado</div>
     <div class="form-grid" style="grid-template-columns:1fr 1fr;">
       <div class="form-group"><label>Fecha</label><input type="date" id="mFecha"></div>
       <div class="form-group"><label>Turno</label><select id="mTurno"><option value="DIA">TURNO DIA</option><option value="NOCHE">TURNO NOCHE</option></select></div>
@@ -1779,20 +1819,28 @@ function showToast(msg, isError) {
 async function refreshAll() {
   const filterDate = document.getElementById('filterDate').value;
 
-  // Primero intentar cargar datos de Supabase para la fecha seleccionada
+  // Cargar datos de Supabase para la fecha seleccionada
   if (typeof supabaseClient !== 'undefined' && supabaseClient) {
     try {
-      const { data, error } = await supabaseClient
+      // Also load the week of the selected date so Comparativo Turnos chart has data
+      const refDate = new Date(filterDate + 'T12:00:00');
+      const dayOfWeek = refDate.getDay();
+      const mondayDate = new Date(refDate);
+      mondayDate.setDate(mondayDate.getDate() + (dayOfWeek === 0 ? -6 : 1 - dayOfWeek));
+      const mondayStr = mondayDate.getFullYear() + '-' + String(mondayDate.getMonth()+1).padStart(2,'0') + '-' + String(mondayDate.getDate()).padStart(2,'0');
+
+      const { data: weekData } = await supabaseClient
         .from('registro_produccion')
         .select('*')
-        .eq('fecha', filterDate)
+        .gte('fecha', mondayStr)
+        .order('fecha')
         .order('hora');
 
-      if (!error && data && data.length > 0) {
-        // Merge con localStorage - Supabase es fuente de verdad para esta fecha
+      if (weekData && weekData.length > 0) {
         const localRecords = JSON.parse(localStorage.getItem('prod_registros') || '[]');
-        const otherDays = localRecords.filter(r => r.fecha !== filterDate);
-        const merged = [...otherDays, ...data.map(d => ({
+        const weekDates = new Set(weekData.map(d => d.fecha));
+        const otherDays = localRecords.filter(r => !weekDates.has(r.fecha));
+        const merged = [...otherDays, ...weekData.map(d => ({
           ...d,
           consumo_kg: parseFloat(d.consumo_kg),
           pt_aprox_kg: parseFloat(d.pt_aprox_kg),
@@ -2195,6 +2243,7 @@ function updateTable(recs) {
 // ═══════════════ CHART FILTERS ═══════════════
 let chartFilterTurno = 'AMBOS';
 let chartFilterFruta = 'TODAS';
+let chartMode = 'CONSOLIDADO'; // CONSOLIDADO | POR_FRUTA
 
 function toggleChartFilter(btn) {
   const filterType = btn.dataset.filter;
@@ -2204,8 +2253,28 @@ function toggleChartFilter(btn) {
   btn.classList.add('active');
   if (filterType === 'turno') chartFilterTurno = value;
   if (filterType === 'fruta') chartFilterFruta = value;
+  if (filterType === 'modo') {
+    chartMode = value;
+    aplicarModoVista();
+  }
   rebuildCharts();
 }
+
+// Cambia visibilidad entre modo Consolidado y modo Por Fruta
+function aplicarModoVista() {
+  const cons = document.getElementById('chartsConsolidado');
+  const pf = document.getElementById('chartsPorFruta');
+  if (!cons || !pf) return;
+  if (chartMode === 'POR_FRUTA') {
+    cons.style.display = 'none';
+    pf.style.display = 'block';
+  } else {
+    cons.style.display = 'block';
+    pf.style.display = 'none';
+    pf.innerHTML = '';
+  }
+}
+
 
 // Objetivos de rendimiento por fruta (editables)
 const REND_OBJETIVOS = {
@@ -2229,201 +2298,179 @@ function applyChartFilters(recs) {
 
 // ═══════════════ CHARTS ═══════════════
 let chartBar = null, chartLine = null, chartAcumulado = null, chartTurnos = null;
+// Instancias dinámicas de gráficos en modo POR_FRUTA (para poder destruirlas al re-render)
+let chartsPorFrutaInstances = [];
 
-function rebuildCharts(recs) {
-  if (!recs) {
-    const filterDate = document.getElementById('filterDate').value;
-    recs = getRecords().filter(r => r.fecha === filterDate);
-  }
-  // Aplicar filtros de turno y fruta
-  recs = applyChartFilters(recs);
-
-  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-  const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
-  const textColor = isLight ? '#64748b' : '#94a3b8';
-
-  // Ordenar: DIA primero (orden normal), NOCHE despues (19,20..23,00,01..)
+// Helper: ordena registros DIA primero (orden normal) y NOCHE luego (19→23,00→04)
+function sortRecsForCharts(recs) {
   const diaC = recs.filter(r => r.turno !== 'NOCHE').sort((a, b) => a.hora.localeCompare(b.hora));
   const nocheC = recs.filter(r => r.turno === 'NOCHE').sort(sortNocheHoras);
-  const sorted = [...diaC, ...nocheC];
-  const labels = sorted.map(r => r.hora.split('-')[0]);
+  return [...diaC, ...nocheC];
+}
 
-  // ── BAR CHART: Consumo vs PT con colores por turno/fruta ──
-  if (chartBar) chartBar.destroy();
-  const ctxBar = document.getElementById('chartBarras').getContext('2d');
+// Helper: temas del tema claro/oscuro para los ejes
+function getChartTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  return {
+    gridColor: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)',
+    textColor: isLight ? '#64748b' : '#94a3b8'
+  };
+}
 
-  // Colores de barra por fruta
-  const barBgConsumo = sorted.map(r => {
-    const fc = getFrutaColor(r.fruta);
-    return fc.main + 'B3'; // ~70% opacity
-  });
+// Detecta si está en vista móvil — detección automática por ancho de ventana
+function isMobileView() {
+  return window.innerWidth <= 640;
+}
+
+// Rebuild de charts con debounce cuando cambia el tamaño de la ventana.
+// Permite que el layout y datalabels se ajusten automaticamente cuando
+// el usuario pasa de escritorio a tableta/celular (o rota el telefono).
+let _resizeDebounce = null;
+let _lastMobileState = isMobileView();
+window.addEventListener('resize', function() {
+  clearTimeout(_resizeDebounce);
+  _resizeDebounce = setTimeout(function() {
+    const nowMobile = isMobileView();
+    // Solo rebuild cuando cambia el modo (evita rebuilds innecesarios)
+    if (nowMobile !== _lastMobileState) {
+      _lastMobileState = nowMobile;
+      if (typeof rebuildCharts === 'function') rebuildCharts();
+    }
+  }, 200);
+});
+
+// Config compartida de datalabels: evita amontonamiento con display:'auto' y clamp:true.
+// En móvil los datalabels se ocultan por defecto (el tooltip los reemplaza).
+function getDatalabelsConfig(textColor, opts) {
+  opts = opts || {};
+  const mobile = isMobileView();
+  return {
+    display: mobile ? false : (opts.display || 'auto'),
+    clamp: true,
+    clip: false,
+    anchor: opts.anchor || 'end',
+    align: opts.align || 'top',
+    offset: opts.offset != null ? opts.offset : 2,
+    color: opts.color || textColor,
+    font: { size: opts.size || 9, weight: '700', family: 'Plus Jakarta Sans' },
+    formatter: opts.formatter || function(v) { return v > 0 ? v.toLocaleString('es-PE') : ''; }
+  };
+}
+
+// Config común de opciones responsivas para móvil vs desktop
+function getResponsiveTicks(textColor) {
+  const mobile = isMobileView();
+  return {
+    color: textColor,
+    font: { size: mobile ? 9 : 10 },
+    maxRotation: mobile ? 60 : 0,
+    minRotation: 0,
+    autoSkip: true,
+    autoSkipPadding: mobile ? 6 : 4
+  };
+}
+
+// ── Gráfico: Consumo vs PT por Hora ──
+function buildChartBarras(ctx, sorted, labels, theme) {
+  const mobile = isMobileView();
+  const barBgConsumo = sorted.map(r => getFrutaColor(r.fruta).main + 'B3');
   const barBorderConsumo = sorted.map(r => getFrutaColor(r.fruta).main);
-  const barBgPT = sorted.map(r => {
-    return r.turno === 'NOCHE' ? 'rgba(139,92,246,0.55)' : 'rgba(37,99,235,0.55)';
-  });
+  const barBgPT = sorted.map(r => r.turno === 'NOCHE' ? 'rgba(139,92,246,0.55)' : 'rgba(37,99,235,0.55)');
   const barBorderPT = sorted.map(r => r.turno === 'NOCHE' ? '#8b5cf6' : '#2563eb');
-
-  chartBar = new Chart(ctxBar, {
+  return new Chart(ctx, {
     type: 'bar',
     data: {
       labels: labels,
       datasets: [
-        {
-          label: 'Consumo MP (kg)',
-          data: sorted.map(r => r.consumo_kg),
-          backgroundColor: barBgConsumo,
-          borderColor: barBorderConsumo,
-          borderWidth: 1,
-          borderRadius: 6,
-          barPercentage: 0.7,
-          categoryPercentage: 0.8
-        },
-        {
-          label: 'P. Terminado (kg)',
-          data: sorted.map(r => r.pt_aprox_kg),
-          backgroundColor: barBgPT,
-          borderColor: barBorderPT,
-          borderWidth: 1,
-          borderRadius: 6,
-          barPercentage: 0.7,
-          categoryPercentage: 0.8
-        }
+        { label: 'Consumo MP (kg)', data: sorted.map(r => r.consumo_kg), backgroundColor: barBgConsumo, borderColor: barBorderConsumo, borderWidth: 1, borderRadius: 6, barPercentage: 0.72, categoryPercentage: 0.82 },
+        { label: 'P. Terminado (kg)', data: sorted.map(r => r.pt_aprox_kg), backgroundColor: barBgPT, borderColor: barBorderPT, borderWidth: 1, borderRadius: 6, barPercentage: 0.72, categoryPercentage: 0.82 }
       ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      layout: { padding: { top: 18 } },
       plugins: {
-        legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600', size: 11 } } },
-        datalabels: {
-          anchor: 'end', align: 'top', color: textColor, font: { size: 9, weight: '700', family: 'Plus Jakarta Sans' },
-          formatter: function(v) { return v > 0 ? v.toLocaleString('es-PE') : ''; }
-        },
+        legend: { position: mobile ? 'bottom' : 'top', labels: { color: theme.textColor, font: { family: 'Plus Jakarta Sans', weight: '600', size: mobile ? 10 : 11 }, boxWidth: mobile ? 10 : 14, padding: mobile ? 8 : 12 } },
+        datalabels: getDatalabelsConfig(theme.textColor, { size: 8, offset: 3 }),
         tooltip: {
           callbacks: {
-            title: function(items) {
-              const i = items[0].dataIndex;
-              const r = sorted[i];
-              return r.hora + ' — ' + r.fruta + ' (' + r.turno + ')';
-            }
+            title: function(items) { const r = sorted[items[0].dataIndex]; return r.hora + ' — ' + r.fruta + ' (' + r.turno + ')'; }
           }
         }
       },
       scales: {
-        x: { ticks: { color: function(ctx) { const r = sorted[ctx.index]; return r && r.turno === 'NOCHE' ? '#8b5cf6' : textColor; }, font: { size: 10, weight: function(ctx) { const r = sorted[ctx.index]; return r && r.turno === 'NOCHE' ? '700' : '400'; } } }, grid: { color: gridColor } },
-        y: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor }, beginAtZero: true }
+        x: { ticks: Object.assign(getResponsiveTicks(theme.textColor), { color: function(c) { const r = sorted[c.index]; return r && r.turno === 'NOCHE' ? '#8b5cf6' : theme.textColor; } }), grid: { color: theme.gridColor } },
+        y: { ticks: { color: theme.textColor, font: { size: mobile ? 9 : 10 } }, grid: { color: theme.gridColor }, beginAtZero: true }
       }
     },
     plugins: [ChartDataLabels]
   });
+}
 
-  // ── PRODUCTIVIDAD CHART: kg consumidos / N° personas por hora ──
-  if (chartLine) chartLine.destroy();
-  const ctxLine = document.getElementById('chartProductividad').getContext('2d');
-  const prodData = sorted.map(r => {
-    const p = r.personas || 0;
-    return p > 0 ? parseFloat((r.consumo_kg / p).toFixed(1)) : 0;
-  });
-  const pointColors = sorted.map(r => {
-    const fc = getFrutaColor(r.fruta);
-    return fc.main;
-  });
+// ── Gráfico: Productividad (kg/persona) por Hora ──
+function buildChartProductividad(ctx, sorted, labels, theme) {
+  const mobile = isMobileView();
+  const prodData = sorted.map(r => { const p = r.personas || 0; return p > 0 ? parseFloat((r.consumo_kg / p).toFixed(1)) : 0; });
+  const pointColors = sorted.map(r => getFrutaColor(r.fruta).main);
   const pointBorders = sorted.map(r => r.turno === 'NOCHE' ? '#8b5cf6' : '#fff');
-
-  // Color de barra según turno
-  const barColorsProd = sorted.map(r => {
-    const fc = getFrutaColor(r.fruta);
-    return fc.main + 'CC';
-  });
+  const barColorsProd = sorted.map(r => getFrutaColor(r.fruta).main + 'CC');
   const barBordersProd = sorted.map(r => getFrutaColor(r.fruta).main);
-
-  chartLine = new Chart(ctxLine, {
+  return new Chart(ctx, {
     type: 'bar',
     data: {
       labels: labels,
       datasets: [
-        {
-          label: 'Productividad (kg/persona)',
-          data: prodData,
-          backgroundColor: barColorsProd,
-          borderColor: barBordersProd,
-          borderWidth: 1.5,
-          borderRadius: 6,
-          barPercentage: 0.65,
-          categoryPercentage: 0.85,
-          order: 2
-        },
-        {
-          type: 'line',
-          label: 'Tendencia',
-          data: prodData,
-          borderColor: '#0891b2',
-          backgroundColor: 'rgba(8,145,178,0.08)',
-          fill: false,
-          tension: 0.35,
-          pointRadius: 5,
-          pointBackgroundColor: pointColors,
-          pointBorderColor: pointBorders,
-          pointBorderWidth: 2,
-          borderWidth: 2.5,
-          order: 1
-        }
+        { label: 'Productividad (kg/persona)', data: prodData, backgroundColor: barColorsProd, borderColor: barBordersProd, borderWidth: 1.5, borderRadius: 6, barPercentage: 0.68, categoryPercentage: 0.85, order: 2 },
+        { type: 'line', label: 'Tendencia', data: prodData, borderColor: '#0891b2', backgroundColor: 'rgba(8,145,178,0.08)', fill: false, tension: 0.35, pointRadius: mobile ? 3 : 5, pointBackgroundColor: pointColors, pointBorderColor: pointBorders, pointBorderWidth: 2, borderWidth: 2.5, order: 1 }
       ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      layout: { padding: { top: 22 } },
       plugins: {
-        legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600', size: 11 } } },
+        legend: { position: mobile ? 'bottom' : 'top', labels: { color: theme.textColor, font: { family: 'Plus Jakarta Sans', weight: '600', size: mobile ? 10 : 11 }, boxWidth: mobile ? 10 : 14, padding: mobile ? 8 : 12 } },
         datalabels: {
-          anchor: 'end', align: 'top',
-          color: function(ctx) {
-            if (ctx.datasetIndex !== 0) return 'transparent';
-            const r = sorted[ctx.dataIndex];
-            return r ? getFrutaColor(r.fruta).main : textColor;
-          },
-          font: { weight: '800', size: 9, family: 'Plus Jakarta Sans' },
-          formatter: function(value, ctx) {
-            if (ctx.datasetIndex !== 0) return '';
-            return value > 0 ? value.toLocaleString('es-PE') + ' kg/p' : '';
-          }
+          display: mobile ? false : 'auto',
+          clamp: true,
+          clip: false,
+          anchor: 'end',
+          align: 'top',
+          offset: 4,
+          color: function(c) { if (c.datasetIndex !== 0) return 'transparent'; const r = sorted[c.dataIndex]; return r ? getFrutaColor(r.fruta).main : theme.textColor; },
+          font: { weight: '800', size: 8, family: 'Plus Jakarta Sans' },
+          formatter: function(value, c) { if (c.datasetIndex !== 0) return ''; return value > 0 ? value.toLocaleString('es-PE') + ' kg/p' : ''; }
         },
         tooltip: {
           callbacks: {
-            title: function(items) {
-              const i = items[0].dataIndex;
-              const r = sorted[i];
-              if (!r) return '';
-              const icon = FRUTA_ICONS[r.fruta] || '';
-              return r.hora + ' — ' + icon + ' ' + r.fruta + ' (' + r.turno + ')';
-            },
-            label: function(item) {
-              const r = sorted[item.dataIndex];
-              if (!r) return '';
-              const p = r.personas || 0;
-              if (p === 0) return 'Sin N° personas registrado';
-              return 'Productividad: ' + item.raw.toLocaleString('es-PE') + ' kg/persona  (' + formatNum(r.consumo_kg) + ' kg ÷ ' + p + ' pers)';
-            }
+            title: function(items) { const r = sorted[items[0].dataIndex]; if (!r) return ''; const icon = FRUTA_ICONS[r.fruta] || ''; return r.hora + ' — ' + icon + ' ' + r.fruta + ' (' + r.turno + ')'; },
+            label: function(item) { const r = sorted[item.dataIndex]; if (!r) return ''; const p = r.personas || 0; if (p === 0) return 'Sin N° personas registrado'; return 'Productividad: ' + item.raw.toLocaleString('es-PE') + ' kg/persona  (' + formatNum(r.consumo_kg) + ' kg ÷ ' + p + ' pers)'; }
           }
         }
       },
       scales: {
-        x: { ticks: { color: function(ctx) { const r = sorted[ctx.index]; return r && r.turno === 'NOCHE' ? '#8b5cf6' : textColor; }, font: { size: 10 } }, grid: { color: gridColor } },
-        y: { ticks: { color: textColor, font: { size: 10 }, callback: function(v) { return v + ' kg/p'; } }, grid: { color: gridColor }, beginAtZero: true, title: { display: true, text: 'kg / persona', color: textColor, font: { size: 11, weight: '700' } } }
+        x: { ticks: Object.assign(getResponsiveTicks(theme.textColor), { color: function(c) { const r = sorted[c.index]; return r && r.turno === 'NOCHE' ? '#8b5cf6' : theme.textColor; } }), grid: { color: theme.gridColor } },
+        y: { ticks: { color: theme.textColor, font: { size: mobile ? 9 : 10 }, callback: function(v) { return v + ' kg/p'; } }, grid: { color: theme.gridColor }, beginAtZero: true, title: { display: !mobile, text: 'kg / persona', color: theme.textColor, font: { size: 11, weight: '700' } } }
       }
     },
     plugins: [ChartDataLabels]
   });
+}
 
-  // ── COMBO CHART: Produccion Acumulada por Hora ──
-  if (chartAcumulado) chartAcumulado.destroy();
-  const ctxAcum = document.getElementById('chartAcumulado').getContext('2d');
+// ── Gráfico: Producción Acumulada por Hora ──
+function buildChartAcumulado(ctx, sorted, labels, theme, frutaColor) {
+  const mobile = isMobileView();
   const consumoPerHour = sorted.map(r => r.consumo_kg);
   let cumulative = [];
   let runningTotal = 0;
   consumoPerHour.forEach(v => { runningTotal += v; cumulative.push(runningTotal); });
-
-  chartAcumulado = new Chart(ctxAcum, {
+  const barColor = frutaColor || '#ea580c';
+  const barBg = frutaColor ? (frutaColor + 'B3') : 'rgba(234,88,12,0.7)';
+  const nPts = cumulative.length;
+  // Mostrar label solo en el último y en puntos espaciados para que no se amontonen
+  const labelStep = nPts > 12 ? 3 : nPts > 8 ? 2 : 1;
+  return new Chart(ctx, {
     type: 'bar',
     data: {
       labels: labels,
@@ -2431,74 +2478,65 @@ function rebuildCharts(recs) {
         {
           label: 'Consumo por Hora (kg)',
           data: consumoPerHour,
-          backgroundColor: 'rgba(234,88,12,0.7)',
-          borderColor: '#ea580c',
-          borderWidth: 1,
-          borderRadius: 6,
-          barPercentage: 0.7,
-          categoryPercentage: 0.8,
-          yAxisID: 'y',
-          order: 2
+          backgroundColor: barBg, borderColor: barColor, borderWidth: 1, borderRadius: 6, barPercentage: 0.72, categoryPercentage: 0.82,
+          yAxisID: 'y', order: 2,
+          datalabels: { display: false } // No mostrar: info ya visible en gráfico 1 y en tooltip
         },
         {
           label: 'Acumulado Consumo (kg)',
-          data: cumulative,
-          type: 'line',
-          borderColor: '#16a34a',
-          backgroundColor: 'rgba(22,163,74,0.15)',
-          fill: true,
-          tension: 0.3,
-          pointRadius: 5,
-          pointBackgroundColor: '#16a34a',
-          borderWidth: 2.5,
-          yAxisID: 'y1',
-          order: 1
+          data: cumulative, type: 'line',
+          borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.15)', fill: true, tension: 0.3,
+          pointRadius: mobile ? 3 : 5, pointBackgroundColor: '#16a34a', borderWidth: 2.5,
+          yAxisID: 'y1', order: 1,
+          datalabels: {
+            display: function(c) {
+              if (mobile) return false;
+              // Mostrar solo último punto + cada labelStep
+              return c.dataIndex === nPts - 1 || c.dataIndex % labelStep === 0;
+            },
+            anchor: 'end', align: 'top', offset: 6, clamp: true, clip: false,
+            color: '#16a34a', backgroundColor: 'rgba(22,163,74,0.08)', borderRadius: 4, padding: { top: 2, bottom: 2, left: 5, right: 5 },
+            font: { size: 9, weight: '800', family: 'Plus Jakarta Sans' },
+            formatter: function(v) { return v > 0 ? v.toLocaleString('es-PE') : ''; }
+          }
         }
       ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      layout: { padding: { top: 22 } },
       plugins: {
-        legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600', size: 11 } } },
-        datalabels: {
-          anchor: 'end', align: 'top', color: textColor, font: { size: 9, weight: '700', family: 'Plus Jakarta Sans' },
-          formatter: function(v) { return v > 0 ? v.toLocaleString('es-PE') : ''; }
+        legend: { position: mobile ? 'bottom' : 'top', labels: { color: theme.textColor, font: { family: 'Plus Jakarta Sans', weight: '600', size: mobile ? 10 : 11 }, boxWidth: mobile ? 10 : 14, padding: mobile ? 8 : 12 } },
+        datalabels: { display: false }, // Se define a nivel de dataset
+        tooltip: {
+          callbacks: {
+            label: function(item) {
+              if (item.datasetIndex === 0) return 'Consumo hora: ' + item.raw.toLocaleString('es-PE') + ' kg';
+              return 'Acumulado: ' + item.raw.toLocaleString('es-PE') + ' kg';
+            }
+          }
         }
       },
       scales: {
-        x: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } },
-        y: {
-          type: 'linear',
-          position: 'left',
-          title: { display: true, text: 'Kg/hora', color: textColor, font: { size: 11, weight: '700' } },
-          ticks: { color: textColor, font: { size: 10 } },
-          grid: { color: gridColor },
-          beginAtZero: true
-        },
-        y1: {
-          type: 'linear',
-          position: 'right',
-          title: { display: true, text: 'Acumulado (kg)', color: textColor, font: { size: 11, weight: '700' } },
-          ticks: { color: textColor, font: { size: 10 } },
-          grid: { drawOnChartArea: false },
-          beginAtZero: true
-        }
+        x: { ticks: getResponsiveTicks(theme.textColor), grid: { color: theme.gridColor } },
+        y: { type: 'linear', position: 'left', title: { display: !mobile, text: 'Kg/hora', color: theme.textColor, font: { size: 11, weight: '700' } }, ticks: { color: theme.textColor, font: { size: mobile ? 9 : 10 } }, grid: { color: theme.gridColor }, beginAtZero: true },
+        y1: { type: 'linear', position: 'right', title: { display: !mobile, text: 'Acumulado (kg)', color: theme.textColor, font: { size: 11, weight: '700' } }, ticks: { color: theme.textColor, font: { size: mobile ? 9 : 10 } }, grid: { drawOnChartArea: false }, beginAtZero: true }
       }
     },
     plugins: [ChartDataLabels]
   });
+}
 
-  // ── GROUPED BAR CHART: Comparativo Turnos Dia vs Noche ──
+// ── Gráfico: Comparativo Turnos Día vs Noche (semana actual) ──
+function buildChartTurnos() {
   if (chartTurnos) chartTurnos.destroy();
-  const ctxTurnos = document.getElementById('chartTurnos').getContext('2d');
-
-  // Gather all records for the current week (Mon-Sat)
+  const theme = getChartTheme();
+  const ctx = document.getElementById('chartTurnos').getContext('2d');
   const allRecords = getRecords();
   const filterDate = document.getElementById('filterDate').value;
   const refDate = new Date(filterDate + 'T12:00:00');
-  const dayOfWeek = refDate.getDay(); // 0=Sun,1=Mon...6=Sat
-  // Find Monday of this week
+  const dayOfWeek = refDate.getDay();
   const monday = new Date(refDate);
   const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
   monday.setDate(monday.getDate() + diff);
@@ -2513,69 +2551,205 @@ function rebuildCharts(recs) {
     const dateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
     const dayRecs = allRecords.filter(r => r.fecha === dateStr);
     dayRecs.forEach(r => {
-      if (r.turno === 'NOCHE') {
-        nocheData[i] += (r.consumo_kg || 0);
-      } else {
-        diaData[i] += (r.consumo_kg || 0);
-      }
+      if (r.turno === 'NOCHE') nocheData[i] += (r.consumo_kg || 0);
+      else diaData[i] += (r.consumo_kg || 0);
     });
   }
 
-  chartTurnos = new Chart(ctxTurnos, {
+  const mobile = isMobileView();
+  chartTurnos = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: dayNames,
       datasets: [
-        {
-          label: 'Turno Dia',
-          data: diaData,
-          backgroundColor: 'rgba(22,163,74,0.7)',
-          borderColor: '#16a34a',
-          borderWidth: 1,
-          borderRadius: 6,
-          barPercentage: 0.7,
-          categoryPercentage: 0.8
-        },
-        {
-          label: 'Turno Noche',
-          data: nocheData,
-          backgroundColor: 'rgba(139,92,246,0.7)',
-          borderColor: '#8b5cf6',
-          borderWidth: 1,
-          borderRadius: 6,
-          barPercentage: 0.7,
-          categoryPercentage: 0.8
-        }
+        { label: 'Turno Dia', data: diaData, backgroundColor: 'rgba(22,163,74,0.7)', borderColor: '#16a34a', borderWidth: 1, borderRadius: 6, barPercentage: 0.72, categoryPercentage: 0.82 },
+        { label: 'Turno Noche', data: nocheData, backgroundColor: 'rgba(139,92,246,0.7)', borderColor: '#8b5cf6', borderWidth: 1, borderRadius: 6, barPercentage: 0.72, categoryPercentage: 0.82 }
       ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      layout: { padding: { top: 18 } },
       plugins: {
-        legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600', size: 11 } } },
-        datalabels: {
-          anchor: 'end', align: 'top', color: textColor, font: { size: 9, weight: '700', family: 'Plus Jakarta Sans' },
-          formatter: function(v) { return v > 0 ? v.toLocaleString('es-PE') : ''; }
-        }
+        legend: { position: mobile ? 'bottom' : 'top', labels: { color: theme.textColor, font: { family: 'Plus Jakarta Sans', weight: '600', size: mobile ? 10 : 11 }, boxWidth: mobile ? 10 : 14, padding: mobile ? 8 : 12 } },
+        datalabels: getDatalabelsConfig(theme.textColor, { size: 9, offset: 3 })
       },
       scales: {
-        x: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } },
-        y: {
-          ticks: { color: textColor, font: { size: 10 } },
-          grid: { color: gridColor },
-          beginAtZero: true,
-          title: { display: true, text: 'Consumo (kg)', color: textColor, font: { size: 11, weight: '700' } }
-        }
+        x: { ticks: Object.assign(getResponsiveTicks(theme.textColor), { maxRotation: 0 }), grid: { color: theme.gridColor } },
+        y: { ticks: { color: theme.textColor, font: { size: mobile ? 9 : 10 } }, grid: { color: theme.gridColor }, beginAtZero: true, title: { display: !mobile, text: 'Consumo (kg)', color: theme.textColor, font: { size: 11, weight: '700' } } }
       }
     },
     plugins: [ChartDataLabels]
   });
 }
 
+// Destruye todas las instancias de los 3 gráficos por fruta
+function destruirChartsPorFruta() {
+  chartsPorFrutaInstances.forEach(c => { try { c.destroy(); } catch(e) {} });
+  chartsPorFrutaInstances = [];
+  const pf = document.getElementById('chartsPorFruta');
+  if (pf) pf.innerHTML = '';
+}
+
+// Destruye las 3 instancias consolidadas
+function destruirChartsConsolidado() {
+  if (chartBar) { chartBar.destroy(); chartBar = null; }
+  if (chartLine) { chartLine.destroy(); chartLine = null; }
+  if (chartAcumulado) { chartAcumulado.destroy(); chartAcumulado = null; }
+}
+
+// Renderiza los 3 gráficos consolidados en los canvas fijos
+function renderChartsConsolidado(recs) {
+  destruirChartsConsolidado();
+  const theme = getChartTheme();
+  const sorted = sortRecsForCharts(recs);
+  const labels = sorted.map(r => r.hora.split('-')[0]);
+  chartBar = buildChartBarras(document.getElementById('chartBarras').getContext('2d'), sorted, labels, theme);
+  chartLine = buildChartProductividad(document.getElementById('chartProductividad').getContext('2d'), sorted, labels, theme);
+  chartAcumulado = buildChartAcumulado(document.getElementById('chartAcumulado').getContext('2d'), sorted, labels, theme);
+}
+
+// Renderiza una sección por cada fruta detectada (con filtro de fruta opcional)
+function renderChartsPorFruta(recs) {
+  destruirChartsPorFruta();
+  const pf = document.getElementById('chartsPorFruta');
+  if (!pf) return;
+
+  // Si hay filtro de fruta específico, quedarse solo con esa fruta
+  let recsFiltrados = recs;
+  if (chartFilterFruta !== 'TODAS') {
+    recsFiltrados = recs.filter(r => r.fruta === chartFilterFruta);
+  }
+
+  // Frutas únicas en los registros, preservando el orden de aparición del día
+  const frutasSet = [];
+  recsFiltrados.forEach(r => {
+    const f = r.fruta || 'MANGO';
+    if (!frutasSet.includes(f)) frutasSet.push(f);
+  });
+
+  if (frutasSet.length === 0) {
+    pf.innerHTML = '<div class="card"><div class="empty-state"><div class="empty-icon">🍎</div><div class="empty-text">No hay registros para mostrar</div><div class="empty-sub">Registra producción para ver las gráficas separadas por fruta</div></div></div>';
+    return;
+  }
+
+  const theme = getChartTheme();
+
+  frutasSet.forEach((fruta, idx) => {
+    const recsFruta = recsFiltrados.filter(r => r.fruta === fruta);
+    if (recsFruta.length === 0) return;
+
+    const fc = getFrutaColor(fruta);
+    const icon = FRUTA_ICONS[fruta] || '📦';
+    const totalConsumo = recsFruta.reduce((s, r) => s + (r.consumo_kg || 0), 0);
+    const totalPT = recsFruta.reduce((s, r) => s + (r.pt_aprox_kg || 0), 0);
+    const rendProm = totalConsumo > 0 ? (totalPT / totalConsumo * 100) : 0;
+
+    // Crear bloque de la fruta
+    const block = document.createElement('div');
+    block.style.cssText = 'margin-bottom:24px;padding:16px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);border-left:4px solid ' + fc.main + ';box-shadow:var(--shadow)';
+    block.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px dashed var(--border)">' +
+        '<div style="display:flex;align-items:center;gap:10px">' +
+          '<div style="font-size:22px">' + icon + '</div>' +
+          '<div>' +
+            '<div style="font-size:16px;font-weight:900;color:' + fc.main + '">' + fruta + '</div>' +
+            '<div style="font-size:11px;color:var(--muted);font-weight:600">' + recsFruta.length + ' hrs · ' + formatNum(totalConsumo) + ' kg MP · ' + formatNum(totalPT) + ' kg PT · Rend ' + rendProm.toFixed(1) + '%</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="grid-2">' +
+        '<div class="card" style="margin:0">' +
+          '<div class="card-title">📊 Consumo vs PT por Hora</div>' +
+          '<div class="chart-wrap"><canvas id="chartBarras_' + idx + '"></canvas></div>' +
+        '</div>' +
+        '<div class="card" style="margin:0">' +
+          '<div class="card-title">👥 Productividad por Hora <span style="font-size:11px;color:var(--muted);font-weight:500">(kg / N° personas)</span></div>' +
+          '<div class="chart-wrap"><canvas id="chartProd_' + idx + '"></canvas></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="card" style="margin-top:14px;margin-bottom:0">' +
+        '<div class="card-title">📊 Produccion Acumulada por Hora</div>' +
+        '<div class="chart-wrap"><canvas id="chartAcum_' + idx + '"></canvas></div>' +
+      '</div>';
+    pf.appendChild(block);
+
+    const sorted = sortRecsForCharts(recsFruta);
+    const labels = sorted.map(r => r.hora.split('-')[0]);
+    const cBar = buildChartBarras(document.getElementById('chartBarras_' + idx).getContext('2d'), sorted, labels, theme);
+    const cProd = buildChartProductividad(document.getElementById('chartProd_' + idx).getContext('2d'), sorted, labels, theme);
+    const cAcum = buildChartAcumulado(document.getElementById('chartAcum_' + idx).getContext('2d'), sorted, labels, theme, fc.main);
+    chartsPorFrutaInstances.push(cBar, cProd, cAcum);
+  });
+}
+
+function rebuildCharts(recs) {
+  if (!recs) {
+    const filterDate = document.getElementById('filterDate').value;
+    recs = getRecords().filter(r => r.fecha === filterDate);
+  }
+
+  if (chartMode === 'POR_FRUTA') {
+    // En modo por-fruta solo aplicamos el filtro de turno; la fruta separa las secciones.
+    let recsTurno = recs;
+    if (chartFilterTurno !== 'AMBOS') recsTurno = recsTurno.filter(r => r.turno === chartFilterTurno);
+    destruirChartsConsolidado();
+    renderChartsPorFruta(recsTurno);
+  } else {
+    // Modo Consolidado: aplica filtros de turno + fruta
+    const recsFiltered = applyChartFilters(recs);
+    destruirChartsPorFruta();
+    renderChartsConsolidado(recsFiltered);
+  }
+
+  // Comparativo Turnos siempre se construye (toma datos de la semana completa)
+  buildChartTurnos();
+}
+
 // ═══════════════ SUPABASE LOAD ═══════════════
 function getLocalToday() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function getLocalMonday() {
+  const d = new Date();
+  const day = d.getDay(); // 0=Sun,1=Mon...6=Sat
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+async function loadWeekFromSupabase() {
+  if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
+  try {
+    const monday = getLocalMonday();
+    const { data, error } = await supabaseClient
+      .from('registro_produccion')
+      .select('*')
+      .gte('fecha', monday)
+      .order('fecha')
+      .order('hora');
+
+    if (error || !data || data.length === 0) return;
+
+    const localRecords = JSON.parse(localStorage.getItem('prod_registros') || '[]');
+    // Get set of dates from the week data to replace
+    const weekDates = new Set(data.map(d => d.fecha));
+    // Keep local records that are NOT in the week range (older data)
+    const otherDays = localRecords.filter(r => !weekDates.has(r.fecha));
+    const merged = [...otherDays, ...data.map(d => ({
+      ...d,
+      consumo_kg: parseFloat(d.consumo_kg),
+      pt_aprox_kg: parseFloat(d.pt_aprox_kg),
+      rendimiento: parseFloat(d.rendimiento),
+      personas: parseInt(d.personas) || 0,
+      proyectado_tn: parseFloat(d.proyectado_tn)
+    }))];
+    localStorage.setItem('prod_registros', JSON.stringify(merged));
+  } catch(e) {
+    console.log('loadWeekFromSupabase: Supabase offline');
+  }
 }
 
 async function loadFromSupabase() {
@@ -2585,6 +2759,9 @@ async function loadFromSupabase() {
     return;
   }
   try {
+    // Load full week data so Comparativo Turnos chart has all days
+    await loadWeekFromSupabase();
+
     const { data, error } = await supabaseClient
       .from('registro_produccion')
       .select('*')
@@ -2598,7 +2775,7 @@ async function loadFromSupabase() {
     }
 
     if (data && data.length > 0) {
-      // Merge with localStorage - Supabase is source of truth
+      // Merge with localStorage - Supabase is source of truth for today
       const localRecords = JSON.parse(localStorage.getItem('prod_registros') || '[]');
       const otherDays = localRecords.filter(r => r.fecha !== getLocalToday());
       const merged = [...otherDays, ...data.map(d => ({
@@ -2610,10 +2787,12 @@ async function loadFromSupabase() {
         proyectado_tn: parseFloat(d.proyectado_tn)
       }))];
       localStorage.setItem('prod_registros', JSON.stringify(merged));
-      if (typeof refreshAll === 'function') refreshAll();
-      else if (typeof updateAll === 'function') updateAll();
-      else if (typeof renderTabla === 'function') renderTabla();
     }
+
+    // Always rebuild after loading week + today data
+    if (typeof refreshAll === 'function') refreshAll();
+    else if (typeof updateAll === 'function') updateAll();
+    else if (typeof renderTabla === 'function') renderTabla();
   } catch(e) {
     console.log('Supabase offline, usando localStorage');
     console.log('Supabase offline - usando datos locales');
@@ -2622,6 +2801,12 @@ async function loadFromSupabase() {
 
 // ═══════════════ INIT ═══════════════
 (function init() {
+  // Limpiar residuo de versiones anteriores (toggle movil manual ya eliminado)
+  try {
+    localStorage.removeItem('prod_force_mobile');
+    document.documentElement.removeAttribute('data-force-mobile');
+  } catch(e) {}
+
   // Restore supervisor
   const savedSup = localStorage.getItem('prod_reg_supervisor');
   if (savedSup) document.getElementById('fSupervisor').value = savedSup;
