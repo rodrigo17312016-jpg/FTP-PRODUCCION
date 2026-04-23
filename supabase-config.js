@@ -45,7 +45,7 @@ function showSupabaseToast(msg, color) {
 // Helper: Verificar conexion a Supabase y actualizar indicador visual
 async function checkSupabaseConnection() {
   const indicator = document.getElementById('supabaseStatus');
-  if (!indicator) return;
+  if (!indicator) return false;
   if (typeof supabaseClient === 'undefined' || !supabaseClient) {
     indicator.style.background = '#ef4444';
     indicator.title = 'Supabase: NO conectado';

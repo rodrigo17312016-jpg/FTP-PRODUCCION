@@ -40,6 +40,13 @@ body{font-family:'Plus Jakarta Sans','Inter',system-ui,sans-serif;background:var
 .topbar-back:hover{background:rgba(217,119,6,0.15);color:#fbbf24;border-color:rgba(217,119,6,0.3);}
 .theme-toggle{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);padding:7px 12px;border-radius:10px;color:rgba(255,255,255,0.6);font-size:16px;cursor:pointer;transition:all 0.2s;}
 .theme-toggle:hover{background:rgba(217,119,6,0.15);color:#fbbf24;}
+.sync-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border:none;border-radius:8px;background:rgba(22,163,106,0.18);color:#16a34a;font-size:12px;font-weight:700;cursor:pointer;transition:background 0.2s,transform 0.15s;}
+.sync-btn:hover{background:rgba(22,163,106,0.32);transform:scale(1.04);}
+.sync-btn:active{transform:scale(0.97);}
+.sync-btn.syncing{pointer-events:none;opacity:0.7;}
+.sync-btn .sync-icon{display:inline-block;}
+.sync-btn.syncing .sync-icon{animation:spin-sync 1s linear infinite;}
+@keyframes spin-sync{100%{transform:rotate(360deg);}}
 
 /* Signature */
 .topbar-dev-signature{text-align:right;padding:6px 14px;background:rgba(0,0,0,0.4);border:1px solid rgba(212,175,55,0.2);border-radius:12px;position:relative;overflow:hidden;animation:borderGlow 3s ease-in-out infinite;}
@@ -286,6 +293,7 @@ body{font-family:'Plus Jakarta Sans','Inter',system-ui,sans-serif;background:var
   </div>
   <div class="topbar-spacer"></div>
   <div id="supabaseStatus" style="width:12px;height:12px;border-radius:50%;background:#ef4444;box-shadow:0 0 6px rgba(0,0,0,0.3);cursor:help;flex-shrink:0" title="Supabase: Verificando..."></div>
+  <button class="sync-btn" id="btnSync" onclick="manualSync()" title="Sincronizar con Supabase"><span class="sync-icon">🔄</span> Sync</button>
   <div class="live-badge"><span class="dot"></span> En vivo</div>
   <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema" id="themeBtn">🌙</button>
   <a class="topbar-back" href="index.html">← Portal</a>
@@ -671,6 +679,45 @@ function getAllPositions(){
     merged[cl.area].push({key:cl.key, label:cl.label, def:cl.def||0, custom:true});
   });
   return merged;
+}
+
+/* ===== MANUAL SYNC ===== */
+async function manualSync() {
+  const btn = document.getElementById('btnSync');
+  if (!btn || btn.classList.contains('syncing')) return;
+  btn.classList.add('syncing');
+  btn.querySelector('.sync-icon').textContent = '⏳';
+  try {
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      const registros = JSON.parse(localStorage.getItem('personal_registros') || '[]').filter(r => r.fecha === getLocalToday());
+      let pushed = 0, errors = 0;
+      for (const r of registros) {
+        try {
+          const { error } = await supabaseClient.from('registro_personal').upsert({
+            fecha: r.fecha, hora: r.hora, turno: r.turno, fruta: r.fruta, linea: r.linea,
+            num_personal: r.num_personal, distribucion: r.distribucion,
+            observacion: r.observacion, registrado_por: r.registrado_por
+          }, { onConflict: 'fecha,hora,linea' });
+          if (error) errors++; else pushed++;
+        } catch(e) { errors++; }
+      }
+      await loadFromSupabase();
+      await loadLaboresFromSupabase();
+      checkSupabaseConnection();
+      if (errors > 0) {
+        showSupabaseToast('Sync parcial: ' + pushed + ' subidos, ' + errors + ' errores', '#f59e0b');
+      } else {
+        showSupabaseToast('Sync completo: ' + pushed + ' registros sincronizados', '#16a34a');
+      }
+    } else {
+      showSupabaseToast('Supabase no disponible - sin conexion', '#ef4444');
+    }
+  } catch(e) {
+    console.error('Manual sync error:', e);
+    showSupabaseToast('Error de sincronizacion: ' + e.message, '#ef4444');
+  }
+  btn.classList.remove('syncing');
+  btn.querySelector('.sync-icon').textContent = '🔄';
 }
 
 /* ===== INIT ===== */

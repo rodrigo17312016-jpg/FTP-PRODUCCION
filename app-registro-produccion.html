@@ -131,6 +131,27 @@ body {
   flex-wrap: wrap;
 }
 
+.sync-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(22,163,106,0.18);
+  color: #16a34a;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.sync-btn:hover { background: rgba(22,163,106,0.32); transform: scale(1.04); }
+.sync-btn:active { transform: scale(0.97); }
+.sync-btn.syncing { pointer-events: none; opacity: 0.7; }
+.sync-btn .sync-icon { display: inline-block; }
+.sync-btn.syncing .sync-icon { animation: spin-sync 1s linear infinite; }
+@keyframes spin-sync { 100% { transform: rotate(360deg); } }
+
 .topbar-back {
   color: rgba(255,255,255,0.7);
   text-decoration: none;
@@ -665,6 +686,7 @@ body {
   </div>
   <div class="topbar-right">
     <div id="supabaseStatus" style="width:12px;height:12px;border-radius:50%;background:#ef4444;box-shadow:0 0 6px rgba(0,0,0,0.3);cursor:help;flex-shrink:0" title="Supabase: Verificando..."></div>
+    <button class="sync-btn" id="btnSync" onclick="manualSync()" title="Sincronizar con Supabase"><span class="sync-icon">🔄</span> Sync</button>
     <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema" id="themeBtn">🌙</button>
     <div class="topbar-dev-signature">
       <div class="topbar-sig-label">Desarrollado por:</div>
@@ -1126,12 +1148,14 @@ async function registrarHora() {
         proyectado_tn: record.proyectado_tn,
         consumo_kg: record.consumo_kg,
         pt_aprox_kg: record.pt_aprox_kg,
+        rendimiento: record.rendimiento,
         hora_inicio_turno: record.hora_inicio_turno || null,
         hora_fin_turno: record.hora_fin_turno || null,
         almuerzo_inicio: record.almuerzo_inicio || null,
         almuerzo_fin: record.almuerzo_fin || null,
         supervisor: record.supervisor,
-        observacion: record.observacion
+        observacion: record.observacion,
+        created_at: record.created_at
       }, { onConflict: 'fecha,hora,linea' });
 
     if (error) {
@@ -1407,6 +1431,9 @@ async function guardarEdicion() {
       await supabaseClient.from('registro_produccion').upsert({
         fecha: r.fecha, hora: r.hora, turno: r.turno, fruta: r.fruta, linea: r.linea,
         proyectado_tn: r.proyectado_tn, consumo_kg: r.consumo_kg, pt_aprox_kg: r.pt_aprox_kg,
+        rendimiento: r.rendimiento,
+        hora_inicio_turno: r.hora_inicio_turno || null, hora_fin_turno: r.hora_fin_turno || null,
+        almuerzo_inicio: r.almuerzo_inicio || null, almuerzo_fin: r.almuerzo_fin || null,
         supervisor: r.supervisor, observacion: r.observacion
       }, { onConflict: 'fecha,hora,linea' });
     } catch(e) { console.error('Supabase sync error', e); }
@@ -1988,6 +2015,52 @@ async function loadFromSupabase() {
     console.log('Supabase offline, usando localStorage');
     console.log('Supabase offline - usando datos locales');
   }
+}
+
+// ═══════════════ MANUAL SYNC ═══════════════
+async function manualSync() {
+  const btn = document.getElementById('btnSync');
+  if (!btn || btn.classList.contains('syncing')) return;
+  btn.classList.add('syncing');
+  btn.querySelector('.sync-icon').textContent = '⏳';
+
+  try {
+    // 1. Push local records to Supabase
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      const records = getRecords().filter(r => r.fecha === getLocalToday());
+      let pushed = 0, errors = 0;
+      for (const r of records) {
+        try {
+          const { error } = await supabaseClient.from('registro_produccion').upsert({
+            fecha: r.fecha, hora: r.hora, turno: r.turno, fruta: r.fruta, linea: r.linea,
+            proyectado_tn: r.proyectado_tn, consumo_kg: r.consumo_kg, pt_aprox_kg: r.pt_aprox_kg,
+            rendimiento: r.rendimiento,
+            hora_inicio_turno: r.hora_inicio_turno || null, hora_fin_turno: r.hora_fin_turno || null,
+            almuerzo_inicio: r.almuerzo_inicio || null, almuerzo_fin: r.almuerzo_fin || null,
+            supervisor: r.supervisor, observacion: r.observacion
+          }, { onConflict: 'fecha,hora,linea' });
+          if (error) errors++; else pushed++;
+        } catch(e) { errors++; }
+      }
+      // 2. Pull from Supabase
+      await loadFromSupabase();
+      await checkSupabaseConnection();
+
+      if (errors > 0) {
+        showSupabaseToast('Sync parcial: ' + pushed + ' subidos, ' + errors + ' errores', '#f59e0b');
+      } else {
+        showSupabaseToast('Sync completo: ' + pushed + ' registros sincronizados', '#16a34a');
+      }
+    } else {
+      showSupabaseToast('Supabase no disponible - sin conexion', '#ef4444');
+    }
+  } catch(e) {
+    console.error('Manual sync error:', e);
+    showSupabaseToast('Error de sincronizacion: ' + e.message, '#ef4444');
+  }
+
+  btn.classList.remove('syncing');
+  btn.querySelector('.sync-icon').textContent = '🔄';
 }
 
 // ═══════════════ INIT ═══════════════

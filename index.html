@@ -263,6 +263,13 @@ body.dark-mode .sidebar { background:linear-gradient(180deg,#080f0b 0%,#0d1f14 3
 }
 .topbar-alerts:hover { background:rgba(234,88,12,0.15); }
 .topbar-date { font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px; }
+.sync-btn { display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border:none;border-radius:8px;background:rgba(22,163,106,0.18);color:#16a34a;font-size:12px;font-weight:700;cursor:pointer;transition:background 0.2s,transform 0.15s; }
+.sync-btn:hover { background:rgba(22,163,106,0.32);transform:scale(1.04); }
+.sync-btn:active { transform:scale(0.97); }
+.sync-btn.syncing { pointer-events:none;opacity:0.7; }
+.sync-btn .sync-icon { display:inline-block; }
+.sync-btn.syncing .sync-icon { animation:spin-sync 1s linear infinite; }
+@keyframes spin-sync { 100% { transform:rotate(360deg); } }
 .topbar-theme {
   width:36px;height:36px;border-radius:12px;border:1px solid var(--border);
   background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;
@@ -961,6 +968,8 @@ body.dark-mode .topbar-dev-signature .signature-name {
     <div class="topbar-breadcrumb" id="topbarBreadcrumb">Vista general de la planta</div>
   </div>
   <div class="topbar-spacer"></div>
+  <div id="supabaseStatus" style="width:12px;height:12px;border-radius:50%;background:#ef4444;box-shadow:0 0 6px rgba(0,0,0,0.3);cursor:help;flex-shrink:0" title="Supabase: Verificando..."></div>
+  <button class="sync-btn" id="btnSync" onclick="manualSync()" title="Sincronizar con Supabase"><span class="sync-icon">🔄</span> Sync</button>
   <div class="topbar-live"><span class="dot"></span> En tiempo real</div>
   <button class="topbar-alerts" id="alertsBtn">⚠️ <span id="alertCount">12</span> alertas</button>
   <div class="topbar-date" id="topbarDate">📅 mie, 25 de marzo · 11:35</div>
@@ -3704,6 +3713,60 @@ setInterval(() => {
 
 // Supabase sync every 15 seconds
 setInterval(syncFromSupabase, 15000);
+
+// ── MANUAL SYNC ──
+async function manualSync() {
+  const btn = document.getElementById('btnSync');
+  if (!btn || btn.classList.contains('syncing')) return;
+  btn.classList.add('syncing');
+  btn.querySelector('.sync-icon').textContent = '⏳';
+  const indicator = document.getElementById('supabaseStatus');
+  try {
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      await syncFromSupabase();
+      const { error } = await supabaseClient.from('registro_produccion').select('fecha').limit(1);
+      if (!error) {
+        if (indicator) { indicator.style.background = '#16a34a'; indicator.title = 'Supabase: Conectado'; }
+        showPortalToast('Sync completo - datos actualizados de Supabase', '#16a34a');
+      } else {
+        if (indicator) { indicator.style.background = '#ef4444'; indicator.title = 'Supabase: Error - ' + error.message; }
+        showPortalToast('Error Supabase: ' + error.message, '#ef4444');
+      }
+    } else {
+      if (indicator) { indicator.style.background = '#ef4444'; indicator.title = 'Supabase: No disponible'; }
+      showPortalToast('Supabase no disponible', '#ef4444');
+    }
+  } catch(e) {
+    if (indicator) { indicator.style.background = '#ef4444'; indicator.title = 'Supabase: Sin conexion'; }
+    showPortalToast('Error de sincronizacion', '#ef4444');
+  }
+  btn.classList.remove('syncing');
+  btn.querySelector('.sync-icon').textContent = '🔄';
+}
+
+function showPortalToast(msg, color) {
+  let t = document.getElementById('portalSyncToast');
+  if (!t) { t = document.createElement('div'); t.id = 'portalSyncToast'; document.body.appendChild(t); }
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 28px;border-radius:12px;color:#fff;font-weight:700;font-size:14px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,0.3);background:'+(color||'#16a34a')+';transition:opacity 0.3s';
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// Check supabase connection on load
+(function checkPortalSupabaseStatus() {
+  const indicator = document.getElementById('supabaseStatus');
+  if (!indicator) return;
+  if (typeof supabaseClient === 'undefined' || !supabaseClient) {
+    indicator.style.background = '#ef4444'; indicator.title = 'Supabase: No conectado';
+    return;
+  }
+  supabaseClient.from('registro_produccion').select('fecha').limit(1)
+    .then(({ error }) => {
+      if (error) { indicator.style.background = '#ef4444'; indicator.title = 'Supabase: Error'; }
+      else { indicator.style.background = '#16a34a'; indicator.title = 'Supabase: Conectado'; }
+    })
+    .catch(() => { indicator.style.background = '#ef4444'; indicator.title = 'Supabase: Sin conexion'; });
+})();
 
 // Set today's date in table header
 const dateEl = document.getElementById('acoTableDate');

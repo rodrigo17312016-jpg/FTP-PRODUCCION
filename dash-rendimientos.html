@@ -205,6 +205,13 @@ body::before { content:''; position:fixed; top:0; left:0; width:100%; height:100
   .chart-wrap, [class*="chart-wrap"], [class*="chart-container"] { height:170px; }
   h1, .section-title { font-size:16px; }
 }
+.sync-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border:none;border-radius:8px;background:rgba(22,163,106,0.18);color:#16a34a;font-size:12px;font-weight:700;cursor:pointer;transition:background 0.2s,transform 0.15s;}
+.sync-btn:hover{background:rgba(22,163,106,0.32);transform:scale(1.04);}
+.sync-btn:active{transform:scale(0.97);}
+.sync-btn.syncing{pointer-events:none;opacity:0.7;}
+.sync-btn .sync-icon{display:inline-block;}
+.sync-btn.syncing .sync-icon{animation:spin-sync 1s linear infinite;}
+@keyframes spin-sync{100%{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
@@ -224,6 +231,8 @@ body::before { content:''; position:fixed; top:0; left:0; width:100%; height:100
         <div class="signature-name">Rodrigo Garcia</div>
         <div class="signature-role">Systems Analyst &amp; Developer-QA</div>
       </div>
+      <div id="supabaseStatus" style="width:12px;height:12px;border-radius:50%;background:#ef4444;box-shadow:0 0 6px rgba(0,0,0,0.3);cursor:help;flex-shrink:0" title="Supabase: Verificando..."></div>
+      <button class="sync-btn" id="btnSync" onclick="manualSync()" title="Sincronizar con Supabase"><span class="sync-icon">🔄</span> Sync</button>
       <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
     </div>
   </div>
@@ -864,6 +873,34 @@ function initCharts() {
   rebuildAllCharts();
   buildTables();
 }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+async function manualSync() {
+  const btn = document.getElementById('btnSync');
+  if (!btn || btn.classList.contains('syncing')) return;
+  btn.classList.add('syncing');
+  btn.querySelector('.sync-icon').textContent = '⏳';
+  const indicator = document.getElementById('supabaseStatus');
+  try {
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      const connected = await checkSupabaseConnection();
+      if (connected) {
+        indicator.style.background = '#16a34a'; indicator.title = 'Supabase: Conectado';
+      } else {
+        indicator.style.background = '#ef4444'; indicator.title = 'Supabase: Error de conexion';
+      }
+    } else {
+      if (indicator) { indicator.style.background = '#ef4444'; indicator.title = 'Supabase: No disponible'; }
+    }
+  } catch(e) {
+    if (indicator) { indicator.style.background = '#ef4444'; indicator.title = 'Supabase: Sin conexion'; }
+  }
+  btn.classList.remove('syncing');
+  btn.querySelector('.sync-icon').textContent = '🔄';
+}
+if (typeof checkSupabaseConnection === 'function') checkSupabaseConnection();
 </script>
 </body>
 </html>

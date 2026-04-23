@@ -78,6 +78,13 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .topbar{position:sticky;top:0;z-index:100;background:var(--bg-card);backdrop-filter:blur(30px);border-bottom:1px solid var(--border-color);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;transition:all var(--transition)}
 .topbar-left{display:flex;align-items:center;gap:16px}
 .topbar-right{display:flex;align-items:center;gap:16px}
+.sync-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border:none;border-radius:8px;background:rgba(22,163,106,0.18);color:#16a34a;font-size:12px;font-weight:700;cursor:pointer;transition:background 0.2s,transform 0.15s}
+.sync-btn:hover{background:rgba(22,163,106,0.32);transform:scale(1.04)}
+.sync-btn:active{transform:scale(0.97)}
+.sync-btn.syncing{pointer-events:none;opacity:0.7}
+.sync-btn .sync-icon{display:inline-block}
+.sync-btn.syncing .sync-icon{animation:spin-sync 1s linear infinite}
+@keyframes spin-sync{100%{transform:rotate(360deg)}}
 
 /* ===== Logo ===== */
 .dash-logo{height:48px;width:auto;filter:drop-shadow(0 4px 16px rgba(220,38,38,0.4)) drop-shadow(0 2px 8px rgba(0,0,0,0.3));animation:logoFloat 4s ease-in-out infinite,logoGlow 3s ease-in-out infinite}
@@ -372,6 +379,7 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
   </div>
   <div class="topbar-right">
     <div id="supabaseStatus" style="width:12px;height:12px;border-radius:50%;background:#ef4444;box-shadow:0 0 6px rgba(0,0,0,0.3);cursor:help;flex-shrink:0" title="Supabase: Verificando..."></div>
+    <button class="sync-btn" id="btnSync" onclick="manualSync()" title="Sincronizar con Supabase"><span class="sync-icon">🔄</span> Sync</button>
     <button class="btn-moneda active-soles" id="btnMoneda" onclick="toggleMoneda()">💱 Mostrar en $</button>
     <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema"></div>
     <div class="topbar-dev-signature">
@@ -682,6 +690,31 @@ function getHoraSlots() {
     '12:00-13:00','13:00-14:00','14:00-15:00','15:00-16:00','16:00-17:00',
     '17:00-18:00','18:00-19:00'
   ];
+}
+
+// ===================== MANUAL SYNC =====================
+async function manualSync() {
+  const btn = document.getElementById('btnSync');
+  if (!btn || btn.classList.contains('syncing')) return;
+  btn.classList.add('syncing');
+  btn.querySelector('.sync-icon').textContent = '⏳';
+  try {
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      await loadFromSupabase();
+      await loadCrossAppFromSupabase();
+      readCrossAppData();
+      renderAll();
+      checkSupabaseConnection();
+      showSupabaseToast('Sync completo - datos actualizados', '#16a34a');
+    } else {
+      showSupabaseToast('Supabase no disponible - sin conexion', '#ef4444');
+    }
+  } catch(e) {
+    console.error('Manual sync error:', e);
+    showSupabaseToast('Error de sincronizacion: ' + e.message, '#ef4444');
+  }
+  btn.classList.remove('syncing');
+  btn.querySelector('.sync-icon').textContent = '🔄';
 }
 
 // ===================== INIT =====================

@@ -86,6 +86,13 @@ body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);c
 .toast{position:fixed;bottom:24px;right:24px;background:#0891b2;color:#fff;padding:14px 20px;border-radius:12px;font-weight:700;font-size:14px;box-shadow:0 8px 24px rgba(8,145,178,0.45);transform:translateY(80px);opacity:0;transition:all 0.3s;z-index:9999;}
 .toast.show{transform:translateY(0);opacity:1;}
 @media(max-width:768px){.tunnel-grid{grid-template-columns:1fr;}.grid-2{grid-template-columns:1fr;}}
+.sync-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border:none;border-radius:8px;background:rgba(22,163,106,0.18);color:#16a34a;font-size:12px;font-weight:700;cursor:pointer;transition:background 0.2s,transform 0.15s;}
+.sync-btn:hover{background:rgba(22,163,106,0.32);transform:scale(1.04);}
+.sync-btn:active{transform:scale(0.97);}
+.sync-btn.syncing{pointer-events:none;opacity:0.7;}
+.sync-btn .sync-icon{display:inline-block;}
+.sync-btn.syncing .sync-icon{animation:spin-sync 1s linear infinite;}
+@keyframes spin-sync{100%{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
@@ -116,6 +123,8 @@ body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);c
       <div class="header-sub">Control de Congelamiento en Tiempo Real</div>
     </div>
     <div class="header-spacer"></div>
+    <div id="supabaseStatus" style="width:12px;height:12px;border-radius:50%;background:#ef4444;box-shadow:0 0 6px rgba(0,0,0,0.3);cursor:help;flex-shrink:0" title="Supabase: Verificando..."></div>
+    <button class="sync-btn" id="btnSync" onclick="manualSync()" title="Sincronizar con Supabase"><span class="sync-icon">🔄</span> Sync</button>
     <div class="header-live"><span class="dot"></span> En vivo</div>
     <div>
       <div class="header-sig-dev">Developer</div>
@@ -423,6 +432,38 @@ function updateCharts() {
   chartTemp.data.datasets[1].data = conTemp.map(()=>-30);
   chartTemp.update();
 }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+async function manualSync() {
+  const btn = document.getElementById('btnSync');
+  if (!btn || btn.classList.contains('syncing')) return;
+  btn.classList.add('syncing');
+  btn.querySelector('.sync-icon').textContent = '⏳';
+  const indicator = document.getElementById('supabaseStatus');
+  try {
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      const connected = await checkSupabaseConnection();
+      if (connected) {
+        indicator.style.background = '#16a34a'; indicator.title = 'Supabase: Conectado';
+        showToast('✅ Conexion con Supabase verificada');
+      } else {
+        indicator.style.background = '#ef4444'; indicator.title = 'Supabase: Error de conexion';
+        showToast('❌ Sin conexion a Supabase');
+      }
+    } else {
+      if (indicator) { indicator.style.background = '#ef4444'; indicator.title = 'Supabase: No disponible'; }
+      showToast('❌ Supabase no disponible');
+    }
+  } catch(e) {
+    if (indicator) { indicator.style.background = '#ef4444'; indicator.title = 'Supabase: Sin conexion'; }
+    showToast('❌ Error de conexion');
+  }
+  btn.classList.remove('syncing');
+  btn.querySelector('.sync-icon').textContent = '🔄';
+}
+if (typeof checkSupabaseConnection === 'function') checkSupabaseConnection();
 </script>
 </body>
 </html>

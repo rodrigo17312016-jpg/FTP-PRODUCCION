@@ -254,6 +254,27 @@ body {
   flex-wrap: wrap;
 }
 
+.sync-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(22,163,106,0.18);
+  color: #16a34a;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.sync-btn:hover { background: rgba(22,163,106,0.32); transform: scale(1.04); }
+.sync-btn:active { transform: scale(0.97); }
+.sync-btn.syncing { pointer-events: none; opacity: 0.7; }
+.sync-btn .sync-icon { display: inline-block; }
+.sync-btn.syncing .sync-icon { animation: spin-sync 1s linear infinite; }
+@keyframes spin-sync { 100% { transform: rotate(360deg); } }
+
 .topbar-back {
   color: rgba(255,255,255,0.7);
   text-decoration: none;
@@ -1158,6 +1179,7 @@ body {
   <div class="topbar-right">
     <a href="index.html" class="topbar-back portal-back-link">&larr; Portal</a>
     <span id="supabaseStatus" class="supabase-status" title="Verificando..."></span>
+    <button class="sync-btn" id="btnSync" onclick="manualSync()" title="Sincronizar con Supabase"><span class="sync-icon">🔄</span> Sync</button>
     <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">&#9790;</button>
     <div class="topbar-dev-signature">
       <div class="topbar-sig-label">Desarrollado por:</div>
@@ -1713,6 +1735,28 @@ function setFilterChip(btn) {
   btn.classList.add('active');
 
   renderAll();
+}
+
+/* ═══════════════ MANUAL SYNC ═══════════════ */
+async function manualSync() {
+  const btn = document.getElementById('btnSync');
+  if (!btn || btn.classList.contains('syncing')) return;
+  btn.classList.add('syncing');
+  btn.querySelector('.sync-icon').textContent = '⏳';
+  try {
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      await loadData();
+      await checkSupabaseConnectionTunel();
+      showToast('Sync completo - datos actualizados', '#16a34a');
+    } else {
+      showToast('Supabase no disponible - sin conexion', '#ef4444');
+    }
+  } catch(e) {
+    console.error('Manual sync error:', e);
+    showToast('Error de sincronizacion: ' + e.message, '#ef4444');
+  }
+  btn.classList.remove('syncing');
+  btn.querySelector('.sync-icon').textContent = '🔄';
 }
 
 /* ═══════════════ INIT ═══════════════ */
