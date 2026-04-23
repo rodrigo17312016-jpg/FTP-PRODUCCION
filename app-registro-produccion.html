@@ -2845,5 +2845,99 @@ async function loadFromSupabase() {
   }, 1500);
 })();
 </script>
+
+<!-- FTP_SYNC_WIDGET_v1 -->
+<button id="ftpSyncFab" type="button" title="Sincronizar registros pendientes con Supabase"
+  style="position:fixed;bottom:20px;right:20px;z-index:99998;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:50px;padding:12px 22px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 8px 25px rgba(37,99,235,0.45);display:flex;align-items:center;gap:8px;font-family:system-ui,-apple-system,sans-serif">
+  <span>&#128260; Sync</span>
+  <span id="ftpSyncBadge" style="background:#dc2626;border-radius:10px;padding:2px 8px;font-size:11px;display:none;min-width:22px;text-align:center">0</span>
+</button>
+<script>
+(function(){
+  var CONFIG = {
+    table: 'registro_produccion',
+    storageKey: 'prod_registros',
+    onConflict: 'fecha,hora,linea',
+    requiredFields: ['fecha','hora','consumo_kg'],
+    mapRecord: function(r){
+      return {
+        fecha: r.fecha, hora: r.hora, turno: r.turno,
+        fruta: r.fruta || 'MANGO', linea: r.linea || 'Linea 1',
+        proyectado_tn: r.proyectado_tn || 16,
+        consumo_kg: r.consumo_kg, pt_aprox_kg: r.pt_aprox_kg,
+        personas: r.personas || 0,
+        hora_inicio_turno: r.hora_inicio_turno || null,
+        hora_fin_turno: r.hora_fin_turno || null,
+        almuerzo_inicio: r.almuerzo_inicio || null,
+        almuerzo_fin: r.almuerzo_fin || null,
+        supervisor: r.supervisor || null,
+        observacion: r.observacion || null
+      };
+    }
+  };
+  var btn = document.getElementById('ftpSyncFab');
+  var badge = document.getElementById('ftpSyncBadge');
+  function getClient(){ return window.supabaseClient || null; }
+  function getRecords(){ try { return JSON.parse(localStorage.getItem(CONFIG.storageKey) || '[]'); } catch(e){ return []; } }
+  function toast(msg, color){
+    var el = document.createElement('div');
+    el.style.cssText = 'position:fixed;top:20px;right:20px;background:'+(color||'#16a34a')+';color:#fff;padding:14px 22px;border-radius:12px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,0.3);z-index:999999;font-size:13px;max-width:380px;font-family:system-ui';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(function(){ el.style.opacity='0'; el.style.transition='opacity .4s'; }, 4500);
+    setTimeout(function(){ el.remove(); }, 5000);
+  }
+  function updateBadge(){
+    var n = getRecords().length;
+    if (n > 0) { badge.textContent = n; badge.style.display = 'inline-block'; }
+    else { badge.style.display = 'none'; }
+  }
+  async function performSync(){
+    var client = getClient();
+    if (!client) { toast('Supabase no disponible', '#dc2626'); return; }
+    var records = getRecords();
+    if (!records.length) { toast('No hay registros pendientes', '#2563eb'); return; }
+    btn.disabled = true; btn.style.opacity='0.7';
+    var orig = btn.innerHTML;
+    btn.innerHTML = '&#9203; Sincronizando ' + records.length + '...';
+    var synced=0, failed=0, firstError=null;
+    var batchSize=50;
+    for (var i=0; i<records.length; i+=batchSize) {
+      var slice = records.slice(i, i+batchSize);
+      var payload = slice.map(function(r){ try { return CONFIG.mapRecord(r); } catch(e){ return null; } })
+        .filter(function(r){
+          if (!r) return false;
+          for (var j=0; j<CONFIG.requiredFields.length; j++){
+            if (!r[CONFIG.requiredFields[j]]) return false;
+          }
+          return true;
+        });
+      if (!payload.length) continue;
+      try {
+        var q = client.from(CONFIG.table);
+        var result = CONFIG.onConflict
+          ? await q.upsert(payload, { onConflict: CONFIG.onConflict })
+          : await q.upsert(payload);
+        if (result.error) { firstError = firstError || result.error; failed += payload.length; }
+        else { synced += payload.length; }
+      } catch(e) { firstError = firstError || e; failed += payload.length; }
+    }
+    btn.disabled = false; btn.style.opacity='1'; btn.innerHTML = orig;
+    updateBadge();
+    if (failed===0 && synced>0) toast('\u2705 ' + synced + ' registros sincronizados', '#16a34a');
+    else if (failed>0 && synced>0) toast('\u26A0\uFE0F Parcial: ' + synced + ' OK, ' + failed + ' fallaron', '#f59e0b');
+    else {
+      var msg = firstError ? (firstError.message || String(firstError)) : '';
+      if (msg.indexOf('policy')>=0 || msg.indexOf('row-level')>=0) toast('\uD83D\uDEAB Sin permiso. Contacta a Rodrigo.', '#dc2626');
+      else toast('\u274C ' + failed + ' fallaron: ' + msg, '#dc2626');
+    }
+  }
+  btn.addEventListener('click', performSync);
+  updateBadge();
+  setInterval(updateBadge, 3000);
+  window.addEventListener('storage', function(ev){ if (ev.key === CONFIG.storageKey) updateBadge(); });
+})();
+</script>
+
 </body>
 </html>
