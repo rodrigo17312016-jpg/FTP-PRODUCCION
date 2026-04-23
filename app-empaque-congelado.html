@@ -2239,12 +2239,19 @@ async function checkSupabaseConnectionEmpaque() {
 })();
 </script>
 
-<!-- FTP_SYNC_WIDGET_v1 -->
-<button id="ftpSyncFab" type="button" title="Sincronizar registros pendientes con Supabase"
-  style="position:fixed;bottom:20px;right:20px;z-index:99998;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:50px;padding:12px 22px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 8px 25px rgba(37,99,235,0.45);display:flex;align-items:center;gap:8px;font-family:system-ui,-apple-system,sans-serif">
-  <span>&#128260; Sync</span>
-  <span id="ftpSyncBadge" style="background:#dc2626;border-radius:10px;padding:2px 8px;font-size:11px;display:none;min-width:22px;text-align:center">0</span>
-</button>
+
+<!-- FTP_SYNC_WIDGET_v2 -->
+<div id="ftpSyncWrap" style="position:fixed;bottom:20px;right:20px;z-index:99998;display:flex;gap:8px;flex-direction:column;align-items:flex-end;font-family:system-ui,-apple-system,sans-serif">
+  <button id="ftpSyncFab" type="button" title="Sincronizar registros pendientes con Supabase"
+    style="background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:50px;padding:12px 22px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 8px 25px rgba(37,99,235,0.45);display:flex;align-items:center;gap:8px">
+    <span>&#128260; Sync</span>
+    <span id="ftpSyncBadge" style="background:#dc2626;border-radius:10px;padding:2px 8px;font-size:11px;display:none;min-width:22px;text-align:center">0</span>
+  </button>
+  <button id="ftpSyncBackup" type="button" title="Descargar backup JSON de registros locales (seguridad)"
+    style="background:rgba(100,116,139,0.95);color:#fff;border:none;border-radius:50px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);display:none">
+    &#128190; Backup JSON
+  </button>
+</div>
 <script>
 (function(){
   var CONFIG = {
@@ -2271,61 +2278,126 @@ async function checkSupabaseConnectionEmpaque() {
   };
   var btn = document.getElementById('ftpSyncFab');
   var badge = document.getElementById('ftpSyncBadge');
+  var backupBtn = document.getElementById('ftpSyncBackup');
+
   function getClient(){ return window.supabaseClient || null; }
   function getRecords(){ try { return JSON.parse(localStorage.getItem(CONFIG.storageKey) || '[]'); } catch(e){ return []; } }
-  function toast(msg, color){
+  function toast(msg, color, dur){
     var el = document.createElement('div');
-    el.style.cssText = 'position:fixed;top:20px;right:20px;background:'+(color||'#16a34a')+';color:#fff;padding:14px 22px;border-radius:12px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,0.3);z-index:999999;font-size:13px;max-width:380px;font-family:system-ui';
+    el.style.cssText = 'position:fixed;top:20px;right:20px;background:'+(color||'#16a34a')+';color:#fff;padding:14px 22px;border-radius:12px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,0.3);z-index:999999;font-size:13px;max-width:400px;line-height:1.4;font-family:system-ui;white-space:pre-line';
     el.textContent = msg;
     document.body.appendChild(el);
-    setTimeout(function(){ el.style.opacity='0'; el.style.transition='opacity .4s'; }, 4500);
-    setTimeout(function(){ el.remove(); }, 5000);
+    setTimeout(function(){ el.style.opacity='0'; el.style.transition='opacity .4s'; }, dur||5500);
+    setTimeout(function(){ el.remove(); }, (dur||5500)+500);
   }
   function updateBadge(){
     var n = getRecords().length;
-    if (n > 0) { badge.textContent = n; badge.style.display = 'inline-block'; }
-    else { badge.style.display = 'none'; }
+    if (n > 0) { badge.textContent = n; badge.style.display='inline-block'; backupBtn.style.display='block'; }
+    else { badge.style.display='none'; backupBtn.style.display='none'; }
   }
+
+  // Descargar backup JSON como seguridad
+  backupBtn.addEventListener('click', function(){
+    var records = getRecords();
+    var blob = new Blob([JSON.stringify(records, null, 2)], {type:'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+    a.href = url;
+    a.download = 'backup-' + CONFIG.storageKey + '-' + ts + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('\u2705 Backup descargado (' + records.length + ' registros)', '#16a34a');
+  });
+
+  async function tryUpsertOne(client, r) {
+    try {
+      var q = client.from(CONFIG.table);
+      var result = CONFIG.onConflict
+        ? await q.upsert([r], { onConflict: CONFIG.onConflict })
+        : await q.upsert([r]);
+      return { ok: !result.error, error: result.error };
+    } catch(e) { return { ok: false, error: e }; }
+  }
+
   async function performSync(){
     var client = getClient();
-    if (!client) { toast('Supabase no disponible', '#dc2626'); return; }
+    if (!client) { toast('\u274C Supabase no disponible', '#dc2626'); return; }
     var records = getRecords();
-    if (!records.length) { toast('No hay registros pendientes', '#2563eb'); return; }
+    if (!records.length) { toast('\u2139 No hay registros pendientes', '#2563eb'); return; }
+
     btn.disabled = true; btn.style.opacity='0.7';
     var orig = btn.innerHTML;
-    btn.innerHTML = '&#9203; Sincronizando ' + records.length + '...';
-    var synced=0, failed=0, firstError=null;
-    var batchSize=50;
-    for (var i=0; i<records.length; i+=batchSize) {
-      var slice = records.slice(i, i+batchSize);
-      var payload = slice.map(function(r){ try { return CONFIG.mapRecord(r); } catch(e){ return null; } })
-        .filter(function(r){
-          if (!r) return false;
-          for (var j=0; j<CONFIG.requiredFields.length; j++){
-            if (!r[CONFIG.requiredFields[j]]) return false;
-          }
-          return true;
-        });
-      if (!payload.length) continue;
+
+    // Mapear y filtrar
+    var payload = records.map(function(r){
+      try { return CONFIG.mapRecord(r); } catch(e){ return null; }
+    }).filter(function(r){
+      if (!r) return false;
+      for (var j=0; j<CONFIG.requiredFields.length; j++){
+        if (!r[CONFIG.requiredFields[j]]) return false;
+      }
+      return true;
+    });
+
+    btn.innerHTML = '&#9203; Subiendo ' + payload.length + '...';
+
+    var synced = 0, failed = 0;
+    var errorCounts = {};  // agrupar errores por mensaje
+    var batchSize = 50;
+
+    // FASE 1: intento por batch (rapido)
+    for (var i=0; i<payload.length; i+=batchSize) {
+      var slice = payload.slice(i, i+batchSize);
       try {
         var q = client.from(CONFIG.table);
         var result = CONFIG.onConflict
-          ? await q.upsert(payload, { onConflict: CONFIG.onConflict })
-          : await q.upsert(payload);
-        if (result.error) { firstError = firstError || result.error; failed += payload.length; }
-        else { synced += payload.length; }
-      } catch(e) { firstError = firstError || e; failed += payload.length; }
+          ? await q.upsert(slice, { onConflict: CONFIG.onConflict })
+          : await q.upsert(slice);
+        if (!result.error) {
+          synced += slice.length;
+        } else {
+          // FASE 2: batch fallo -> reintentar uno por uno para salvar los buenos
+          btn.innerHTML = '&#9203; Reintentando 1x1 (' + slice.length + ')...';
+          for (var k=0; k<slice.length; k++) {
+            var res = await tryUpsertOne(client, slice[k]);
+            if (res.ok) synced++;
+            else {
+              failed++;
+              var em = res.error && res.error.message ? res.error.message.slice(0,80) : 'desconocido';
+              errorCounts[em] = (errorCounts[em]||0)+1;
+            }
+          }
+        }
+      } catch(e) {
+        // Reintento 1x1 tambien si hay excepcion
+        for (var k2=0; k2<slice.length; k2++) {
+          var res2 = await tryUpsertOne(client, slice[k2]);
+          if (res2.ok) synced++;
+          else {
+            failed++;
+            var em2 = res2.error && res2.error.message ? res2.error.message.slice(0,80) : 'excepcion';
+            errorCounts[em2] = (errorCounts[em2]||0)+1;
+          }
+        }
+      }
     }
+
     btn.disabled = false; btn.style.opacity='1'; btn.innerHTML = orig;
     updateBadge();
-    if (failed===0 && synced>0) toast('\u2705 ' + synced + ' registros sincronizados', '#16a34a');
-    else if (failed>0 && synced>0) toast('\u26A0\uFE0F Parcial: ' + synced + ' OK, ' + failed + ' fallaron', '#f59e0b');
-    else {
-      var msg = firstError ? (firstError.message || String(firstError)) : '';
-      if (msg.indexOf('policy')>=0 || msg.indexOf('row-level')>=0) toast('\uD83D\uDEAB Sin permiso. Contacta a Rodrigo.', '#dc2626');
-      else toast('\u274C ' + failed + ' fallaron: ' + msg, '#dc2626');
+
+    var errList = Object.keys(errorCounts).map(function(k){ return errorCounts[k]+'x '+k; }).slice(0,3).join('\n');
+
+    if (failed === 0 && synced > 0) {
+      toast('\u2705 ' + synced + ' registros sincronizados a Supabase', '#16a34a');
+    } else if (failed > 0 && synced > 0) {
+      toast('\u26A0\uFE0F ' + synced + ' OK, ' + failed + ' fallaron.\n' + errList, '#f59e0b', 9000);
+    } else if (failed > 0) {
+      toast('\u274C Todos fallaron (' + failed + ').\n' + errList, '#dc2626', 9000);
     }
+    console.log('[FTP Sync v2] synced=' + synced + ' failed=' + failed, errorCounts);
   }
+
   btn.addEventListener('click', performSync);
   updateBadge();
   setInterval(updateBadge, 3000);
